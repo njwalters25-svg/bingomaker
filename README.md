@@ -25,3 +25,13 @@ The deploy path is set in `.cpanel.yml`:
 This is intended as an internal production tool. Use cPanel Directory Privacy / Password Protect Directory on the hosted folder if the subdomain should not be accessible to anyone with the URL.
 
 The cPanel deployment intentionally does not copy `.htaccess`, because cPanel Directory Privacy writes its own `.htaccess` file into the live folder.
+
+## Free Square Images
+
+Reusable centre-square images live in `public/free-square/`.
+
+To add one:
+
+1. Add the image file to `public/free-square/`.
+2. Add an entry to `public/free-square/manifest.json` with an `id`, `label`, and `src`.
+3. Commit, push, and deploy from cPanel.

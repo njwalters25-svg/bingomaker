@@ -50,12 +50,8 @@ const inputs = {
 };
 
 const centerIndex = 12;
-const freePresetImages = {
-  microphone: "assets/free-square/microphone.svg",
-  "music-notes": "assets/free-square/music-notes.svg",
-  "disco-ball": "assets/free-square/disco-ball.svg",
-  star: "assets/free-square/star.svg",
-};
+const freePresetBasePath = "public/free-square/";
+let freePresetImages = {};
 const pageDimensions = {
   letter: [816, 1056],
   a4: [794, 1123],
@@ -329,6 +325,60 @@ function getFreeImageSrc() {
     return freeImageData;
   }
   return freePresetImages[selectedFreePreset] || "";
+}
+
+function createFreePresetOption(preset) {
+  const label = document.createElement("label");
+  label.className = "free-preset-option";
+
+  const input = document.createElement("input");
+  input.type = "radio";
+  input.name = "freePreset";
+  input.value = preset.id;
+
+  const image = document.createElement("img");
+  image.src = preset.src;
+  image.alt = "";
+
+  label.append(input, image, preset.label);
+  return label;
+}
+
+async function loadFreePresetManifest() {
+  try {
+    const response = await fetch(`${freePresetBasePath}manifest.json?v=20260502-free-presets`, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Free preset manifest failed with ${response.status}`);
+    }
+
+    const presets = await response.json();
+    freePresetImages = {};
+    presets.forEach((preset) => {
+      if (!preset.id || !preset.src) {
+        return;
+      }
+
+      const normalizedPreset = {
+        id: preset.id,
+        label: preset.label || preset.id,
+        src: preset.src.startsWith("http") || preset.src.startsWith("/") ? preset.src : `${freePresetBasePath}${preset.src}`,
+      };
+      freePresetImages[normalizedPreset.id] = normalizedPreset.src;
+
+      if (!freePresetGrid.querySelector(`input[name="freePreset"][value="${normalizedPreset.id}"]`)) {
+        const customOption = freePresetGrid.querySelector('input[name="freePreset"][value="custom"]')?.closest("label");
+        freePresetGrid.insertBefore(createFreePresetOption(normalizedPreset), customOption);
+      }
+    });
+  } catch (error) {
+    console.warn(error);
+  } finally {
+    if (selectedFreePreset !== "custom" && selectedFreePreset !== "text" && !freePresetImages[selectedFreePreset]) {
+      selectedFreePreset = "text";
+    }
+    updateFreePresetSelection();
+    generateCards();
+  }
 }
 
 function updateFreePresetSelection() {
@@ -1342,4 +1392,4 @@ updateFreePresetSelection();
 applyCurrentColors();
 updateDesignSettings();
 updateListHelp();
-generateCards();
+loadFreePresetManifest();

@@ -6,5 +6,5 @@ deployment:
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
     - /bin/cp robots.txt $DEPLOYPATH
-    - /bin/mkdir -p $DEPLOYPATH/assets/free-square
-    - /bin/cp assets/free-square/*.svg $DEPLOYPATH/assets/free-square/
+    - /bin/mkdir -p $DEPLOYPATH/public/free-square
+    - /bin/cp -R public/free-square/* $DEPLOYPATH/public/free-square/

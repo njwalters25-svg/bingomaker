@@ -1,0 +1,22 @@
+[
+  {
+    "id": "microphone",
+    "label": "Mic",
+    "src": "microphone.svg"
+  },
+  {
+    "id": "music-notes",
+    "label": "Notes",
+    "src": "music-notes.svg"
+  },
+  {
+    "id": "disco-ball",
+    "label": "Disco",
+    "src": "disco-ball.svg"
+  },
+  {
+    "id": "star",
+    "label": "Star",
+    "src": "star.svg"
+  }
+]
