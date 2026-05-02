@@ -7,7 +7,7 @@ Private static browser app for creating printable bingo products for All Occasio
 - `index.html` - app markup
 - `styles.css` - screen and print styling
 - `app.js` - card generation and controls
-- `.htaccess` - prevents directory listing on Apache/cPanel hosting
+- `.htaccess` - fallback directory-listing protection for manual uploads
 - `robots.txt` and the `noindex` meta tag - discourages search indexing
 
 ## Hosting
@@ -23,3 +23,5 @@ The deploy path is set in `.cpanel.yml`:
 ## Access
 
 This is intended as an internal production tool. Use cPanel Directory Privacy / Password Protect Directory on the hosted folder if the subdomain should not be accessible to anyone with the URL.
+
+The cPanel deployment intentionally does not copy `.htaccess`, because cPanel Directory Privacy writes its own `.htaccess` file into the live folder.

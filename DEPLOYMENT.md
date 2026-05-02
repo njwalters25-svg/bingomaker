@@ -27,7 +27,6 @@ deployment:
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
-    - /bin/cp .htaccess $DEPLOYPATH
     - /bin/cp robots.txt $DEPLOYPATH
 ```
 
@@ -37,6 +36,7 @@ Best simple setup:
 
 - One shared password.
 - Keep the URL and password private.
+- Re-apply Directory Privacy after the first deploy if the deploy overwrote cPanel's generated `.htaccess`.
 
 More controlled later:
 

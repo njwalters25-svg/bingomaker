@@ -6,4 +6,3 @@ deployment:
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
     - /bin/cp robots.txt $DEPLOYPATH
-    - /bin/cp .htaccess $DEPLOYPATH
