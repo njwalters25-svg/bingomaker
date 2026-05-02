@@ -10,6 +10,13 @@
   --title-color: #a8221b;
   --occasion-color: #a8221b;
   --line: #ded4c5;
+  --tool-bg: #e8f6f2;
+  --tool-panel: #f8fffc;
+  --tool-line: #a9d7ce;
+  --tool-accent: #0f766e;
+  --tool-accent-2: #e05d3c;
+  --tool-accent-soft: #d8f3ed;
+  --tool-shadow: 0 18px 45px rgba(12, 74, 66, 0.14);
   --card: #ffffff;
   --cell-bg: #fff;
   --page-width: 8.5in;
@@ -38,9 +45,9 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(120deg, rgba(217, 63, 50, 0.12), transparent 36%),
-    linear-gradient(240deg, rgba(33, 118, 121, 0.12), transparent 42%),
-    var(--bg);
+    linear-gradient(120deg, rgba(15, 118, 110, 0.18), transparent 36%),
+    linear-gradient(240deg, rgba(224, 93, 60, 0.16), transparent 42%),
+    var(--tool-bg);
   color: var(--ink);
 }
 
@@ -75,9 +82,9 @@ textarea {
 .brand-panel,
 .form-grid,
 .output {
-  border: 1px solid var(--line);
-  background: rgba(255, 250, 241, 0.88);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--tool-line);
+  background: color-mix(in srgb, var(--tool-panel) 92%, #fff);
+  box-shadow: var(--tool-shadow);
 }
 
 .brand-panel {
@@ -98,7 +105,7 @@ textarea {
 
 .brand-panel .usage-note {
   padding: 11px 12px;
-  border-left: 4px solid var(--accent-2);
+  border-left: 4px solid var(--tool-accent-2);
   border-radius: 4px;
   background: #fff;
   color: var(--ink);
@@ -109,7 +116,7 @@ textarea {
 
 .eyebrow {
   margin: 0 0 6px;
-  color: var(--accent-strong);
+  color: var(--tool-accent);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -168,16 +175,16 @@ fieldset {
 
 .list-tip {
   padding: 11px 12px;
-  border-left: 4px solid var(--accent-2);
+  border-left: 4px solid var(--tool-accent-2);
   border-radius: 4px;
-  background: color-mix(in srgb, var(--accent-soft) 20%, #fff);
+  background: color-mix(in srgb, var(--tool-accent-soft) 52%, #fff);
 }
 
 .print-help {
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--tool-line);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--accent-soft) 24%, #fff);
+  background: color-mix(in srgb, var(--tool-accent-soft) 62%, #fff);
 }
 
 .help-panel {
@@ -263,8 +270,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--tool-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tool-accent) 22%, transparent);
 }
 
 .full-span {
@@ -301,7 +308,7 @@ textarea:focus {
 .check-option input {
   width: 18px;
   height: 18px;
-  accent-color: var(--accent);
+  accent-color: var(--tool-accent);
 }
 
 .custom-colors {
@@ -316,7 +323,7 @@ input[type="color"] {
 }
 
 input[type="range"] {
-  accent-color: var(--accent);
+  accent-color: var(--tool-accent);
   min-height: 24px;
   padding: 0;
 }
@@ -419,7 +426,7 @@ button {
 }
 
 #generateButton {
-  background: var(--accent);
+  background: var(--tool-accent);
   color: #fff;
 }
 
@@ -432,13 +439,13 @@ button {
 #downloadFullSizeButton,
 #downloadTwoUpButton,
 #downloadExtrasButton {
-  background: var(--accent-2);
+  background: var(--tool-accent-2);
   color: #fff;
 }
 
 #resetButton {
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--accent-soft) 20%, #fff);
+  border: 1px solid var(--tool-line);
+  background: color-mix(in srgb, var(--tool-accent-soft) 50%, #fff);
   color: var(--muted);
 }
 
