@@ -518,7 +518,10 @@ function createPdfExportArea({ includeCards = true, includeExtras = true } = {})
 function addPdfExportOverrides(clonedDocument) {
   const style = clonedDocument.createElement("style");
   style.textContent = `
-    .pdf-export-area, .pdf-export-area * {
+    .pdf-export-area,
+    .pdf-export-sheet,
+    .pdf-export-area .bingo-card,
+    .pdf-export-area .extra-page {
       box-shadow: none !important;
     }
 
