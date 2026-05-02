@@ -17,14 +17,11 @@ const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton")
 const downloadTwoUpButton = document.querySelector("#downloadTwoUpButton");
 const downloadExtrasButton = document.querySelector("#downloadExtrasButton");
 const resetButton = document.querySelector("#resetButton");
-const schemeGrid = document.querySelector("#schemeGrid");
 const pageSize = document.querySelector("#pageSize");
 const cardsPerPage = document.querySelector("#cardsPerPage");
 const printPageStyle = document.querySelector("#printPageStyle");
 const primaryColor = document.querySelector("#primaryColor");
 const highlightColor = document.querySelector("#highlightColor");
-const titleColor = document.querySelector("#titleColor");
-const occasionColor = document.querySelector("#occasionColor");
 
 let freeImageData = "";
 let selectedFreePreset = "text";
@@ -55,20 +52,6 @@ let freePresetImages = {};
 const pageDimensions = {
   letter: [816, 1056],
   a4: [794, 1123],
-};
-const schemeColors = {
-  party: ["#d94841", "#178f88", "#7a2f82", "#d94841"],
-  primary: ["#d62828", "#1d4ed8", "#111827", "#d62828"],
-  pastel: ["#f4a6c1", "#8ddad5", "#8e6cc8", "#d7833f"],
-  kids: ["#ff6b35", "#00b4d8", "#53389e", "#0f8a5f"],
-  teen: ["#ff2aa1", "#00b4ff", "#7c3aed", "#111827"],
-  masculine: ["#243447", "#2f6f73", "#8c3f2b", "#c9932b"],
-  feminine: ["#d65a87", "#8e5aa8", "#9b2f67", "#c06c84"],
-  earth: ["#6f4e37", "#6c8f4e", "#2f5d50", "#b85c38"],
-  coastal: ["#0e7490", "#f4a261", "#275f75", "#2a9d8f"],
-  luxury: ["#111827", "#b08d57", "#7f1d1d", "#111827"],
-  christmas: ["#b91c1c", "#166534", "#7f1212", "#d4af37"],
-  halloween: ["#111111", "#f97316", "#7e22ce", "#111111"],
 };
 
 function parseItems(value) {
@@ -142,8 +125,6 @@ function getSettingsSnapshot() {
     cardsPerPage: cardsPerPage.value,
     primaryColor: primaryColor.value,
     highlightColor: highlightColor.value,
-    titleColor: titleColor.value,
-    occasionColor: occasionColor.value,
   };
 }
 
@@ -182,8 +163,6 @@ function restoreSettings() {
     cardsPerPage.value = savedSettings.cardsPerPage || cardsPerPage.value;
     primaryColor.value = savedSettings.primaryColor || primaryColor.value;
     highlightColor.value = savedSettings.highlightColor || highlightColor.value;
-    titleColor.value = savedSettings.titleColor || titleColor.value;
-    occasionColor.value = savedSettings.occasionColor || occasionColor.value;
   } catch {
     localStorage.removeItem(storageKey);
   } finally {
@@ -208,13 +187,8 @@ function resetSettings() {
   inputs.includeMarkers.checked = true;
   pageSize.value = "letter";
   cardsPerPage.value = "2";
-  primaryColor.value = schemeColors.party[0];
-  highlightColor.value = schemeColors.party[1];
-  titleColor.value = schemeColors.party[2];
-  occasionColor.value = schemeColors.party[3];
-  document.querySelector('input[name="scheme"][value="party"]').checked = true;
-  document.body.dataset.scheme = "party";
-  document.body.dataset.customColors = "false";
+  primaryColor.value = "#e33c2f";
+  highlightColor.value = "#137b80";
   freeImageData = "";
   headerImageData = "";
   freeImageInput.value = "";
@@ -301,7 +275,6 @@ function updateDesignSettings() {
 }
 
 function updateCustomColors() {
-  document.body.dataset.customColors = "true";
   applyCurrentColors();
 }
 
@@ -310,8 +283,8 @@ function applyCurrentColors() {
   colorTargets.forEach((target) => {
     target.style.setProperty("--accent", primaryColor.value);
     target.style.setProperty("--accent-2", highlightColor.value);
-    target.style.setProperty("--title-color", titleColor.value);
-    target.style.setProperty("--occasion-color", occasionColor.value);
+    target.style.setProperty("--title-color", primaryColor.value);
+    target.style.setProperty("--occasion-color", highlightColor.value);
   });
 }
 
@@ -608,7 +581,7 @@ function addPdfExportOverrides(clonedDocument) {
     }
 
     .pdf-export-area .square.free {
-      background: ${mixWithWhite(highlightColor.value, 0.82).join(",").replace(/^/, "rgb(").replace(/$/, ")")} !important;
+      background: #fff !important;
     }
 
     .pdf-export-area .instructions-page section,
@@ -767,7 +740,7 @@ function drawInstructionsPdf(pdf, sizing, pageIndex) {
   let y = sizing.sheetHeight * 0.11;
   drawFittedText(pdf, "Game guide", margin, y, sizing.sheetWidth - margin * 2, 34, {
     maxSize: 20,
-    color: occasionColor.value,
+    color: highlightColor.value,
     font: "helvetica",
   });
   y += 40;
@@ -776,7 +749,7 @@ function drawInstructionsPdf(pdf, sizing, pageIndex) {
     minSize: 24,
     font: "times",
     style: "bold",
-    color: titleColor.value,
+    color: primaryColor.value,
   });
   y += 90;
   const steps = [
@@ -819,7 +792,7 @@ function drawMasterListPdf(pdf, sizing, pageIndex, items) {
     maxSize: 40,
     font: "times",
     style: "bold",
-    color: titleColor.value,
+    color: primaryColor.value,
   });
   const columns = cardsPerPage.value === "2" ? 4 : 3;
   const rows = Math.ceil(sortedItems.length / columns);
@@ -855,7 +828,7 @@ function drawMarkersPdf(pdf, sizing, pageIndex) {
     maxSize: 38,
     font: "times",
     style: "bold",
-    color: titleColor.value,
+    color: primaryColor.value,
   });
   for (let index = 0; index < across * down; index += 1) {
     const col = index % across;
@@ -1321,21 +1294,7 @@ headerImageInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
-schemeGrid.addEventListener("change", (event) => {
-  if (event.target.name === "scheme") {
-    document.body.dataset.scheme = event.target.value;
-    const [primary, highlight, title, occasion] = schemeColors[event.target.value];
-    primaryColor.value = primary;
-    highlightColor.value = highlight;
-    titleColor.value = title;
-    occasionColor.value = occasion;
-    document.body.dataset.customColors = "false";
-    applyCurrentColors();
-    saveSettings();
-  }
-});
-
-[primaryColor, highlightColor, titleColor, occasionColor].forEach((control) => {
+[primaryColor, highlightColor].forEach((control) => {
   control.addEventListener("input", () => {
     updateCustomColors();
     saveSettings();
@@ -1386,7 +1345,6 @@ resetButton.addEventListener("click", resetSettings);
 
 window.addEventListener("resize", updatePreviewScale);
 
-document.body.dataset.scheme = "party";
 restoreSettings();
 updateFreePresetSelection();
 applyCurrentColors();
