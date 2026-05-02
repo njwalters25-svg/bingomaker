@@ -32,8 +32,12 @@ let currentCards = [];
 
 const storageKey = "allOccasionsBingoMakerSettings";
 
+function getControl(primarySelector, fallbackSelector = null) {
+  return document.querySelector(primarySelector) || (fallbackSelector ? document.querySelector(fallbackSelector) : null);
+}
+
 const inputs = {
-  productName: document.querySelector("#productName"),
+  productName: getControl("#productName", "#occasionInput"),
   count: document.querySelector("#cardCount"),
   items: document.querySelector("#itemList"),
   freeText: document.querySelector("#freeText"),
@@ -115,9 +119,13 @@ function setStatus(message, isError = false) {
   statusMessage.classList.toggle("error", isError);
 }
 
+function getProductName() {
+  return inputs.productName?.value?.trim() || "";
+}
+
 function getSettingsSnapshot() {
   return {
-    productName: inputs.productName.value,
+    productName: inputs.productName?.value || "",
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
@@ -154,7 +162,9 @@ function restoreSettings() {
     }
 
     isRestoringSettings = true;
-    inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? inputs.productName.value;
+    if (inputs.productName) {
+      inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? inputs.productName.value;
+    }
     inputs.count.value = savedSettings.count || inputs.count.value;
     inputs.items.value = savedSettings.items ?? inputs.items.value;
     inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
@@ -179,7 +189,9 @@ function resetSettings() {
   localStorage.removeItem(storageKey);
   isRestoringSettings = true;
 
-  inputs.productName.value = "";
+  if (inputs.productName) {
+    inputs.productName.value = "";
+  }
   inputs.count.value = "100";
   inputs.items.value = "";
   inputs.freeText.value = "FREE";
@@ -435,7 +447,7 @@ function getCurrentPageSize() {
 }
 
 function getProductNameForFilename() {
-  return inputs.productName.value.trim()
+  return getProductName()
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
@@ -773,7 +785,7 @@ function drawMarkersPdf(pdf, sizing, pageIndex) {
     setPdfColor(pdf, "setDrawColor", highlightColor.value);
     setPdfColor(pdf, "setFillColor", mixWithWhite(highlightColor.value, 0.86));
     pdf.circle(x + token / 2, y + token / 2, token / 2, "FD");
-    drawFittedText(pdf, inputs.productName.value.trim() || "Bingo", x + token * 0.12, y + token * 0.16, token * 0.76, token * 0.45, {
+    drawFittedText(pdf, getProductName() || "Bingo", x + token * 0.12, y + token * 0.16, token * 0.76, token * 0.45, {
       maxSize: token * 0.12,
       minSize: 4,
       color: primaryColor.value,
@@ -915,7 +927,7 @@ function renderCards(cards) {
       const image = document.createElement("img");
       image.className = "header-image";
       image.src = headerImageData;
-      image.alt = inputs.productName.value.trim() || "Bingo header";
+      image.alt = getProductName() || "Bingo header";
       cardHeader.append(image);
       card.classList.add("has-header-image");
     } else {
@@ -945,7 +957,7 @@ function createExtraFrame(page) {
 }
 
 function updateHeadingPreview() {
-  const markerOccasion = inputs.productName.value.trim() || "Bingo";
+  const markerOccasion = getProductName() || "Bingo";
   const footerText = inputs.footerText.value.trim();
 
   extrasContainer.querySelectorAll(".marker-occasion").forEach((heading) => {
@@ -1062,7 +1074,7 @@ function renderMarkers() {
   const page = markersTemplate.content.firstElementChild.cloneNode(true);
   const grid = page.querySelector(".markers-grid");
   const markerCount = cardsPerPage.value === "2" ? 99 : 42;
-  const occasion = inputs.productName.value.trim() || "Bingo";
+  const occasion = getProductName() || "Bingo";
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
 
   for (let marker = 0; marker < markerCount; marker += 1) {
@@ -1245,7 +1257,7 @@ cardsPerPage.addEventListener("change", generateCards);
   control.addEventListener("change", generateCards);
 });
 
-[inputs.productName, inputs.footerText].forEach((control) => {
+[inputs.productName, inputs.footerText].filter(Boolean).forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
     saveSettings();
