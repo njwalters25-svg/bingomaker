@@ -366,20 +366,45 @@ function formatTitleText(value) {
     return trimmed;
   }
 
-  return trimmed.toLowerCase().replace(/(^|[\s("/-])([a-z])/g, (match) => match.toUpperCase());
+  return trimmed.split(/(\s+|-|\/)/).map((part) => {
+    if (!/[A-Z]/.test(part) || /[./]/.test(part)) {
+      return part;
+    }
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  }).join("");
 }
 
 function parseMusicItem(value) {
   const trimmed = value.trim();
-  const match = trimmed.match(/^(.+?)\s(?:[-–—|]|\bby\b)\s(.+)$/i);
-  if (!match) {
-    return null;
+  const separatorPatterns = [
+    /\s+\|\s+/,
+    /\s+[–—]\s+/,
+    /\s+-\s+/,
+    /\s+by\s+/i,
+    /\s*[|]\s*/,
+    /\s+[–—]\s*/,
+    /\s+-\s*/,
+  ];
+
+  for (const pattern of separatorPatterns) {
+    const parts = trimmed.split(pattern);
+    if (parts.length >= 2 && parts[0].trim() && parts.slice(1).join(" ").trim()) {
+      return {
+        title: formatTitleText(parts[0]),
+        artist: parts.slice(1).join(" ").trim().toLocaleUpperCase("en-US"),
+      };
+    }
   }
 
-  return {
-    title: formatTitleText(match[1]),
-    artist: match[2].trim().toUpperCase(),
-  };
+  const looseHyphenMatch = trimmed.match(/^(.+?)[-–—](.+)$/);
+  if (looseHyphenMatch) {
+    return {
+      title: formatTitleText(looseHyphenMatch[1]),
+      artist: looseHyphenMatch[2].trim().toLocaleUpperCase("en-US"),
+    };
+  }
+
+  return null;
 }
 
 function createSquare(value) {

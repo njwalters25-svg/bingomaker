@@ -629,7 +629,7 @@ button:disabled {
 
 .music-square {
   align-content: center;
-  gap: 18px;
+  gap: 24px;
 }
 
 .song-title,
@@ -1343,7 +1343,7 @@ body[data-cards-per-page="2"] .bingo-grid {
 }
 
 body[data-cards-per-page="2"] .music-square {
-  gap: 9px;
+  gap: 12px;
 }
 
 body[data-cards-per-page="2"] .square.text-medium {
