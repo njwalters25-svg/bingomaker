@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/simpxlow/bingogenerator.alloccasionsprintables.com/
+    - export DEPLOYPATH=/home/simpxlow/bingomaker.alloccasionsprintables.com/
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH

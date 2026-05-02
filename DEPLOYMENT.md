@@ -2,18 +2,17 @@
 
 ## Recommended First Launch
 
-1. Create a subfolder or subdomain, for example `bingo.yourdomain.com` or `yourdomain.com/bingo`.
+1. Create the subdomain `bingomaker.alloccasionsprintables.com`.
 2. Upload the app files to that folder.
-3. In cPanel, use Directory Privacy / Password Protect Directory for the app folder.
-4. Add the app link and password to your Etsy instant-download PDF.
-5. In the Etsy listing, say it is for personal use only.
+3. In cPanel, use Directory Privacy / Password Protect Directory for the app folder if you want a simple password gate.
+4. Use the app internally to generate PDFs for Etsy listings.
 
 ## GitHub + cPanel
 
 If using GitHub with cPanel Git Version Control:
 
-1. Create a private GitHub repository.
-2. Push this folder to GitHub.
+1. Create the GitHub repository `njwalters25-svg/bingomaker`.
+2. Push this folder to that repository.
 3. In cPanel, open Git Version Control.
 4. Clone the repository into a non-public repo folder.
 5. Deploy the files into your public app folder.
@@ -24,7 +23,7 @@ cPanel deployments usually use a `.cpanel.yml` file. The exact deploy path depen
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/YOUR_CPANEL_USERNAME/public_html/bingo/
+    - export DEPLOYPATH=/home/simpxlow/bingomaker.alloccasionsprintables.com/
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
@@ -37,8 +36,7 @@ deployment:
 Best simple setup:
 
 - One shared password.
-- Keep it stable so buyers can reuse the tool.
-- Put the password in the Etsy download PDF.
+- Keep the URL and password private.
 
 More controlled later:
 

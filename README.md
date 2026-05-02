@@ -1,6 +1,6 @@
-# Bingo Card Generator
+# Bingo Maker
 
-Static browser app for creating printable text-based bingo cards.
+Private static browser app for creating printable bingo products for All Occasions Printables.
 
 ## Files
 
@@ -12,16 +12,14 @@ Static browser app for creating printable text-based bingo cards.
 
 ## Hosting
 
-This app does not need a database or build step. Upload these files to a folder on your hosting account, for example:
+This app does not need a database or build step. It is configured for cPanel Git Version Control deployment to:
 
-`public_html/bingo/`
+`bingomaker.alloccasionsprintables.com`
 
-Then visit:
+The deploy path is set in `.cpanel.yml`:
 
-`https://yourdomain.com/bingo/`
+`/home/simpxlow/bingomaker.alloccasionsprintables.com/`
 
 ## Access
 
-For a simple paid Etsy product, use cPanel Directory Privacy / Password Protect Directory on the hosted folder. Put the link and shared password in the Etsy download PDF.
-
-Keep the password stable if buyers are allowed to reuse the tool.
+This is intended as an internal production tool. Use cPanel Directory Privacy / Password Protect Directory on the hosted folder if the subdomain should not be accessible to anyone with the URL.

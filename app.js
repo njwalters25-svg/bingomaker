@@ -33,7 +33,7 @@ let freeImageData = "";
 let isRestoringSettings = false;
 let currentCards = [];
 
-const storageKey = "allOccasionsBingoSettings";
+const storageKey = "allOccasionsBingoMakerSettings";
 
 const inputs = {
   occasion: document.querySelector("#occasionInput"),
