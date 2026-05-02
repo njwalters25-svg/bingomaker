@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Music notes">
+  <rect width="200" height="200" fill="white"/>
+  <g fill="#111">
+    <path d="M73 36v90a25 25 0 1 1-12-21V50l83-18v87a25 25 0 1 1-12-21V54L73 66V36Z"/>
+    <circle cx="49" cy="126" r="22"/>
+    <circle cx="120" cy="119" r="22"/>
+  </g>
+</svg>

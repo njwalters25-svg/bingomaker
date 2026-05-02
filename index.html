@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260502-header-image" />
+    <link rel="stylesheet" href="styles.css?v=20260502-free-presets" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -89,14 +89,46 @@
 
           <fieldset class="full-span">
             <legend>Free square</legend>
-            <p class="fieldset-hint">Use simple text, or upload an image/logo for the centre square.</p>
+            <p class="fieldset-hint">Choose a saved image, use simple text, or upload a custom image for this game.</p>
+            <div class="free-preset-grid" id="freePresetGrid">
+              <label class="free-preset-option">
+                <input type="radio" name="freePreset" value="text" checked />
+                <span class="preset-text">FREE</span>
+                Text
+              </label>
+              <label class="free-preset-option">
+                <input type="radio" name="freePreset" value="microphone" />
+                <img src="assets/free-square/microphone.svg" alt="" />
+                Mic
+              </label>
+              <label class="free-preset-option">
+                <input type="radio" name="freePreset" value="music-notes" />
+                <img src="assets/free-square/music-notes.svg" alt="" />
+                Notes
+              </label>
+              <label class="free-preset-option">
+                <input type="radio" name="freePreset" value="disco-ball" />
+                <img src="assets/free-square/disco-ball.svg" alt="" />
+                Disco
+              </label>
+              <label class="free-preset-option">
+                <input type="radio" name="freePreset" value="star" />
+                <img src="assets/free-square/star.svg" alt="" />
+                Star
+              </label>
+              <label class="free-preset-option">
+                <input type="radio" name="freePreset" value="custom" />
+                <span class="preset-text">+</span>
+                Custom
+              </label>
+            </div>
             <div class="free-square-controls">
               <label>
                 Text
                 <input id="freeText" type="text" value="FREE" maxlength="30" />
               </label>
               <label>
-                Image
+                Custom image
                 <input id="freeImage" type="file" accept="image/*" />
               </label>
             </div>
@@ -327,6 +359,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="app.js?v=20260502-header-image"></script>
+    <script src="app.js?v=20260502-free-presets"></script>
   </body>
 </html>

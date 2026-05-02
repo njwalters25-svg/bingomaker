@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Disco ball">
+  <rect width="200" height="200" fill="white"/>
+  <circle cx="100" cy="108" r="58" fill="#f4f4f4" stroke="#111" stroke-width="6"/>
+  <path d="M100 20v30M74 53c14 11 38 11 52 0M52 88h96M44 112h112M55 139h90M100 50v116M72 64c-12 26-12 62 0 88M128 64c12 26 12 62 0 88" fill="none" stroke="#111" stroke-width="4"/>
+  <g fill="#ff6b6b">
+    <rect x="76" y="91" width="20" height="18"/><rect x="106" y="115" width="20" height="18"/>
+  </g>
+  <g fill="#69c6b3">
+    <rect x="101" y="91" width="20" height="18"/><rect x="77" y="116" width="20" height="18"/>
+  </g>
+  <g fill="#ffc857">
+    <rect x="54" y="116" width="18" height="17"/><rect x="129" y="91" width="17" height="18"/>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Microphone">
+  <rect width="200" height="200" fill="white"/>
+  <g fill="none" stroke="#111" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M91 30c18-8 40 0 48 18l8 19c8 18 0 40-18 48s-40 0-48-18l-8-19c-8-18 0-40 18-48Z" fill="#111" stroke-width="4"/>
+    <path d="M83 46l58 58" stroke="#fff" stroke-width="7"/>
+    <path d="M72 94c-11 12-15 28-8 43 11 24 39 34 63 23" stroke-width="9"/>
+    <path d="M115 163l18 28" stroke-width="9"/>
+    <path d="M96 190h57" stroke-width="9"/>
+  </g>
+</svg>

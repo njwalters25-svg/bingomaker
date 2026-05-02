@@ -11,6 +11,7 @@ const listHelp = document.querySelector("#listHelp");
 const qualityWarnings = document.querySelector("#qualityWarnings");
 const headerImageInput = document.querySelector("#headerImage");
 const freeImageInput = document.querySelector("#freeImage");
+const freePresetGrid = document.querySelector("#freePresetGrid");
 const printButton = document.querySelector("#printButton");
 const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton");
 const downloadTwoUpButton = document.querySelector("#downloadTwoUpButton");
@@ -26,6 +27,7 @@ const titleColor = document.querySelector("#titleColor");
 const occasionColor = document.querySelector("#occasionColor");
 
 let freeImageData = "";
+let selectedFreePreset = "text";
 let headerImageData = "";
 let isRestoringSettings = false;
 let currentCards = [];
@@ -48,6 +50,12 @@ const inputs = {
 };
 
 const centerIndex = 12;
+const freePresetImages = {
+  microphone: "assets/free-square/microphone.svg",
+  "music-notes": "assets/free-square/music-notes.svg",
+  "disco-ball": "assets/free-square/disco-ball.svg",
+  star: "assets/free-square/star.svg",
+};
 const pageDimensions = {
   letter: [816, 1056],
   a4: [794, 1123],
@@ -129,6 +137,7 @@ function getSettingsSnapshot() {
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
+    freePreset: selectedFreePreset,
     footerText: inputs.footerText.value,
     includeInstructions: inputs.includeInstructions.checked,
     includeMasterList: inputs.includeMasterList.checked,
@@ -168,6 +177,7 @@ function restoreSettings() {
     inputs.count.value = savedSettings.count || inputs.count.value;
     inputs.items.value = savedSettings.items ?? inputs.items.value;
     inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
+    selectedFreePreset = savedSettings.freePreset || selectedFreePreset;
     inputs.footerText.value = savedSettings.footerText ?? inputs.footerText.value;
     inputs.includeInstructions.checked = savedSettings.includeInstructions ?? inputs.includeInstructions.checked;
     inputs.includeMasterList.checked = savedSettings.includeMasterList ?? inputs.includeMasterList.checked;
@@ -195,6 +205,7 @@ function resetSettings() {
   inputs.count.value = "100";
   inputs.items.value = "";
   inputs.freeText.value = "FREE";
+  selectedFreePreset = "text";
   inputs.footerText.value = "";
   inputs.includeInstructions.checked = true;
   inputs.includeMasterList.checked = true;
@@ -211,6 +222,7 @@ function resetSettings() {
   freeImageData = "";
   headerImageData = "";
   freeImageInput.value = "";
+  updateFreePresetSelection();
   headerImageInput.value = "";
   isRestoringSettings = false;
 
@@ -258,7 +270,7 @@ function getHelpfulChecks(items, requestedCount) {
     checks.push("Some long words or artist names may need extra space. Check the preview before printing.");
   }
 
-  if (cardsPerPage.value === "2" && freeLabel.length > 16 && !freeImageData) {
+  if (cardsPerPage.value === "2" && freeLabel.length > 16 && !getFreeImageSrc()) {
     checks.push("The free square is much smaller in 2-per-page mode, so short free-square text will print best.");
   }
 
@@ -310,6 +322,20 @@ function applyCurrentColors() {
 function resetTextFitClasses(square) {
   square.classList.remove("text-tight", "text-medium", "text-long", "text-xlong");
   square.style.fontSize = "";
+}
+
+function getFreeImageSrc() {
+  if (selectedFreePreset === "custom") {
+    return freeImageData;
+  }
+  return freePresetImages[selectedFreePreset] || "";
+}
+
+function updateFreePresetSelection() {
+  const selected = freePresetGrid?.querySelector(`input[name="freePreset"][value="${selectedFreePreset}"]`);
+  if (selected) {
+    selected.checked = true;
+  }
 }
 
 function formatTitleText(value) {
@@ -365,9 +391,10 @@ function createSquare(value) {
 
   if (value === "__FREE__") {
     square.classList.add("free");
-    if (freeImageData) {
+    const freeImageSrc = getFreeImageSrc();
+    if (freeImageSrc) {
       const image = document.createElement("img");
-      image.src = freeImageData;
+      image.src = freeImageSrc;
       image.alt = inputs.freeText.value.trim() || "Free square";
       square.append(image);
     } else {
@@ -1198,6 +1225,8 @@ freeImageInput.addEventListener("change", () => {
   const file = freeImageInput.files[0];
   if (!file) {
     freeImageData = "";
+    selectedFreePreset = "text";
+    updateFreePresetSelection();
     generateCards();
     return;
   }
@@ -1205,9 +1234,25 @@ freeImageInput.addEventListener("change", () => {
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     freeImageData = reader.result;
+    selectedFreePreset = "custom";
+    updateFreePresetSelection();
     generateCards();
   });
   reader.readAsDataURL(file);
+});
+
+freePresetGrid.addEventListener("change", (event) => {
+  if (event.target.name !== "freePreset") {
+    return;
+  }
+
+  selectedFreePreset = event.target.value;
+  if (selectedFreePreset !== "custom") {
+    freeImageData = "";
+    freeImageInput.value = "";
+  }
+  generateCards();
+  saveSettings();
 });
 
 headerImageInput.addEventListener("change", () => {
@@ -1293,6 +1338,7 @@ window.addEventListener("resize", updatePreviewScale);
 
 document.body.dataset.scheme = "party";
 restoreSettings();
+updateFreePresetSelection();
 applyCurrentColors();
 updateDesignSettings();
 updateListHelp();

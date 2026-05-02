@@ -279,6 +279,7 @@ textarea:focus {
 }
 
 .free-square-controls,
+.free-preset-grid,
 .scheme-grid,
 .custom-colors,
 .design-grid,
@@ -286,6 +287,46 @@ textarea:focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+.free-preset-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.free-preset-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 7px;
+  min-height: 58px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.free-preset-option input {
+  width: auto;
+  min-height: auto;
+}
+
+.free-preset-option img,
+.preset-text {
+  grid-row: span 2;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.preset-text {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 850;
 }
 
 .actions {
