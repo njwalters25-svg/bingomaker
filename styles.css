@@ -624,8 +624,9 @@ button:disabled {
   background: var(--cell-bg);
   color: var(--ink);
   text-align: center;
-  font-size: 16px;
-  font-weight: 780;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 12pt;
+  font-weight: 500;
   line-height: 1.12;
   overflow-wrap: break-word;
   overflow: hidden;
@@ -646,17 +647,17 @@ button:disabled {
 }
 
 .song-title {
-  font-weight: 740;
+  font-weight: 500;
   text-transform: none;
 }
 
 .song-artist {
-  font-weight: 820;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
 .square.text-medium {
-  font-size: 13.5px;
+  font-size: 10.5pt;
   line-height: 1.08;
 }
 
@@ -665,12 +666,12 @@ button:disabled {
 }
 
 .square.text-long {
-  font-size: 11.75px;
+  font-size: 9.25pt;
   line-height: 1.08;
 }
 
 .square.text-xlong {
-  font-size: 10.25px;
+  font-size: 8.25pt;
   line-height: 1.05;
   overflow-wrap: anywhere;
 }
@@ -1327,7 +1328,7 @@ body[data-cards-per-page="2"] .square {
   padding: 7px;
   border-radius: 14px;
   box-shadow: 3px 3px 4px rgba(36, 36, 36, 0.2);
-  font-size: 10.25px;
+  font-size: 7.5pt;
   line-height: 1.08;
 }
 
@@ -1355,15 +1356,15 @@ body[data-cards-per-page="2"] .music-square {
 }
 
 body[data-cards-per-page="2"] .square.text-medium {
-  font-size: 9px;
+  font-size: 6.75pt;
 }
 
 body[data-cards-per-page="2"] .square.text-long {
-  font-size: 8px;
+  font-size: 6pt;
 }
 
 body[data-cards-per-page="2"] .square.text-xlong {
-  font-size: 7.25px;
+  font-size: 5.5pt;
 }
 
 body[data-cards-per-page="2"] .square.free {
