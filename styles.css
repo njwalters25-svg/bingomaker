@@ -429,7 +429,9 @@ button {
   color: var(--ink);
 }
 
-#downloadPdfButton {
+#downloadFullSizeButton,
+#downloadTwoUpButton,
+#downloadExtrasButton {
   background: var(--accent-2);
   color: #fff;
 }
@@ -642,6 +644,12 @@ button:disabled {
   font-size: 17px;
   font-weight: 800;
   text-align: center;
+}
+
+.bingo-card footer:empty,
+.extra-page footer:empty {
+  padding: 0;
+  border-top: 0;
 }
 
 .extras-preview {

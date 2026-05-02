@@ -11,7 +11,9 @@ const listHelp = document.querySelector("#listHelp");
 const qualityWarnings = document.querySelector("#qualityWarnings");
 const freeImageInput = document.querySelector("#freeImage");
 const printButton = document.querySelector("#printButton");
-const downloadPdfButton = document.querySelector("#downloadPdfButton");
+const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton");
+const downloadTwoUpButton = document.querySelector("#downloadTwoUpButton");
+const downloadExtrasButton = document.querySelector("#downloadExtrasButton");
 const resetButton = document.querySelector("#resetButton");
 const schemeGrid = document.querySelector("#schemeGrid");
 const fontStyle = document.querySelector("#fontStyle");
@@ -41,13 +43,13 @@ const inputs = {
   count: document.querySelector("#cardCount"),
   items: document.querySelector("#itemList"),
   freeText: document.querySelector("#freeText"),
+  footerText: document.querySelector("#footerText"),
   includeInstructions: document.querySelector("#includeInstructions"),
   includeMasterList: document.querySelector("#includeMasterList"),
   includeMarkers: document.querySelector("#includeMarkers"),
 };
 
 const centerIndex = 12;
-const storeFooter = "alloccasionprints.etsy.com";
 const pageDimensions = {
   letter: [816, 1056],
   a4: [794, 1123],
@@ -145,6 +147,7 @@ function getSettingsSnapshot() {
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
+    footerText: inputs.footerText.value,
     includeInstructions: inputs.includeInstructions.checked,
     includeMasterList: inputs.includeMasterList.checked,
     includeMarkers: inputs.includeMarkers.checked,
@@ -187,6 +190,7 @@ function restoreSettings() {
     inputs.count.value = savedSettings.count || inputs.count.value;
     inputs.items.value = savedSettings.items ?? inputs.items.value;
     inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
+    inputs.footerText.value = savedSettings.footerText ?? inputs.footerText.value;
     inputs.includeInstructions.checked = savedSettings.includeInstructions ?? inputs.includeInstructions.checked;
     inputs.includeMasterList.checked = savedSettings.includeMasterList ?? inputs.includeMasterList.checked;
     inputs.includeMarkers.checked = savedSettings.includeMarkers ?? inputs.includeMarkers.checked;
@@ -214,19 +218,20 @@ function resetSettings() {
 
   inputs.occasion.value = "";
   inputs.title.value = "BINGO";
-  inputs.count.value = "12";
+  inputs.count.value = "100";
   inputs.items.value = "";
   inputs.freeText.value = "FREE";
+  inputs.footerText.value = "";
   inputs.includeInstructions.checked = true;
   inputs.includeMasterList.checked = true;
-  inputs.includeMarkers.checked = false;
+  inputs.includeMarkers.checked = true;
   fontStyle.value = "editorial";
   occasionFont.value = "bold";
   occasionSize.value = "25";
   titleSize.value = "98";
   gridStyle.value = "crisp";
   pageSize.value = "letter";
-  cardsPerPage.value = "1";
+  cardsPerPage.value = "2";
   primaryColor.value = schemeColors.party[0];
   highlightColor.value = schemeColors.party[1];
   titleColor.value = schemeColors.party[2];
@@ -423,9 +428,23 @@ function getCurrentPageSize() {
   };
 }
 
-function getPdfFilename() {
-  const occasion = inputs.occasion.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  return `${occasion || "bingo"}-cards.pdf`;
+function getProductNameForFilename() {
+  return inputs.occasion.value.trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "") || "bingo";
+}
+
+function getPdfFilename(exportType = "current") {
+  const productName = getProductNameForFilename();
+  const suffixes = {
+    "cards-full": "bingo-cards",
+    "cards-two-up": "bingo-cards-2-to-a-page",
+    extras: "instructions-playlist",
+    current: cardsPerPage.value === "2" ? "bingo-cards-2-to-a-page" : "bingo-cards",
+  };
+  return `${productName}-${suffixes[exportType] || suffixes.current}.pdf`;
 }
 
 function cloneForPdf(page, width, height) {
@@ -447,7 +466,7 @@ function createPdfSheet(width, height, isTwoUp = false) {
   return sheet;
 }
 
-function createPdfExportArea() {
+function createPdfExportArea({ includeCards = true, includeExtras = true } = {}) {
   const sizing = getCurrentPageSize();
   const exportArea = document.createElement("div");
   exportArea.className = "pdf-export-area";
@@ -455,21 +474,25 @@ function createPdfExportArea() {
   exportArea.style.setProperty("--screen-page-width", `${sizing.cardWidth}px`);
   exportArea.style.setProperty("--screen-page-height", `${sizing.cardHeight}px`);
 
-  const cards = [...cardsContainer.querySelectorAll(".bingo-card")];
-  for (let index = 0; index < cards.length; index += cardsPerPage.value === "2" ? 2 : 1) {
-    const sheet = createPdfSheet(sizing.sheetWidth, sizing.sheetHeight, cardsPerPage.value === "2");
-    sheet.append(cloneForPdf(cards[index], sizing.cardWidth, sizing.cardHeight));
-    if (cardsPerPage.value === "2" && cards[index + 1]) {
-      sheet.append(cloneForPdf(cards[index + 1], sizing.cardWidth, sizing.cardHeight));
+  if (includeCards) {
+    const cards = [...cardsContainer.querySelectorAll(".bingo-card")];
+    for (let index = 0; index < cards.length; index += cardsPerPage.value === "2" ? 2 : 1) {
+      const sheet = createPdfSheet(sizing.sheetWidth, sizing.sheetHeight, cardsPerPage.value === "2");
+      sheet.append(cloneForPdf(cards[index], sizing.cardWidth, sizing.cardHeight));
+      if (cardsPerPage.value === "2" && cards[index + 1]) {
+        sheet.append(cloneForPdf(cards[index + 1], sizing.cardWidth, sizing.cardHeight));
+      }
+      exportArea.append(sheet);
     }
-    exportArea.append(sheet);
   }
 
-  [...extrasContainer.querySelectorAll(".extra-page")].forEach((page) => {
-    const sheet = createPdfSheet(sizing.sheetWidth, sizing.sheetHeight);
-    sheet.append(cloneForPdf(page, sizing.sheetWidth, sizing.sheetHeight));
-    exportArea.append(sheet);
-  });
+  if (includeExtras) {
+    [...extrasContainer.querySelectorAll(".extra-page")].forEach((page) => {
+      const sheet = createPdfSheet(sizing.sheetWidth, sizing.sheetHeight);
+      sheet.append(cloneForPdf(page, sizing.sheetWidth, sizing.sheetHeight));
+      exportArea.append(sheet);
+    });
+  }
 
   return { exportArea, sizing };
 }
@@ -641,14 +664,17 @@ function drawBingoCardPdf(pdf, cardItems, x, y, width, height) {
     });
   });
 
-  setPdfColor(pdf, "setDrawColor", highlight);
-  pdf.setLineWidth(Math.max(1, 1.5 * scale));
-  pdf.line(x + paddingX, footerY, x + width - paddingX, footerY);
-  drawFittedText(pdf, storeFooter, x + paddingX, footerY + footerHeight * 0.18, width - paddingX * 2, footerHeight * 0.55, {
-    maxSize: clamp(15 * scale, 6, 16),
-    minSize: 5,
-    color: muted,
-  });
+  const footerText = inputs.footerText.value.trim();
+  if (footerText) {
+    setPdfColor(pdf, "setDrawColor", highlight);
+    pdf.setLineWidth(Math.max(1, 1.5 * scale));
+    pdf.line(x + paddingX, footerY, x + width - paddingX, footerY);
+    drawFittedText(pdf, footerText, x + paddingX, footerY + footerHeight * 0.18, width - paddingX * 2, footerHeight * 0.55, {
+      maxSize: clamp(15 * scale, 6, 16),
+      minSize: 5,
+      color: muted,
+    });
+  }
 }
 
 function addPdfPage(pdf, sizing, pageIndex) {
@@ -776,31 +802,75 @@ function drawMarkersPdf(pdf, sizing, pageIndex) {
 }
 
 function setPdfBusy(isBusy) {
-  downloadPdfButton.disabled = isBusy;
+  downloadFullSizeButton.disabled = isBusy;
+  downloadTwoUpButton.disabled = isBusy;
+  downloadExtrasButton.disabled = isBusy;
   printButton.disabled = isBusy;
   form.querySelector("#generateButton").disabled = isBusy;
   resetButton.disabled = isBusy;
-  downloadPdfButton.textContent = isBusy ? "Making PDF..." : "Download PDF";
+  downloadFullSizeButton.textContent = isBusy ? "Making PDF..." : "Full size cards PDF";
+  downloadTwoUpButton.textContent = isBusy ? "Making PDF..." : "2-up cards PDF";
+  downloadExtrasButton.textContent = isBusy ? "Making PDF..." : "Instructions playlist PDF";
 }
 
-async function downloadPdf() {
+function restoreExportSettings(previousCardsPerPage, previousExtras) {
+  cardsPerPage.value = previousCardsPerPage;
+  inputs.includeInstructions.checked = previousExtras.includeInstructions;
+  inputs.includeMasterList.checked = previousExtras.includeMasterList;
+  inputs.includeMarkers.checked = previousExtras.includeMarkers;
+  updateDesignSettings();
+  generateCards();
+}
+
+async function downloadPdf(exportType = "current") {
+  const previousCardsPerPage = cardsPerPage.value;
+  const previousExtras = {
+    includeInstructions: inputs.includeInstructions.checked,
+    includeMasterList: inputs.includeMasterList.checked,
+    includeMarkers: inputs.includeMarkers.checked,
+  };
+
+  if (exportType === "cards-full" || exportType === "extras") {
+    cardsPerPage.value = "1";
+  } else if (exportType === "cards-two-up") {
+    cardsPerPage.value = "2";
+  }
+
+  if (exportType === "cards-full" || exportType === "cards-two-up") {
+    inputs.includeInstructions.checked = false;
+    inputs.includeMasterList.checked = false;
+    inputs.includeMarkers.checked = false;
+  }
+
+  if (exportType === "extras") {
+    inputs.includeInstructions.checked = true;
+    inputs.includeMasterList.checked = true;
+    inputs.includeMarkers.checked = true;
+  }
+
+  updateDesignSettings();
   generateCards();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
   if (currentCards.length === 0) {
     setStatus("Add at least 24 unique list items before downloading a PDF.", true);
+    restoreExportSettings(previousCardsPerPage, previousExtras);
     return;
   }
 
   if (!window.html2canvas || !window.jspdf?.jsPDF) {
     setStatus("The PDF maker is still loading. Please try again in a moment.", true);
+    restoreExportSettings(previousCardsPerPage, previousExtras);
     return;
   }
 
   setPdfBusy(true);
   setStatus("Creating your PDF...");
 
-  const { exportArea, sizing } = createPdfExportArea();
+  const { exportArea, sizing } = createPdfExportArea({
+    includeCards: exportType !== "extras",
+    includeExtras: exportType === "current" || exportType === "extras",
+  });
   document.body.append(exportArea);
 
   try {
@@ -834,7 +904,7 @@ async function downloadPdf() {
       pdf.addImage(image, "JPEG", 0, 0, sizing.sheetWidth, sizing.sheetHeight);
     }
 
-    pdf.save(getPdfFilename());
+    pdf.save(getPdfFilename(exportType));
     setStatus(`Downloaded ${sheets.length} PDF page${sheets.length === 1 ? "" : "s"}.`);
   } catch (error) {
     console.error(error);
@@ -842,6 +912,7 @@ async function downloadPdf() {
   } finally {
     exportArea.remove();
     setPdfBusy(false);
+    restoreExportSettings(previousCardsPerPage, previousExtras);
   }
 }
 
@@ -855,7 +926,7 @@ function renderCards(cards) {
     const card = cardTemplate.content.firstElementChild.cloneNode(true);
     card.querySelector(".occasion").textContent = inputs.occasion.value.trim();
     card.querySelector("h3").textContent = inputs.title.value.trim() || "BINGO";
-    card.querySelector("footer").textContent = storeFooter;
+    card.querySelector("footer").textContent = inputs.footerText.value.trim();
 
     const grid = card.querySelector(".bingo-grid");
     cardItems.forEach((value) => grid.append(createSquare(value)));
@@ -879,6 +950,7 @@ function updateHeadingPreview() {
   const occasion = inputs.occasion.value.trim();
   const title = inputs.title.value.trim() || "BINGO";
   const markerOccasion = occasion || "Bingo";
+  const footerText = inputs.footerText.value.trim();
 
   cardsContainer.querySelectorAll(".occasion").forEach((heading) => {
     heading.textContent = occasion;
@@ -890,6 +962,10 @@ function updateHeadingPreview() {
 
   extrasContainer.querySelectorAll(".marker-occasion").forEach((heading) => {
     heading.textContent = markerOccasion;
+  });
+
+  document.querySelectorAll(".bingo-card footer, .extra-page footer").forEach((footer) => {
+    footer.textContent = footerText;
   });
 }
 
@@ -910,12 +986,14 @@ function updateFreeSquarePreview() {
   });
 
   const items = parseItems(inputs.items.value);
-  const requestedCount = Math.min(Math.max(Number(inputs.count.value) || 1, 1), 100);
+  const requestedCount = Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
   renderHelpfulChecks(getHelpfulChecks(items, requestedCount));
 }
 
 function renderInstructions() {
-  return instructionsTemplate.content.firstElementChild.cloneNode(true);
+  const page = instructionsTemplate.content.firstElementChild.cloneNode(true);
+  page.querySelector("footer").textContent = inputs.footerText.value.trim();
+  return page;
 }
 
 function getMasterListPageSize() {
@@ -937,6 +1015,7 @@ function renderMasterListPage(items, startIndex, pageIndex, pageCount) {
   const rowCount = Math.ceil(items.length / columnCount);
 
   list.style.setProperty("--master-list-columns", columnCount);
+  page.querySelector("footer").textContent = inputs.footerText.value.trim();
   if (items.length > 76) {
     page.classList.add("master-list-ultra-compact");
   } else if (items.length > 54) {
@@ -996,6 +1075,7 @@ function renderMarkers() {
   const grid = page.querySelector(".markers-grid");
   const markerCount = cardsPerPage.value === "2" ? 99 : 42;
   const occasion = inputs.occasion.value.trim() || "Bingo";
+  page.querySelector("footer").textContent = inputs.footerText.value.trim();
 
   for (let marker = 0; marker < markerCount; marker += 1) {
     const token = document.createElement("span");
@@ -1072,7 +1152,7 @@ function updatePreviewScale() {
 function generateCards() {
   const items = parseItems(inputs.items.value);
   updateListHelp();
-  const requestedCount = Math.min(Math.max(Number(inputs.count.value) || 1, 1), 100);
+  const requestedCount = Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
   inputs.count.value = requestedCount;
 
   if (items.length < 24) {
@@ -1168,7 +1248,7 @@ cardsPerPage.addEventListener("change", generateCards);
   });
 });
 
-[inputs.occasion, inputs.title].forEach((control) => {
+[inputs.occasion, inputs.title, inputs.footerText].forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
     saveSettings();
@@ -1192,7 +1272,9 @@ printButton.addEventListener("click", () => {
   requestAnimationFrame(() => window.print());
 });
 
-downloadPdfButton.addEventListener("click", downloadPdf);
+downloadFullSizeButton.addEventListener("click", () => downloadPdf("cards-full"));
+downloadTwoUpButton.addEventListener("click", () => downloadPdf("cards-two-up"));
+downloadExtrasButton.addEventListener("click", () => downloadPdf("extras"));
 resetButton.addEventListener("click", resetSettings);
 
 window.addEventListener("resize", updatePreviewScale);

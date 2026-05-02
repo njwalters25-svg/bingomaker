@@ -70,7 +70,12 @@
 
           <label>
             Number of cards
-            <input id="cardCount" type="number" min="1" max="100" value="12" />
+            <input id="cardCount" type="number" min="1" max="300" step="1" value="100" list="cardCountOptions" />
+            <datalist id="cardCountOptions">
+              <option value="100"></option>
+              <option value="200"></option>
+              <option value="300"></option>
+            </datalist>
           </label>
 
           <label class="full-span">
@@ -246,8 +251,13 @@
                 Cards per page
                 <select id="cardsPerPage">
                   <option value="1">1 card</option>
-                  <option value="2">2 cards</option>
+                  <option value="2" selected>2 cards</option>
                 </select>
+              </label>
+
+              <label>
+                Footer text
+                <input id="footerText" type="text" placeholder="Optional" maxlength="70" />
               </label>
             </div>
           </fieldset>
@@ -265,7 +275,7 @@
                 Master checklist
               </label>
               <label class="check-option">
-                <input id="includeMarkers" type="checkbox" />
+                <input id="includeMarkers" type="checkbox" checked />
                 Bingo markers
               </label>
             </div>
@@ -273,12 +283,14 @@
 
           <div class="actions full-span">
             <button id="generateButton" type="submit">Generate cards</button>
-            <button id="downloadPdfButton" type="button">Download PDF</button>
+            <button id="downloadFullSizeButton" type="button">Full size cards PDF</button>
+            <button id="downloadTwoUpButton" type="button">2-up cards PDF</button>
+            <button id="downloadExtrasButton" type="button">Instructions playlist PDF</button>
             <button id="printButton" type="button">Print or save PDF</button>
             <button id="resetButton" type="button">Clear saved settings</button>
           </div>
 
-          <p class="print-help full-span">Use “Download PDF” for a ready-made file, or “Print or save PDF” if you prefer your browser print window.</p>
+          <p class="print-help full-span">Use the three PDF buttons for Etsy uploads: full size cards, 2-up cards, and the instructions/playlist/markers file.</p>
           <details class="help-panel full-span">
             <summary>Quick tips</summary>
             <ul>
@@ -337,7 +349,7 @@
           <h4>Common winning patterns</h4>
           <p>One row, one column, a diagonal line, four corners, or a full house.</p>
         </section>
-        <footer>alloccasionprints.etsy.com</footer>
+        <footer></footer>
       </article>
     </template>
 
@@ -349,7 +361,7 @@
           <p class="extra-subtitle">Call items in any order and tick them off as you go.</p>
         </header>
         <div class="master-list"></div>
-        <footer>alloccasionprints.etsy.com</footer>
+        <footer></footer>
       </article>
     </template>
 
@@ -360,7 +372,7 @@
           <h3>Bingo markers</h3>
         </header>
         <div class="markers-grid"></div>
-        <footer>alloccasionprints.etsy.com</footer>
+        <footer></footer>
       </article>
     </template>
 
