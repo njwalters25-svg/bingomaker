@@ -18,5 +18,30 @@
     "id": "star",
     "label": "Star",
     "src": "star.svg"
+  },
+  {
+    "id": "boot",
+    "label": "Boot",
+    "src": "boot.svg"
+  },
+  {
+    "id": "disco",
+    "label": "Disco 2",
+    "src": "disco.svg"
+  },
+  {
+    "id": "hat",
+    "label": "Hat",
+    "src": "hat.svg"
+  },
+  {
+    "id": "mic",
+    "label": "Mic 2",
+    "src": "mic.svg"
+  },
+  {
+    "id": "old-mic",
+    "label": "Old Mic",
+    "src": "old mic.svg"
   }
 ]

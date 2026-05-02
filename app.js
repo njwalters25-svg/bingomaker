@@ -361,7 +361,7 @@ async function loadFreePresetManifest() {
       const normalizedPreset = {
         id: preset.id,
         label: preset.label || preset.id,
-        src: preset.src.startsWith("http") || preset.src.startsWith("/") ? preset.src : `${freePresetBasePath}${preset.src}`,
+        src: preset.src.startsWith("http") || preset.src.startsWith("/") ? preset.src : `${freePresetBasePath}${encodeURIComponent(preset.src)}`,
       };
       freePresetImages[normalizedPreset.id] = normalizedPreset.src;
 
