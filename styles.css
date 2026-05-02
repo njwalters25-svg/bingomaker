@@ -506,13 +506,14 @@ button:disabled {
 
 .bingo-card {
   --cell-size: minmax(0, 1fr);
+  position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-rows: 205px 1fr 48px;
+  grid-template-rows: 285px 1fr 34px;
   width: var(--screen-page-width);
   height: var(--screen-page-height);
-  padding: var(--page-padding);
-  border: 2px solid var(--accent-strong);
+  padding: 44px 56px 36px;
+  border: 0;
   border-radius: 0;
   background: var(--card);
   box-shadow: 0 10px 28px rgba(29, 24, 18, 0.14);
@@ -524,6 +525,14 @@ button:disabled {
   print-color-adjust: exact;
 }
 
+.bingo-card::before {
+  content: "";
+  position: absolute;
+  inset: 28px;
+  border: 4px solid var(--accent-2);
+  pointer-events: none;
+}
+
 .card-header {
   position: relative;
   display: grid;
@@ -531,12 +540,12 @@ button:disabled {
   align-content: center;
   gap: 10px;
   min-width: 0;
-  padding: 16px 28px 18px;
+  padding: 10px 40px 18px;
   border-radius: 0;
   background: #fff;
   color: var(--ink);
   text-align: center;
-  border-bottom: 5px solid var(--accent);
+  border-bottom: 0;
 }
 
 .card-header::after {
@@ -572,12 +581,28 @@ button:disabled {
   text-transform: uppercase;
 }
 
+.has-header-image .card-header {
+  padding: 4px 36px 14px;
+}
+
+.has-header-image .occasion,
+.has-header-image .card-header h3 {
+  display: none;
+}
+
+.header-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .bingo-grid {
   display: grid;
   grid-template-columns: repeat(5, var(--cell-size));
   grid-template-rows: repeat(5, var(--cell-size));
-  gap: 13px;
-  padding: 24px 0 16px;
+  gap: 16px;
+  padding: 10px 20px 18px;
 }
 
 .square {
@@ -585,9 +610,9 @@ button:disabled {
   place-items: center;
   min-width: 0;
   min-height: 0;
-  padding: 10px;
-  border: 1px solid var(--accent-2);
-  border-radius: 6px;
+  padding: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 22px;
   background: var(--cell-bg);
   color: var(--ink);
   text-align: center;
@@ -599,6 +624,27 @@ button:disabled {
   word-break: normal;
   hyphens: none;
   text-wrap: balance;
+  box-shadow: 5px 5px 6px rgba(36, 36, 36, 0.22);
+}
+
+.music-square {
+  align-content: center;
+  gap: 18px;
+}
+
+.song-title,
+.song-artist {
+  display: block;
+}
+
+.song-title {
+  font-weight: 740;
+  text-transform: none;
+}
+
+.song-artist {
+  font-weight: 820;
+  text-transform: uppercase;
 }
 
 .square.text-medium {
@@ -1271,8 +1317,33 @@ body[data-cards-per-page="2"] .bingo-grid {
 
 body[data-cards-per-page="2"] .square {
   padding: 7px;
+  border-radius: 14px;
+  box-shadow: 3px 3px 4px rgba(36, 36, 36, 0.2);
   font-size: 10.25px;
   line-height: 1.08;
+}
+
+body[data-cards-per-page="2"] .bingo-card {
+  grid-template-rows: 168px 1fr 24px;
+  padding: 22px 30px 20px;
+}
+
+body[data-cards-per-page="2"] .bingo-card::before {
+  inset: 16px;
+  border-width: 3px;
+}
+
+body[data-cards-per-page="2"] .card-header {
+  padding: 3px 20px 8px;
+}
+
+body[data-cards-per-page="2"] .bingo-grid {
+  gap: 8px;
+  padding: 5px 12px 8px;
+}
+
+body[data-cards-per-page="2"] .music-square {
+  gap: 9px;
 }
 
 body[data-cards-per-page="2"] .square.text-medium {
@@ -1414,7 +1485,6 @@ body[data-cards-per-page="2"] .bingo-card footer {
     background: #fff !important;
     background-image: none !important;
     border: 0 !important;
-    border-bottom: 5px solid var(--accent) !important;
     color: var(--ink) !important;
   }
 

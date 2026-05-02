@@ -9,6 +9,7 @@ const statusMessage = document.querySelector("#statusMessage");
 const cardTotal = document.querySelector("#cardTotal");
 const listHelp = document.querySelector("#listHelp");
 const qualityWarnings = document.querySelector("#qualityWarnings");
+const headerImageInput = document.querySelector("#headerImage");
 const freeImageInput = document.querySelector("#freeImage");
 const printButton = document.querySelector("#printButton");
 const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton");
@@ -32,6 +33,7 @@ const titleColor = document.querySelector("#titleColor");
 const occasionColor = document.querySelector("#occasionColor");
 
 let freeImageData = "";
+let headerImageData = "";
 let isRestoringSettings = false;
 let currentCards = [];
 
@@ -90,9 +92,10 @@ const occasionFontMaxSizes = {
 };
 
 function parseItems(value) {
+  const separator = value.includes("\n") ? /\n/ : /,/;
   return [...new Set(
     value
-      .split(/\n|,/)
+      .split(separator)
       .map((item) => item.trim())
       .filter(Boolean)
   )];
@@ -240,7 +243,9 @@ function resetSettings() {
   document.body.dataset.scheme = "party";
   document.body.dataset.customColors = "false";
   freeImageData = "";
+  headerImageData = "";
   freeImageInput.value = "";
+  headerImageInput.value = "";
   isRestoringSettings = false;
 
   applyCurrentColors();
@@ -355,6 +360,28 @@ function resetTextFitClasses(square) {
   square.style.fontSize = "";
 }
 
+function formatTitleText(value) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed !== trimmed.toUpperCase()) {
+    return trimmed;
+  }
+
+  return trimmed.toLowerCase().replace(/(^|[\s("/-])([a-z])/g, (match) => match.toUpperCase());
+}
+
+function parseMusicItem(value) {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^(.+?)\s(?:[-–—|]|\bby\b)\s(.+)$/i);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    title: formatTitleText(match[1]),
+    artist: match[2].trim().toUpperCase(),
+  };
+}
+
 function createSquare(value) {
   const square = document.createElement("div");
   square.className = "square";
@@ -374,7 +401,21 @@ function createSquare(value) {
     return square;
   }
 
-  square.textContent = value;
+  const musicItem = parseMusicItem(value);
+  if (musicItem) {
+    const title = document.createElement("span");
+    title.className = "song-title";
+    title.textContent = musicItem.title;
+
+    const artist = document.createElement("span");
+    artist.className = "song-artist";
+    artist.textContent = musicItem.artist;
+
+    square.classList.add("music-square");
+    square.append(title, artist);
+  } else {
+    square.textContent = value;
+  }
   applyTextFitClasses(square, value);
   return square;
 }
@@ -924,8 +965,17 @@ function renderCards(cards) {
     frame.className = "card-frame";
 
     const card = cardTemplate.content.firstElementChild.cloneNode(true);
+    const cardHeader = card.querySelector(".card-header");
     card.querySelector(".occasion").textContent = inputs.occasion.value.trim();
     card.querySelector("h3").textContent = inputs.title.value.trim() || "BINGO";
+    if (headerImageData) {
+      const image = document.createElement("img");
+      image.className = "header-image";
+      image.src = headerImageData;
+      image.alt = inputs.title.value.trim() || "Bingo header";
+      cardHeader.append(image);
+      card.classList.add("has-header-image");
+    }
     card.querySelector("footer").textContent = inputs.footerText.value.trim();
 
     const grid = card.querySelector(".bingo-grid");
@@ -1202,6 +1252,22 @@ freeImageInput.addEventListener("change", () => {
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     freeImageData = reader.result;
+    generateCards();
+  });
+  reader.readAsDataURL(file);
+});
+
+headerImageInput.addEventListener("change", () => {
+  const file = headerImageInput.files[0];
+  if (!file) {
+    headerImageData = "";
+    generateCards();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    headerImageData = reader.result;
     generateCards();
   });
   reader.readAsDataURL(file);
