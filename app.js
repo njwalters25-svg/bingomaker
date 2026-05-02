@@ -17,13 +17,6 @@ const downloadTwoUpButton = document.querySelector("#downloadTwoUpButton");
 const downloadExtrasButton = document.querySelector("#downloadExtrasButton");
 const resetButton = document.querySelector("#resetButton");
 const schemeGrid = document.querySelector("#schemeGrid");
-const fontStyle = document.querySelector("#fontStyle");
-const occasionFont = document.querySelector("#occasionFont");
-const occasionSize = document.querySelector("#occasionSize");
-const occasionSizeValue = document.querySelector("#occasionSizeValue");
-const titleSize = document.querySelector("#titleSize");
-const titleSizeValue = document.querySelector("#titleSizeValue");
-const gridStyle = document.querySelector("#gridStyle");
 const pageSize = document.querySelector("#pageSize");
 const cardsPerPage = document.querySelector("#cardsPerPage");
 const printPageStyle = document.querySelector("#printPageStyle");
@@ -40,8 +33,7 @@ let currentCards = [];
 const storageKey = "allOccasionsBingoMakerSettings";
 
 const inputs = {
-  occasion: document.querySelector("#occasionInput"),
-  title: document.querySelector("#titleInput"),
+  productName: document.querySelector("#productName"),
   count: document.querySelector("#cardCount"),
   items: document.querySelector("#itemList"),
   freeText: document.querySelector("#freeText"),
@@ -69,26 +61,6 @@ const schemeColors = {
   luxury: ["#111827", "#b08d57", "#7f1d1d", "#111827"],
   christmas: ["#b91c1c", "#166534", "#7f1212", "#d4af37"],
   halloween: ["#111111", "#f97316", "#7e22ce", "#111111"],
-};
-const occasionFontMaxSizes = {
-  1: {
-    bold: 48,
-    script: 65,
-    serif: 62,
-    modern: 54,
-    playful: 58,
-    groovy: 64,
-    handwritten: 58,
-  },
-  2: {
-    bold: 46,
-    script: 64,
-    serif: 56,
-    modern: 50,
-    playful: 54,
-    groovy: 60,
-    handwritten: 54,
-  },
 };
 
 function parseItems(value) {
@@ -145,8 +117,7 @@ function setStatus(message, isError = false) {
 
 function getSettingsSnapshot() {
   return {
-    occasion: inputs.occasion.value,
-    title: inputs.title.value,
+    productName: inputs.productName.value,
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
@@ -154,11 +125,6 @@ function getSettingsSnapshot() {
     includeInstructions: inputs.includeInstructions.checked,
     includeMasterList: inputs.includeMasterList.checked,
     includeMarkers: inputs.includeMarkers.checked,
-    fontStyle: fontStyle.value,
-    occasionFont: occasionFont.value,
-    occasionSize: occasionSize.value,
-    titleSize: titleSize.value,
-    gridStyle: gridStyle.value,
     pageSize: pageSize.value,
     cardsPerPage: cardsPerPage.value,
     primaryColor: primaryColor.value,
@@ -188,8 +154,7 @@ function restoreSettings() {
     }
 
     isRestoringSettings = true;
-    inputs.occasion.value = savedSettings.occasion ?? inputs.occasion.value;
-    inputs.title.value = savedSettings.title || inputs.title.value;
+    inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? inputs.productName.value;
     inputs.count.value = savedSettings.count || inputs.count.value;
     inputs.items.value = savedSettings.items ?? inputs.items.value;
     inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
@@ -197,11 +162,6 @@ function restoreSettings() {
     inputs.includeInstructions.checked = savedSettings.includeInstructions ?? inputs.includeInstructions.checked;
     inputs.includeMasterList.checked = savedSettings.includeMasterList ?? inputs.includeMasterList.checked;
     inputs.includeMarkers.checked = savedSettings.includeMarkers ?? inputs.includeMarkers.checked;
-    fontStyle.value = savedSettings.fontStyle || fontStyle.value;
-    occasionFont.value = savedSettings.occasionFont || occasionFont.value;
-    occasionSize.value = savedSettings.occasionSize || occasionSize.value;
-    titleSize.value = savedSettings.titleSize || titleSize.value;
-    gridStyle.value = savedSettings.gridStyle || gridStyle.value;
     pageSize.value = savedSettings.pageSize || pageSize.value;
     cardsPerPage.value = savedSettings.cardsPerPage || cardsPerPage.value;
     primaryColor.value = savedSettings.primaryColor || primaryColor.value;
@@ -219,8 +179,7 @@ function resetSettings() {
   localStorage.removeItem(storageKey);
   isRestoringSettings = true;
 
-  inputs.occasion.value = "";
-  inputs.title.value = "BINGO";
+  inputs.productName.value = "";
   inputs.count.value = "100";
   inputs.items.value = "";
   inputs.freeText.value = "FREE";
@@ -228,11 +187,6 @@ function resetSettings() {
   inputs.includeInstructions.checked = true;
   inputs.includeMasterList.checked = true;
   inputs.includeMarkers.checked = true;
-  fontStyle.value = "editorial";
-  occasionFont.value = "bold";
-  occasionSize.value = "25";
-  titleSize.value = "98";
-  gridStyle.value = "crisp";
   pageSize.value = "letter";
   cardsPerPage.value = "2";
   primaryColor.value = schemeColors.party[0];
@@ -309,22 +263,8 @@ function renderHelpfulChecks(checks) {
 }
 
 function updateDesignSettings() {
-  const occasionMaxSizes = occasionFontMaxSizes[cardsPerPage.value] || occasionFontMaxSizes[1];
-  const occasionMaxSize = occasionMaxSizes[occasionFont.value] || 48;
-  occasionSize.max = occasionMaxSize;
-  if (Number(occasionSize.value) > occasionMaxSize) {
-    occasionSize.value = occasionMaxSize;
-  }
-
-  document.body.dataset.font = fontStyle.value;
-  document.body.dataset.occasionFont = occasionFont.value;
-  document.body.dataset.grid = gridStyle.value;
   document.body.dataset.page = pageSize.value;
   document.body.dataset.cardsPerPage = cardsPerPage.value;
-  occasionSizeValue.value = occasionSize.value;
-  titleSizeValue.value = titleSize.value;
-  document.documentElement.style.setProperty("--occasion-size", `${occasionSize.value}px`);
-  document.documentElement.style.setProperty("--title-size", `${titleSize.value}px`);
   const printSizes = {
     letter: {
       1: "8.5in 11in",
@@ -495,7 +435,7 @@ function getCurrentPageSize() {
 }
 
 function getProductNameForFilename() {
-  return inputs.occasion.value.trim()
+  return inputs.productName.value.trim()
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
@@ -653,8 +593,6 @@ function drawFittedText(pdf, text, x, y, width, height, options = {}) {
 function drawBingoCardPdf(pdf, cardItems, x, y, width, height) {
   const primary = primaryColor.value;
   const highlight = highlightColor.value;
-  const title = titleColor.value;
-  const occasion = occasionColor.value;
   const muted = "#70685f";
   const scale = width / 816;
   const paddingX = width * 0.052;
@@ -673,24 +611,6 @@ function drawBingoCardPdf(pdf, cardItems, x, y, width, height) {
   setPdfColor(pdf, "setDrawColor", primary);
   pdf.setLineWidth(Math.max(1, 2 * scale));
   pdf.rect(x, y, width, height);
-
-  pdf.setFont("times", "bolditalic");
-  drawFittedText(pdf, inputs.occasion.value.trim(), x + paddingX, y + paddingTop, width - paddingX * 2, headerHeight * 0.28, {
-    maxSize: clamp(Number(occasionSize.value) * scale, 10, 40),
-    minSize: 7,
-    font: "times",
-    style: "bolditalic",
-    color: occasion,
-  });
-
-  drawFittedText(pdf, inputs.title.value.trim() || "BINGO", x + paddingX, y + paddingTop + headerHeight * 0.24, width - paddingX * 2, headerHeight * 0.58, {
-    maxSize: clamp(Number(titleSize.value) * scale, 24, 92),
-    minSize: 16,
-    font: "times",
-    style: "bold",
-    color: title,
-    lineHeight: 0.95,
-  });
 
   setPdfColor(pdf, "setDrawColor", primary);
   pdf.setLineWidth(Math.max(2, 4 * scale));
@@ -853,12 +773,12 @@ function drawMarkersPdf(pdf, sizing, pageIndex) {
     setPdfColor(pdf, "setDrawColor", highlightColor.value);
     setPdfColor(pdf, "setFillColor", mixWithWhite(highlightColor.value, 0.86));
     pdf.circle(x + token / 2, y + token / 2, token / 2, "FD");
-    drawFittedText(pdf, inputs.occasion.value.trim() || "Bingo", x + token * 0.12, y + token * 0.16, token * 0.76, token * 0.45, {
+    drawFittedText(pdf, inputs.productName.value.trim() || "Bingo", x + token * 0.12, y + token * 0.16, token * 0.76, token * 0.45, {
       maxSize: token * 0.12,
       minSize: 4,
       color: primaryColor.value,
     });
-    drawFittedText(pdf, inputs.title.value.trim() || "BINGO", x + token * 0.16, y + token * 0.6, token * 0.68, token * 0.22, {
+    drawFittedText(pdf, "BINGO", x + token * 0.16, y + token * 0.6, token * 0.68, token * 0.22, {
       maxSize: token * 0.13,
       minSize: 4,
       color: highlightColor.value,
@@ -991,15 +911,18 @@ function renderCards(cards) {
 
     const card = cardTemplate.content.firstElementChild.cloneNode(true);
     const cardHeader = card.querySelector(".card-header");
-    card.querySelector(".occasion").textContent = inputs.occasion.value.trim();
-    card.querySelector("h3").textContent = inputs.title.value.trim() || "BINGO";
     if (headerImageData) {
       const image = document.createElement("img");
       image.className = "header-image";
       image.src = headerImageData;
-      image.alt = inputs.title.value.trim() || "Bingo header";
+      image.alt = inputs.productName.value.trim() || "Bingo header";
       cardHeader.append(image);
       card.classList.add("has-header-image");
+    } else {
+      const placeholder = document.createElement("p");
+      placeholder.className = "header-placeholder";
+      placeholder.textContent = "Upload header image";
+      cardHeader.append(placeholder);
     }
     card.querySelector("footer").textContent = inputs.footerText.value.trim();
 
@@ -1022,18 +945,8 @@ function createExtraFrame(page) {
 }
 
 function updateHeadingPreview() {
-  const occasion = inputs.occasion.value.trim();
-  const title = inputs.title.value.trim() || "BINGO";
-  const markerOccasion = occasion || "Bingo";
+  const markerOccasion = inputs.productName.value.trim() || "Bingo";
   const footerText = inputs.footerText.value.trim();
-
-  cardsContainer.querySelectorAll(".occasion").forEach((heading) => {
-    heading.textContent = occasion;
-  });
-
-  cardsContainer.querySelectorAll(".bingo-card h3").forEach((heading) => {
-    heading.textContent = title;
-  });
 
   extrasContainer.querySelectorAll(".marker-occasion").forEach((heading) => {
     heading.textContent = markerOccasion;
@@ -1149,7 +1062,7 @@ function renderMarkers() {
   const page = markersTemplate.content.firstElementChild.cloneNode(true);
   const grid = page.querySelector(".markers-grid");
   const markerCount = cardsPerPage.value === "2" ? 99 : 42;
-  const occasion = inputs.occasion.value.trim() || "Bingo";
+  const occasion = inputs.productName.value.trim() || "Bingo";
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
 
   for (let marker = 0; marker < markerCount; marker += 1) {
@@ -1162,7 +1075,7 @@ function renderMarkers() {
 
     const bingoText = document.createElement("span");
     bingoText.className = "marker-bingo";
-    bingoText.textContent = inputs.title.value.trim() || "BINGO";
+    bingoText.textContent = "BINGO";
 
     token.append(occasionText, bingoText);
     grid.append(token);
@@ -1319,7 +1232,7 @@ schemeGrid.addEventListener("change", (event) => {
   });
 });
 
-[fontStyle, occasionFont, gridStyle, pageSize, cardsPerPage].forEach((control) => {
+[pageSize, cardsPerPage].forEach((control) => {
   control.addEventListener("change", () => {
     updateDesignSettings();
     saveSettings();
@@ -1332,14 +1245,7 @@ cardsPerPage.addEventListener("change", generateCards);
   control.addEventListener("change", generateCards);
 });
 
-[occasionSize, titleSize].forEach((control) => {
-  control.addEventListener("input", () => {
-    updateDesignSettings();
-    saveSettings();
-  });
-});
-
-[inputs.occasion, inputs.title, inputs.footerText].forEach((control) => {
+[inputs.productName, inputs.footerText].forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
     saveSettings();

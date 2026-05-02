@@ -58,20 +58,16 @@
         </div>
 
         <form id="bingoForm" class="form-grid">
-          <label>
-            Occasion line
-            <input id="occasionInput" type="text" placeholder="e.g. Sarah's 40th Birthday" maxlength="60" />
-          </label>
-
-          <label>
-            Main header
-            <input id="titleInput" type="text" value="BINGO" maxlength="18" />
+          <label class="full-span">
+            Bingo name
+            <input id="productName" type="text" placeholder="e.g. 70s Music Bingo" maxlength="80" />
+            <span class="hint">Used for filenames and markers. The card header comes from your uploaded image.</span>
           </label>
 
           <label class="full-span">
             Header image
             <input id="headerImage" type="file" accept="image/*" />
-            <span class="hint">Upload your Ideogram header to use it instead of the text heading.</span>
+            <span class="hint">Upload your Ideogram header for the card top.</span>
           </label>
 
           <label>
@@ -173,19 +169,19 @@
             </div>
             <div class="custom-colors">
               <label>
-                Primary
+                Square border
                 <input id="primaryColor" type="color" value="#e33c2f" />
               </label>
               <label>
-                Highlight
+                Page border
                 <input id="highlightColor" type="color" value="#137b80" />
               </label>
               <label>
-                Title
+                Extra title
                 <input id="titleColor" type="color" value="#a8221b" />
               </label>
               <label>
-                Occasion
+                Extra accent
                 <input id="occasionColor" type="color" value="#a8221b" />
               </label>
             </div>
@@ -193,58 +189,8 @@
 
           <fieldset class="full-span">
             <legend>Design options</legend>
-            <p class="fieldset-hint">Adjust the heading, card style, and print layout. The shop footer link is added automatically.</p>
-            <p class="fieldset-hint">If your heading wraps onto two lines, reduce the size slider until it fits.</p>
+            <p class="fieldset-hint">Set the print layout and optional footer.</p>
             <div class="design-grid">
-              <label>
-                BINGO font
-                <select id="fontStyle">
-                  <option value="editorial">Editorial</option>
-                  <option value="modern">Modern bold</option>
-                  <option value="retro">Retro party</option>
-                  <option value="elegant">Elegant serif</option>
-                  <option value="fun">Fun bubble</option>
-                  <option value="kids">Kids rounded</option>
-                  <option value="groovy">Groovy</option>
-                  <option value="handmade">Handmade</option>
-                </select>
-              </label>
-
-              <label class="slider-control">
-                BINGO size
-                <span><output id="titleSizeValue">98</output>px</span>
-                <input id="titleSize" type="range" min="58" max="170" value="98" />
-              </label>
-
-              <label>
-                Occasion font
-                <select id="occasionFont">
-                  <option value="bold">Bold caps</option>
-                  <option value="script">Script</option>
-                  <option value="serif">Elegant serif</option>
-                  <option value="modern">Modern</option>
-                  <option value="playful">Playful</option>
-                  <option value="groovy">Groovy</option>
-                  <option value="handwritten">Handwritten</option>
-                </select>
-              </label>
-
-              <label class="slider-control">
-                Occasion size
-                <span><output id="occasionSizeValue">25</output>px</span>
-                <input id="occasionSize" type="range" min="16" max="72" value="25" />
-              </label>
-
-              <label>
-                Square style
-                <select id="gridStyle">
-                  <option value="crisp">Crisp</option>
-                  <option value="rounded">Rounded</option>
-                  <option value="checker">Checker</option>
-                  <option value="luxe">Luxe</option>
-                </select>
-              </label>
-
               <label>
                 PDF page
                 <select id="pageSize">
@@ -327,10 +273,7 @@
 
     <template id="cardTemplate">
       <article class="bingo-card">
-        <header class="card-header">
-          <p class="occasion"></p>
-          <h3></h3>
-        </header>
+        <header class="card-header"></header>
         <div class="bingo-grid" aria-label="Bingo squares"></div>
         <footer></footer>
       </article>
