@@ -774,10 +774,10 @@ button:disabled {
 .extra-page {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 28px;
+  gap: 22px;
   width: var(--screen-page-width);
   height: var(--screen-page-height);
-  padding: 54px 58px 38px;
+  padding: 46px 54px 34px;
   border: 2px solid var(--accent-strong);
   background: #fff;
   box-shadow: 0 10px 28px rgba(29, 24, 18, 0.14);
@@ -815,6 +815,30 @@ button:disabled {
   font-size: 58px;
   line-height: 0.95;
   text-transform: uppercase;
+}
+
+.master-list-page {
+  gap: 18px;
+}
+
+.master-list-page header {
+  gap: 3px;
+  padding-bottom: 14px;
+  border-bottom-width: 4px;
+}
+
+.master-list-page .extra-kicker {
+  font-size: 18px;
+}
+
+.master-list-page h3 {
+  font-size: 42px;
+  line-height: 0.95;
+}
+
+.master-list-page .extra-subtitle {
+  margin-top: 4px;
+  font-size: 14px;
 }
 
 .extra-subtitle {
@@ -968,7 +992,7 @@ button:disabled {
   gap: 8px;
   min-width: 0;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1.18;
 }
@@ -1001,7 +1025,7 @@ button:disabled {
 .master-list-compact .master-list-item {
   grid-template-columns: 16px 24px 1fr;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 11.25px;
   line-height: 1.12;
 }
 
@@ -1011,7 +1035,7 @@ button:disabled {
 }
 
 .master-list-compact .master-number {
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .master-list-ultra-compact .master-list {
@@ -1023,7 +1047,7 @@ button:disabled {
 .master-list-ultra-compact .master-list-item {
   grid-template-columns: 15px 23px 1fr;
   gap: 5px;
-  font-size: 9.5px;
+  font-size: 10.25px;
   line-height: 1.08;
 }
 
@@ -1034,7 +1058,7 @@ button:disabled {
 }
 
 .master-list-ultra-compact .master-number {
-  font-size: 9.5px;
+  font-size: 10px;
 }
 
 .markers-grid {
@@ -1563,6 +1587,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   .form-grid,
   .free-square-controls,
+  .playlist-grid,
   .scheme-grid,
   .custom-colors,
   .design-grid,
@@ -1604,6 +1629,11 @@ body[data-cards-per-page="2"] .bingo-card footer {
     background: #fff;
   }
 
+  body[data-print-export="cards"] .extras-preview,
+  body[data-print-export="extras"] .cards-grid {
+    display: none !important;
+  }
+
   .card-frame,
   .extra-frame {
     display: block;
@@ -1632,8 +1662,15 @@ body[data-cards-per-page="2"] .bingo-card footer {
     height: var(--page-height);
     margin: 0;
     box-shadow: none;
+    overflow: hidden;
     transform: none;
+    break-after: page;
     page-break-after: always;
+  }
+
+  .extra-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .card-header {

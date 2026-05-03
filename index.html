@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260503-free-border" />
+    <link rel="stylesheet" href="styles.css?v=20260503-print-exports" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -200,14 +200,16 @@
 
           <div class="actions full-span">
             <button id="generateButton" type="submit">Generate cards</button>
+            <button id="printFullSizeButton" type="button">Print full size cards</button>
+            <button id="printTwoUpButton" type="button">Print 2-up cards</button>
+            <button id="printExtrasButton" type="button">Print instructions</button>
             <button id="downloadFullSizeButton" type="button">Full size cards PDF</button>
             <button id="downloadTwoUpButton" type="button">2-up cards PDF</button>
             <button id="downloadExtrasButton" type="button">Instructions playlist PDF</button>
-            <button id="printButton" type="button">Print or save PDF</button>
             <button id="resetButton" type="button">Clear saved settings</button>
           </div>
 
-          <p class="print-help full-span">Use the three PDF buttons for Etsy uploads: full size cards, 2-up cards, and the instructions/playlist/markers file.</p>
+          <p class="print-help full-span">Use the print buttons for crisper Save as PDF output. Use the download buttons when convenience matters more than clickable links or selectable text.</p>
           <details class="help-panel full-span">
             <summary>Quick tips</summary>
             <ul>
@@ -301,6 +303,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="app.js?v=20260503-free-border"></script>
+    <script src="app.js?v=20260503-print-exports"></script>
   </body>
 </html>

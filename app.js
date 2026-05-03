@@ -14,7 +14,9 @@ const freeImageInput = document.querySelector("#freeImage");
 const spotifyFullQrInput = document.querySelector("#spotifyFullQr");
 const spotifyPreviewQrInput = document.querySelector("#spotifyPreviewQr");
 const freePresetGrid = document.querySelector("#freePresetGrid");
-const printButton = document.querySelector("#printButton");
+const printFullSizeButton = document.querySelector("#printFullSizeButton");
+const printTwoUpButton = document.querySelector("#printTwoUpButton");
+const printExtrasButton = document.querySelector("#printExtrasButton");
 const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton");
 const downloadTwoUpButton = document.querySelector("#downloadTwoUpButton");
 const downloadExtrasButton = document.querySelector("#downloadExtrasButton");
@@ -876,12 +878,17 @@ function drawMarkersPdf(pdf, sizing, pageIndex) {
 }
 
 function setPdfBusy(isBusy) {
+  printFullSizeButton.disabled = isBusy;
+  printTwoUpButton.disabled = isBusy;
+  printExtrasButton.disabled = isBusy;
   downloadFullSizeButton.disabled = isBusy;
   downloadTwoUpButton.disabled = isBusy;
   downloadExtrasButton.disabled = isBusy;
-  printButton.disabled = isBusy;
   form.querySelector("#generateButton").disabled = isBusy;
   resetButton.disabled = isBusy;
+  printFullSizeButton.textContent = isBusy ? "Preparing..." : "Print full size cards";
+  printTwoUpButton.textContent = isBusy ? "Preparing..." : "Print 2-up cards";
+  printExtrasButton.textContent = isBusy ? "Preparing..." : "Print instructions";
   downloadFullSizeButton.textContent = isBusy ? "Making PDF..." : "Full size cards PDF";
   downloadTwoUpButton.textContent = isBusy ? "Making PDF..." : "2-up cards PDF";
   downloadExtrasButton.textContent = isBusy ? "Making PDF..." : "Instructions playlist PDF";
@@ -896,14 +903,15 @@ function restoreExportSettings(previousCardsPerPage, previousExtras) {
   generateCards();
 }
 
-async function downloadPdf(exportType = "current") {
-  const previousCardsPerPage = cardsPerPage.value;
-  const previousExtras = {
+function getCurrentExtrasSettings() {
+  return {
     includeInstructions: inputs.includeInstructions.checked,
     includeMasterList: inputs.includeMasterList.checked,
     includeMarkers: inputs.includeMarkers.checked,
   };
+}
 
+function applyExportMode(exportType) {
   if (exportType === "cards-full" || exportType === "extras") {
     cardsPerPage.value = "1";
   } else if (exportType === "cards-two-up") {
@@ -921,7 +929,13 @@ async function downloadPdf(exportType = "current") {
     inputs.includeMasterList.checked = true;
     inputs.includeMarkers.checked = true;
   }
+}
 
+async function downloadPdf(exportType = "current") {
+  const previousCardsPerPage = cardsPerPage.value;
+  const previousExtras = getCurrentExtrasSettings();
+
+  applyExportMode(exportType);
   updateDesignSettings();
   generateCards();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -990,6 +1004,44 @@ async function downloadPdf(exportType = "current") {
     setPdfBusy(false);
     restoreExportSettings(previousCardsPerPage, previousExtras);
   }
+}
+
+async function printExport(exportType) {
+  const previousCardsPerPage = cardsPerPage.value;
+  const previousExtras = getCurrentExtrasSettings();
+
+  isRestoringSettings = true;
+  applyExportMode(exportType);
+  document.body.dataset.printExport = exportType === "extras" ? "extras" : "cards";
+  updateDesignSettings();
+  generateCards();
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  isRestoringSettings = false;
+
+  if ((exportType === "cards-full" || exportType === "cards-two-up") && currentCards.length === 0) {
+    setStatus("Add at least 24 unique list items before printing cards.", true);
+    delete document.body.dataset.printExport;
+    restoreExportSettings(previousCardsPerPage, previousExtras);
+    return;
+  }
+
+  const restoreAfterPrint = () => {
+    window.removeEventListener("afterprint", restoreAfterPrint);
+    delete document.body.dataset.printExport;
+    isRestoringSettings = true;
+    restoreExportSettings(previousCardsPerPage, previousExtras);
+    isRestoringSettings = false;
+  };
+
+  window.addEventListener("afterprint", restoreAfterPrint, { once: true });
+  requestAnimationFrame(() => {
+    window.print();
+    setTimeout(() => {
+      if (document.body.dataset.printExport) {
+        restoreAfterPrint();
+      }
+    }, 1200);
+  });
 }
 
 function renderCards(cards) {
@@ -1463,12 +1515,9 @@ cardsPerPage.addEventListener("change", generateCards);
   control.addEventListener("input", saveSettings);
 });
 
-printButton.addEventListener("click", () => {
-  updateDesignSettings();
-  generateCards();
-  requestAnimationFrame(() => window.print());
-});
-
+printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
+printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
+printExtrasButton.addEventListener("click", () => printExport("extras"));
 downloadFullSizeButton.addEventListener("click", () => downloadPdf("cards-full"));
 downloadTwoUpButton.addEventListener("click", () => downloadPdf("cards-two-up"));
 downloadExtrasButton.addEventListener("click", () => downloadPdf("extras"));
