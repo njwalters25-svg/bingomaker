@@ -1288,11 +1288,16 @@ function renderMasterList(items) {
   return pages;
 }
 
-function renderMarkers() {
+function renderMarkersPage(size = "large") {
   const page = markersTemplate.content.firstElementChild.cloneNode(true);
   const grid = page.querySelector(".markers-grid");
-  const markerCount = cardsPerPage.value === "2" ? 99 : 42;
+  const markerCount = size === "small" ? 99 : 42;
   const occasion = getProductName() || "Bingo";
+  const subtitle = page.querySelector(".extra-subtitle");
+  page.classList.add(size === "small" ? "markers-page-small" : "markers-page-large");
+  subtitle.textContent = size === "small"
+    ? "Cut these out for smaller card sets or larger groups."
+    : "Cut these out for full-size cards or easier handling.";
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
 
   for (let marker = 0; marker < markerCount; marker += 1) {
@@ -1323,6 +1328,10 @@ function renderMarkers() {
   return page;
 }
 
+function renderMarkers() {
+  return [renderMarkersPage("large"), renderMarkersPage("small")];
+}
+
 function renderExtras(items) {
   extrasContainer.replaceChildren();
   document.body.dataset.hasExtras = "false";
@@ -1339,7 +1348,9 @@ function renderExtras(items) {
   }
 
   if (inputs.includeMarkers.checked) {
-    extrasContainer.append(createExtraFrame(renderMarkers()));
+    renderMarkers().forEach((page) => {
+      extrasContainer.append(createExtraFrame(page));
+    });
   }
 
   if (extrasContainer.children.length > 0) {
