@@ -30,6 +30,9 @@ let isRestoringSettings = false;
 let currentCards = [];
 
 const storageKey = "allOccasionsBingoMakerSettings";
+const pdfExportScale = 1.35;
+const pdfJpegQuality = 0.84;
+const etsyMaxFileSizeMb = 20;
 
 function getControl(primarySelector, fallbackSelector = null) {
   return document.querySelector(primarySelector) || (fallbackSelector ? document.querySelector(fallbackSelector) : null);
@@ -945,18 +948,20 @@ async function downloadPdf(exportType = "current") {
 
       const canvas = await html2canvas(sheet, {
         backgroundColor: "#ffffff",
-        scale: 2,
+        scale: pdfExportScale,
         useCORS: true,
         allowTaint: true,
         logging: false,
         onclone: addPdfExportOverrides,
       });
-      const image = canvas.toDataURL("image/jpeg", 0.95);
+      const image = canvas.toDataURL("image/jpeg", pdfJpegQuality);
       pdf.addImage(image, "JPEG", 0, 0, sizing.sheetWidth, sizing.sheetHeight);
     }
 
-    pdf.save(getPdfFilename(exportType));
-    setStatus(`Downloaded ${sheets.length} PDF page${sheets.length === 1 ? "" : "s"}.`);
+    const filename = getPdfFilename(exportType);
+    const pdfSizeMb = pdf.output("arraybuffer").byteLength / (1024 * 1024);
+    pdf.save(filename);
+    setStatus(`Downloaded ${sheets.length} PDF page${sheets.length === 1 ? "" : "s"} at about ${pdfSizeMb.toFixed(1)} MB${pdfSizeMb > etsyMaxFileSizeMb ? ". Etsy limit is 20 MB, so split this set or reduce card count." : "."}`, pdfSizeMb > etsyMaxFileSizeMb);
   } catch (error) {
     console.error(error);
     setStatus("The PDF could not be created. Please use Print or save PDF instead.", true);
