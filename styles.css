@@ -159,8 +159,7 @@ fieldset {
 }
 
 .hint,
-.fieldset-hint,
-.list-tip {
+.fieldset-hint {
   margin: 0;
   color: var(--muted);
   font-size: 0.82rem;
@@ -170,13 +169,6 @@ fieldset {
 
 .fieldset-hint {
   margin-top: -2px;
-}
-
-.list-tip {
-  padding: 11px 12px;
-  border-left: 4px solid var(--tool-accent-2);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--tool-accent-soft) 52%, #fff);
 }
 
 .quality-warnings {
