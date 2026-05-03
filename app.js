@@ -3,6 +3,7 @@ const cardsContainer = document.querySelector("#cards");
 const extrasContainer = document.querySelector("#extras");
 const cardTemplate = document.querySelector("#cardTemplate");
 const instructionsTemplate = document.querySelector("#instructionsTemplate");
+const tipsTemplate = document.querySelector("#tipsTemplate");
 const masterListTemplate = document.querySelector("#masterListTemplate");
 const markersTemplate = document.querySelector("#markersTemplate");
 const statusMessage = document.querySelector("#statusMessage");
@@ -1190,7 +1191,7 @@ function renderInstructions() {
   playlistLinks.append(
     createPlaylistCard({
       title: "Full Spotify playlist",
-      description: "Use this playlist for the full game. Shuffle is fine, or follow the master checklist.",
+      description: "Open the playlist and press the main Play button. Shuffle is fine, or follow the master checklist.",
       url: inputs.spotifyFullUrl.value,
       qrData: spotifyFullQrData,
       qrAlt: "QR code for the full Spotify playlist",
@@ -1203,6 +1204,12 @@ function renderInstructions() {
       qrAlt: "QR code for the embedded preview playlist",
     }),
   );
+  page.querySelector("footer").textContent = inputs.footerText.value.trim();
+  return page;
+}
+
+function renderTips() {
+  const page = tipsTemplate.content.firstElementChild.cloneNode(true);
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
   return page;
 }
@@ -1322,6 +1329,7 @@ function renderExtras(items) {
 
   if (inputs.includeInstructions.checked) {
     extrasContainer.append(createExtraFrame(renderInstructions()));
+    extrasContainer.append(createExtraFrame(renderTips()));
   }
 
   if (inputs.includeMasterList.checked) {

@@ -777,8 +777,8 @@ button:disabled {
   gap: 22px;
   width: var(--screen-page-width);
   height: var(--screen-page-height);
-  padding: 46px 54px 34px;
-  border: 2px solid var(--accent-strong);
+  padding: 44px 54px 34px;
+  border: 0;
   background: #fff;
   box-shadow: 0 10px 28px rgba(29, 24, 18, 0.14);
   transform: scale(var(--preview-scale));
@@ -889,7 +889,7 @@ button:disabled {
 .instructions-brand-image {
   display: block;
   width: 100%;
-  max-height: 150px;
+  max-height: 138px;
   object-fit: contain;
   object-position: center;
 }
@@ -960,6 +960,41 @@ button:disabled {
   color: var(--muted);
   font-size: 24px;
   font-weight: 900;
+}
+
+.tips-page {
+  gap: 20px;
+}
+
+.tips-page h3 {
+  font-size: 48px;
+}
+
+.tips-grid {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.tips-page section {
+  padding: 18px;
+  border: 2px solid var(--accent-2);
+  border-radius: 8px;
+}
+
+.tips-page ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+.tips-page li,
+.tips-page p {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .playlist-qr img {
