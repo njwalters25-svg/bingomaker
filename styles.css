@@ -1561,6 +1561,15 @@ body[data-cards-per-page="2"] .bingo-card footer {
     -webkit-text-fill-color: var(--title-color) !important;
   }
 
+  .bingo-grid {
+    background: #fff !important;
+  }
+
+  .square {
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
   .bingo-card:last-child {
     page-break-after: auto;
   }
