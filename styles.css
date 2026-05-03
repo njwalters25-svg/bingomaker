@@ -1703,6 +1703,17 @@ body[data-cards-per-page="2"] .bingo-card footer {
     page-break-after: always;
   }
 
+  .instructions-frame {
+    height: auto !important;
+    overflow: visible;
+  }
+
+  .instructions-frame .instructions-page {
+    height: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .extra-frame:last-child,
   .extra-page:last-child {
     break-after: auto;

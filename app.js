@@ -1041,6 +1041,9 @@ function renderCards(cards) {
 function createExtraFrame(page) {
   const frame = document.createElement("div");
   frame.className = "extra-frame";
+  if (page.classList.contains("instructions-page")) {
+    frame.classList.add("instructions-frame");
+  }
   frame.append(page);
   return frame;
 }
