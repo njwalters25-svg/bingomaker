@@ -88,6 +88,8 @@ textarea {
 }
 
 .brand-panel {
+  display: grid;
+  gap: 14px;
   padding: 28px;
   border-radius: 8px;
 }
@@ -101,17 +103,6 @@ textarea {
   margin: 10px 0 0;
   color: var(--muted);
   line-height: 1.5;
-}
-
-.brand-panel .usage-note {
-  padding: 11px 12px;
-  border-left: 4px solid var(--tool-accent-2);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--ink);
-  font-size: 0.86rem;
-  font-weight: 750;
-  line-height: 1.38;
 }
 
 .eyebrow {
@@ -451,6 +442,11 @@ button {
   border: 1px solid var(--tool-line);
   background: color-mix(in srgb, var(--tool-accent-soft) 50%, #fff);
   color: var(--muted);
+}
+
+.brand-panel #resetButton {
+  width: 100%;
+  margin-top: 2px;
 }
 
 button:disabled {

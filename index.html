@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260503-instruction-frame" />
+    <link rel="stylesheet" href="styles.css?v=20260503-reset-top" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -53,8 +53,7 @@
         <div class="brand-panel">
           <p class="eyebrow"><a href="https://alloccasionprints.etsy.com" target="_blank" rel="noopener">All Occasions Printables</a></p>
           <h1>Bingo Maker</h1>
-          <p>Create printable bingo products from a list of songs, phrases, names, or prompts, then export finished PDFs for your shop workflow.</p>
-          <p class="usage-note">Private production tool. Your list and uploaded centre image stay in this browser while you create your cards.</p>
+          <button id="resetButton" type="button">Clear saved settings</button>
         </div>
 
         <form id="bingoForm" class="form-grid">
@@ -180,7 +179,6 @@
             <button id="printFullSizeButton" type="button">Print full size cards</button>
             <button id="printTwoUpButton" type="button">Print 2-up cards</button>
             <button id="printExtrasButton" type="button">Print instructions</button>
-            <button id="resetButton" type="button">Clear saved settings</button>
           </div>
           <ul id="qualityWarnings" class="quality-warnings full-span" aria-live="polite"></ul>
           <p id="statusMessage" class="status" role="status"></p>
