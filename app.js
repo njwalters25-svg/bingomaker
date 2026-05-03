@@ -169,7 +169,7 @@ function restoreSettings() {
     inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
     spotifyFullQrData = savedSettings.spotifyFullQrData || "";
     spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
-    selectedFreePreset = savedSettings.freePreset || selectedFreePreset;
+    selectedFreePreset = savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || selectedFreePreset);
     inputs.footerText.value = savedSettings.footerText ?? inputs.footerText.value;
     pageSize.value = savedSettings.pageSize || pageSize.value;
     cardsPerPage.value = savedSettings.cardsPerPage || cardsPerPage.value;
@@ -205,7 +205,9 @@ function resetSettings() {
   markerImageData = "";
   spotifyFullQrData = "";
   spotifyPreviewQrData = "";
-  freeImageInput.value = "";
+  if (freeImageInput) {
+    freeImageInput.value = "";
+  }
   spotifyFullQrInput.value = "";
   spotifyPreviewQrInput.value = "";
   updateFreePresetSelection();
@@ -311,9 +313,6 @@ function resetTextFitClasses(square) {
 }
 
 function getFreeImageSrc() {
-  if (selectedFreePreset === "custom") {
-    return freeImageData;
-  }
   return freePresetImages[selectedFreePreset] || "";
 }
 
@@ -336,7 +335,7 @@ function createFreePresetOption(preset) {
 
 async function loadFreePresetManifest() {
   try {
-    const response = await fetch(`${freePresetBasePath}manifest.json?v=20260502-free-presets`, { cache: "no-store" });
+    const response = await fetch(`${freePresetBasePath}manifest.json?v=20260503-free-presets`, { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`Free preset manifest failed with ${response.status}`);
     }
@@ -356,14 +355,13 @@ async function loadFreePresetManifest() {
       freePresetImages[normalizedPreset.id] = normalizedPreset.src;
 
       if (!freePresetGrid.querySelector(`input[name="freePreset"][value="${normalizedPreset.id}"]`)) {
-        const customOption = freePresetGrid.querySelector('input[name="freePreset"][value="custom"]')?.closest("label");
-        freePresetGrid.insertBefore(createFreePresetOption(normalizedPreset), customOption);
+        freePresetGrid.append(createFreePresetOption(normalizedPreset));
       }
     });
   } catch (error) {
     console.warn(error);
   } finally {
-    if (selectedFreePreset !== "custom" && selectedFreePreset !== "text" && !freePresetImages[selectedFreePreset]) {
+    if (selectedFreePreset !== "text" && !freePresetImages[selectedFreePreset]) {
       selectedFreePreset = "text";
     }
     updateFreePresetSelection();
@@ -1402,36 +1400,13 @@ inputs.items.addEventListener("input", () => {
   saveSettings();
 });
 
-freeImageInput.addEventListener("change", () => {
-  const file = freeImageInput.files[0];
-  if (!file) {
-    freeImageData = "";
-    selectedFreePreset = "text";
-    updateFreePresetSelection();
-    generateCards();
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-    freeImageData = reader.result;
-    selectedFreePreset = "custom";
-    updateFreePresetSelection();
-    generateCards();
-  });
-  reader.readAsDataURL(file);
-});
-
 freePresetGrid.addEventListener("change", (event) => {
   if (event.target.name !== "freePreset") {
     return;
   }
 
   selectedFreePreset = event.target.value;
-  if (selectedFreePreset !== "custom") {
-    freeImageData = "";
-    freeImageInput.value = "";
-  }
+  freeImageData = "";
   generateCards();
   saveSettings();
 });
