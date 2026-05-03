@@ -10,6 +10,7 @@ const cardTotal = document.querySelector("#cardTotal");
 const listHelp = document.querySelector("#listHelp");
 const qualityWarnings = document.querySelector("#qualityWarnings");
 const headerImageInput = document.querySelector("#headerImage");
+const markerImageInput = document.querySelector("#markerImage");
 const freeImageInput = document.querySelector("#freeImage");
 const spotifyFullQrInput = document.querySelector("#spotifyFullQr");
 const spotifyPreviewQrInput = document.querySelector("#spotifyPreviewQr");
@@ -30,6 +31,7 @@ const highlightColor = document.querySelector("#highlightColor");
 let freeImageData = "";
 let selectedFreePreset = "text";
 let headerImageData = "";
+let markerImageData = "";
 let spotifyFullQrData = "";
 let spotifyPreviewQrData = "";
 let isRestoringSettings = false;
@@ -127,6 +129,7 @@ function getSettingsSnapshot() {
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
+    markerImageData,
     spotifyFullUrl: inputs.spotifyFullUrl.value,
     spotifyPreviewUrl: inputs.spotifyPreviewUrl.value,
     spotifyFullQrData,
@@ -169,6 +172,7 @@ function restoreSettings() {
     inputs.count.value = savedSettings.count || inputs.count.value;
     inputs.items.value = savedSettings.items ?? inputs.items.value;
     inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
+    markerImageData = savedSettings.markerImageData || "";
     inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
     inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
     spotifyFullQrData = savedSettings.spotifyFullQrData || "";
@@ -212,6 +216,7 @@ function resetSettings() {
   highlightColor.value = "#137b80";
   freeImageData = "";
   headerImageData = "";
+  markerImageData = "";
   spotifyFullQrData = "";
   spotifyPreviewQrData = "";
   freeImageInput.value = "";
@@ -219,6 +224,7 @@ function resetSettings() {
   spotifyPreviewQrInput.value = "";
   updateFreePresetSelection();
   headerImageInput.value = "";
+  markerImageInput.value = "";
   isRestoringSettings = false;
 
   applyCurrentColors();
@@ -1286,10 +1292,20 @@ function renderMarkers() {
     const token = document.createElement("span");
     token.className = "marker-token";
 
+    if (markerImageData) {
+      token.classList.add("has-marker-image");
+      const image = document.createElement("img");
+      image.className = "marker-image";
+      image.src = markerImageData;
+      image.alt = `${occasion} bingo marker`;
+      token.append(image);
+      grid.append(token);
+      continue;
+    }
+
     const occasionText = document.createElement("span");
     occasionText.className = "marker-occasion";
     occasionText.textContent = occasion;
-
     const bingoText = document.createElement("span");
     bingoText.className = "marker-bingo";
     bingoText.textContent = "BINGO";
@@ -1442,6 +1458,24 @@ headerImageInput.addEventListener("change", () => {
   reader.addEventListener("load", () => {
     headerImageData = reader.result;
     generateCards();
+  });
+  reader.readAsDataURL(file);
+});
+
+markerImageInput.addEventListener("change", () => {
+  const file = markerImageInput.files[0];
+  if (!file) {
+    markerImageData = "";
+    generateCards();
+    saveSettings();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    markerImageData = reader.result;
+    generateCards();
+    saveSettings();
   });
   reader.readAsDataURL(file);
 });
