@@ -827,13 +827,13 @@ button:disabled {
 
 .instructions-page ol {
   display: grid;
-  gap: 10px;
+  gap: 7px;
   margin: 0;
   padding-left: 24px;
 }
 
 .instructions-page section {
-  padding: 16px;
+  padding: 12px;
   border: 2px solid var(--accent-2);
   border-radius: 8px;
   background: #fff;
@@ -845,13 +845,13 @@ button:disabled {
 
 .instructions-page {
   grid-template-rows: auto 1fr auto;
-  gap: 18px;
+  gap: 14px;
 }
 
 .instructions-brand-image {
   display: block;
   width: 100%;
-  max-height: 138px;
+  max-height: 118px;
   object-fit: contain;
   object-position: center;
 }
@@ -859,14 +859,14 @@ button:disabled {
 .instructions-content {
   display: grid;
   grid-template-rows: auto auto auto 1fr;
-  gap: 12px;
+  gap: 9px;
   min-height: 0;
 }
 
 .included-pack ul {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px 18px;
+  gap: 3px 18px;
   margin: 0;
   padding-left: 22px;
 }
@@ -892,7 +892,7 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr) 118px;
   gap: 12px;
   align-items: center;
-  padding: 12px;
+  padding: 10px;
   border: 2px solid var(--accent);
   border-radius: 8px;
 }
@@ -906,7 +906,7 @@ button:disabled {
 
 .playlist-card p {
   margin: 0 0 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 650;
   line-height: 1.25;
 }
@@ -928,8 +928,8 @@ button:disabled {
 .playlist-qr {
   display: grid;
   place-items: center;
-  width: 112px;
-  height: 112px;
+  width: 100px;
+  height: 100px;
   border: 1px solid var(--line);
   background: #fff;
   color: var(--muted);
@@ -981,7 +981,7 @@ button:disabled {
 
 .how-to-play li,
 .music-note p {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
 }

@@ -1170,7 +1170,7 @@ function renderInstructions() {
     }),
     createPlaylistCard({
       title: "Embedded preview playlist",
-      description: "Use this option for shorter song previews without needing guests to log in.",
+      description: "Use this option for shorter song previews if the host does not want to log in.",
       url: inputs.spotifyPreviewUrl.value,
       qrData: spotifyPreviewQrData,
       qrAlt: "QR code for the embedded preview playlist",
