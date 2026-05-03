@@ -1391,6 +1391,9 @@ body[data-cards-per-page="2"] .card-header {
 }
 
 body[data-cards-per-page="2"] .bingo-grid {
+  align-self: start;
+  justify-self: stretch;
+  aspect-ratio: 1 / 1;
   gap: 8px;
   padding: 5px 26px 8px;
 }
