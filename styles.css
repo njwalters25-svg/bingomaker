@@ -624,7 +624,9 @@ button:disabled {
 }
 
 .has-header-image .card-header {
+  align-content: start;
   padding: 0;
+  place-items: start stretch;
 }
 
 .has-header-image .occasion,
@@ -638,6 +640,7 @@ button:disabled {
   height: auto;
   max-height: 100%;
   object-fit: contain;
+  object-position: top center;
 }
 
 .header-placeholder {
