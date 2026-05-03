@@ -728,7 +728,7 @@ button:disabled {
 }
 
 .square.free {
-  border: 2px solid var(--accent-2);
+  border: 2px solid var(--accent);
   background: #fff;
   color: var(--accent-2);
   font-size: 21px;
