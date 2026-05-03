@@ -858,9 +858,22 @@ button:disabled {
 
 .instructions-content {
   display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: 14px;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 12px;
   min-height: 0;
+}
+
+.included-pack ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 18px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.included-pack li {
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 .music-access {

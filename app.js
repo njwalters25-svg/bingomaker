@@ -1131,6 +1131,10 @@ function createPlaylistCard({ title, description, url, qrData, qrAlt }) {
   return card;
 }
 
+function getRequestedCardCount() {
+  return Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
+}
+
 function renderInstructions() {
   const page = instructionsTemplate.content.firstElementChild.cloneNode(true);
   const brandImage = page.querySelector(".instructions-brand-image");
@@ -1140,6 +1144,20 @@ function renderInstructions() {
   } else {
     brandImage.remove();
   }
+
+  const includedList = page.querySelector(".included-pack ul");
+  [
+    `${getRequestedCardCount()} full-size bingo cards`,
+    `${getRequestedCardCount()} bingo cards, 2 to a page`,
+    "Spotify playlist link and QR code",
+    "Embedded preview playlist link and QR code",
+    "Master calling checklist",
+    "Bingo markers in 2 sizes",
+  ].forEach((item) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = item;
+    includedList.append(listItem);
+  });
 
   const playlistLinks = page.querySelector(".playlist-links");
   playlistLinks.append(
