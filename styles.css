@@ -572,6 +572,7 @@ button:disabled {
   inset: 28px;
   border: 4px solid var(--accent-2);
   pointer-events: none;
+  z-index: 5;
 }
 
 .card-header {
