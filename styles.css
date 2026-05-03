@@ -550,10 +550,10 @@ button:disabled {
   position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-rows: 285px 1fr 34px;
+  grid-template-rows: 270px 1fr 34px;
   width: var(--screen-page-width);
   height: var(--screen-page-height);
-  padding: 44px 56px 36px;
+  padding: 28px 28px 36px;
   border: 0;
   border-radius: 0;
   background: var(--card);
@@ -623,7 +623,7 @@ button:disabled {
 }
 
 .has-header-image .card-header {
-  padding: 4px 36px 14px;
+  padding: 0;
 }
 
 .has-header-image .occasion,
@@ -634,7 +634,8 @@ button:disabled {
 .header-image {
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: 100%;
   object-fit: contain;
 }
 
@@ -651,7 +652,7 @@ button:disabled {
   grid-template-columns: repeat(5, var(--cell-size));
   grid-template-rows: repeat(5, var(--cell-size));
   gap: 16px;
-  padding: 10px 20px 18px;
+  padding: 10px 48px 18px;
 }
 
 .square {
@@ -1373,7 +1374,7 @@ body[data-cards-per-page="2"] .square {
 
 body[data-cards-per-page="2"] .bingo-card {
   grid-template-rows: 168px 1fr 24px;
-  padding: 22px 30px 20px;
+  padding: 16px 16px 20px;
 }
 
 body[data-cards-per-page="2"] .bingo-card::before {
@@ -1382,12 +1383,12 @@ body[data-cards-per-page="2"] .bingo-card::before {
 }
 
 body[data-cards-per-page="2"] .card-header {
-  padding: 3px 20px 8px;
+  padding: 0;
 }
 
 body[data-cards-per-page="2"] .bingo-grid {
   gap: 8px;
-  padding: 5px 12px 8px;
+  padding: 5px 26px 8px;
 }
 
 body[data-cards-per-page="2"] .music-square {
