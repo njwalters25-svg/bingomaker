@@ -857,7 +857,7 @@ button:disabled {
 
 .instructions-content {
   display: grid;
-  grid-template-rows: auto auto auto 1fr;
+  grid-template-rows: auto auto auto auto;
   gap: 9px;
   min-height: 0;
 }
@@ -1698,6 +1698,41 @@ body[data-cards-per-page="2"] .bingo-card footer {
   .extra-page:last-child {
     break-after: auto;
     page-break-after: auto;
+  }
+
+  .instructions-page {
+    gap: 10px;
+    padding: 32px 50px 24px;
+  }
+
+  .instructions-page header {
+    padding-bottom: 10px;
+    border-bottom-width: 4px;
+  }
+
+  .instructions-page h3 {
+    font-size: 44px;
+  }
+
+  .instructions-page .extra-kicker {
+    font-size: 14px;
+  }
+
+  .instructions-page .extra-subtitle {
+    margin-top: 2px;
+    font-size: 13px;
+  }
+
+  .instructions-page section {
+    padding: 10px;
+  }
+
+  .instructions-content {
+    gap: 8px;
+  }
+
+  .music-note {
+    align-self: start;
   }
 
   .card-header {
