@@ -1109,7 +1109,7 @@ button:disabled {
 }
 
 .markers-page-small .marker-token {
-  padding: 8%;
+  padding: 5%;
 }
 
 .markers-page-small .marker-occasion {
@@ -1758,15 +1758,37 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   .markers-page {
     display: grid !important;
-    grid-template-rows: 1fr;
-    gap: 0;
-    padding: 30px 34px;
+    grid-template-rows: auto 1fr;
+    gap: 14px;
+    padding: 24px 34px 28px;
     overflow: hidden;
   }
 
-  .markers-page header,
   .markers-page footer {
     display: none !important;
+  }
+
+  .markers-page header {
+    display: grid !important;
+    gap: 2px;
+    padding-bottom: 10px;
+    border-bottom: 4px solid var(--accent);
+  }
+
+  .markers-page .extra-kicker {
+    font-size: 13px;
+    line-height: 1.05;
+  }
+
+  .markers-page h3 {
+    font-size: 28px;
+    line-height: 0.95;
+  }
+
+  .markers-page .extra-subtitle {
+    margin-top: 2px;
+    font-size: 12px;
+    line-height: 1.15;
   }
 
   .markers-page .markers-grid {
@@ -1776,8 +1798,8 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 
   body[data-cards-per-page="2"] .markers-page {
-    padding: 30px 34px;
-    gap: 0;
+    padding: 24px 34px 28px;
+    gap: 14px;
   }
 
   .markers-page-small .markers-grid,
@@ -1793,7 +1815,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
     height: auto;
     align-self: stretch;
     justify-self: stretch;
-    padding: 8%;
+    padding: 5%;
   }
 
   body[data-cards-per-page="2"] .cards-grid {
