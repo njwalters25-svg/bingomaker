@@ -160,8 +160,7 @@ fieldset {
 
 .hint,
 .fieldset-hint,
-.list-tip,
-.print-help {
+.list-tip {
   margin: 0;
   color: var(--muted);
   font-size: 0.82rem;
@@ -178,38 +177,6 @@ fieldset {
   border-left: 4px solid var(--tool-accent-2);
   border-radius: 4px;
   background: color-mix(in srgb, var(--tool-accent-soft) 52%, #fff);
-}
-
-.print-help {
-  padding: 12px;
-  border: 1px solid var(--tool-line);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--tool-accent-soft) 62%, #fff);
-}
-
-.help-panel {
-  margin: 0;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 650;
-  line-height: 1.35;
-}
-
-.help-panel summary {
-  color: var(--ink);
-  font-weight: 850;
-  cursor: pointer;
-}
-
-.help-panel ul {
-  display: grid;
-  gap: 7px;
-  margin: 10px 0 0;
-  padding-left: 18px;
 }
 
 .quality-warnings {
@@ -476,17 +443,12 @@ button {
   color: #fff;
 }
 
-#printButton {
+#printFullSizeButton,
+#printTwoUpButton,
+#printExtrasButton {
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);
-}
-
-#downloadFullSizeButton,
-#downloadTwoUpButton,
-#downloadExtrasButton {
-  background: var(--tool-accent-2);
-  color: #fff;
 }
 
 #resetButton {

@@ -19,9 +19,6 @@ const freePresetGrid = document.querySelector("#freePresetGrid");
 const printFullSizeButton = document.querySelector("#printFullSizeButton");
 const printTwoUpButton = document.querySelector("#printTwoUpButton");
 const printExtrasButton = document.querySelector("#printExtrasButton");
-const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton");
-const downloadTwoUpButton = document.querySelector("#downloadTwoUpButton");
-const downloadExtrasButton = document.querySelector("#downloadExtrasButton");
 const resetButton = document.querySelector("#resetButton");
 const pageSize = document.querySelector("#pageSize");
 const cardsPerPage = document.querySelector("#cardsPerPage");
@@ -55,9 +52,6 @@ const inputs = {
   spotifyFullUrl: document.querySelector("#spotifyFullUrl"),
   spotifyPreviewUrl: document.querySelector("#spotifyPreviewUrl"),
   footerText: document.querySelector("#footerText"),
-  includeInstructions: document.querySelector("#includeInstructions"),
-  includeMasterList: document.querySelector("#includeMasterList"),
-  includeMarkers: document.querySelector("#includeMarkers"),
 };
 
 const centerIndex = 12;
@@ -137,9 +131,6 @@ function getSettingsSnapshot() {
     spotifyPreviewQrData,
     freePreset: selectedFreePreset,
     footerText: inputs.footerText.value,
-    includeInstructions: inputs.includeInstructions.checked,
-    includeMasterList: inputs.includeMasterList.checked,
-    includeMarkers: inputs.includeMarkers.checked,
     pageSize: pageSize.value,
     cardsPerPage: cardsPerPage.value,
     primaryColor: primaryColor.value,
@@ -180,9 +171,6 @@ function restoreSettings() {
     spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
     selectedFreePreset = savedSettings.freePreset || selectedFreePreset;
     inputs.footerText.value = savedSettings.footerText ?? inputs.footerText.value;
-    inputs.includeInstructions.checked = savedSettings.includeInstructions ?? inputs.includeInstructions.checked;
-    inputs.includeMasterList.checked = savedSettings.includeMasterList ?? inputs.includeMasterList.checked;
-    inputs.includeMarkers.checked = savedSettings.includeMarkers ?? inputs.includeMarkers.checked;
     pageSize.value = savedSettings.pageSize || pageSize.value;
     cardsPerPage.value = savedSettings.cardsPerPage || cardsPerPage.value;
     primaryColor.value = savedSettings.primaryColor || primaryColor.value;
@@ -208,9 +196,6 @@ function resetSettings() {
   inputs.spotifyPreviewUrl.value = "";
   selectedFreePreset = "text";
   inputs.footerText.value = "";
-  inputs.includeInstructions.checked = true;
-  inputs.includeMasterList.checked = true;
-  inputs.includeMarkers.checked = true;
   pageSize.value = "letter";
   cardsPerPage.value = "2";
   primaryColor.value = "#e33c2f";
@@ -888,34 +873,17 @@ function setPdfBusy(isBusy) {
   printFullSizeButton.disabled = isBusy;
   printTwoUpButton.disabled = isBusy;
   printExtrasButton.disabled = isBusy;
-  downloadFullSizeButton.disabled = isBusy;
-  downloadTwoUpButton.disabled = isBusy;
-  downloadExtrasButton.disabled = isBusy;
   form.querySelector("#generateButton").disabled = isBusy;
   resetButton.disabled = isBusy;
   printFullSizeButton.textContent = isBusy ? "Preparing..." : "Print full size cards";
   printTwoUpButton.textContent = isBusy ? "Preparing..." : "Print 2-up cards";
   printExtrasButton.textContent = isBusy ? "Preparing..." : "Print instructions";
-  downloadFullSizeButton.textContent = isBusy ? "Making PDF..." : "Full size cards PDF";
-  downloadTwoUpButton.textContent = isBusy ? "Making PDF..." : "2-up cards PDF";
-  downloadExtrasButton.textContent = isBusy ? "Making PDF..." : "Instructions playlist PDF";
 }
 
-function restoreExportSettings(previousCardsPerPage, previousExtras) {
+function restoreExportSettings(previousCardsPerPage) {
   cardsPerPage.value = previousCardsPerPage;
-  inputs.includeInstructions.checked = previousExtras.includeInstructions;
-  inputs.includeMasterList.checked = previousExtras.includeMasterList;
-  inputs.includeMarkers.checked = previousExtras.includeMarkers;
   updateDesignSettings();
   generateCards();
-}
-
-function getCurrentExtrasSettings() {
-  return {
-    includeInstructions: inputs.includeInstructions.checked,
-    includeMasterList: inputs.includeMasterList.checked,
-    includeMarkers: inputs.includeMarkers.checked,
-  };
 }
 
 function applyExportMode(exportType) {
@@ -924,23 +892,10 @@ function applyExportMode(exportType) {
   } else if (exportType === "cards-two-up") {
     cardsPerPage.value = "2";
   }
-
-  if (exportType === "cards-full" || exportType === "cards-two-up") {
-    inputs.includeInstructions.checked = false;
-    inputs.includeMasterList.checked = false;
-    inputs.includeMarkers.checked = false;
-  }
-
-  if (exportType === "extras") {
-    inputs.includeInstructions.checked = true;
-    inputs.includeMasterList.checked = true;
-    inputs.includeMarkers.checked = true;
-  }
 }
 
 async function downloadPdf(exportType = "current") {
   const previousCardsPerPage = cardsPerPage.value;
-  const previousExtras = getCurrentExtrasSettings();
 
   applyExportMode(exportType);
   updateDesignSettings();
@@ -949,13 +904,13 @@ async function downloadPdf(exportType = "current") {
 
   if (currentCards.length === 0) {
     setStatus("Add at least 24 unique list items before downloading a PDF.", true);
-    restoreExportSettings(previousCardsPerPage, previousExtras);
+    restoreExportSettings(previousCardsPerPage);
     return;
   }
 
   if (!window.html2canvas || !window.jspdf?.jsPDF) {
     setStatus("The PDF maker is still loading. Please try again in a moment.", true);
-    restoreExportSettings(previousCardsPerPage, previousExtras);
+    restoreExportSettings(previousCardsPerPage);
     return;
   }
 
@@ -1009,13 +964,12 @@ async function downloadPdf(exportType = "current") {
   } finally {
     exportArea.remove();
     setPdfBusy(false);
-    restoreExportSettings(previousCardsPerPage, previousExtras);
+    restoreExportSettings(previousCardsPerPage);
   }
 }
 
 async function printExport(exportType) {
   const previousCardsPerPage = cardsPerPage.value;
-  const previousExtras = getCurrentExtrasSettings();
 
   isRestoringSettings = true;
   applyExportMode(exportType);
@@ -1028,7 +982,7 @@ async function printExport(exportType) {
   if ((exportType === "cards-full" || exportType === "cards-two-up") && currentCards.length === 0) {
     setStatus("Add at least 24 unique list items before printing cards.", true);
     delete document.body.dataset.printExport;
-    restoreExportSettings(previousCardsPerPage, previousExtras);
+    restoreExportSettings(previousCardsPerPage);
     return;
   }
 
@@ -1036,7 +990,7 @@ async function printExport(exportType) {
     window.removeEventListener("afterprint", restoreAfterPrint);
     delete document.body.dataset.printExport;
     isRestoringSettings = true;
-    restoreExportSettings(previousCardsPerPage, previousExtras);
+    restoreExportSettings(previousCardsPerPage);
     isRestoringSettings = false;
   };
 
@@ -1336,22 +1290,16 @@ function renderExtras(items) {
   extrasContainer.replaceChildren();
   document.body.dataset.hasExtras = "false";
 
-  if (inputs.includeInstructions.checked) {
-    extrasContainer.append(createExtraFrame(renderInstructions()));
-    extrasContainer.append(createExtraFrame(renderTips()));
-  }
+  extrasContainer.append(createExtraFrame(renderInstructions()));
+  extrasContainer.append(createExtraFrame(renderTips()));
 
-  if (inputs.includeMasterList.checked) {
-    renderMasterList(items).forEach((page) => {
-      extrasContainer.append(createExtraFrame(page));
-    });
-  }
+  renderMasterList(items).forEach((page) => {
+    extrasContainer.append(createExtraFrame(page));
+  });
 
-  if (inputs.includeMarkers.checked) {
-    renderMarkers().forEach((page) => {
-      extrasContainer.append(createExtraFrame(page));
-    });
-  }
+  renderMarkers().forEach((page) => {
+    extrasContainer.append(createExtraFrame(page));
+  });
 
   if (extrasContainer.children.length > 0) {
     document.body.dataset.hasExtras = "true";
@@ -1545,10 +1493,6 @@ spotifyPreviewQrInput.addEventListener("change", () => {
 
 cardsPerPage.addEventListener("change", generateCards);
 
-[inputs.includeInstructions, inputs.includeMasterList, inputs.includeMarkers].forEach((control) => {
-  control.addEventListener("change", generateCards);
-});
-
 [inputs.productName, inputs.footerText, inputs.spotifyFullUrl, inputs.spotifyPreviewUrl].filter(Boolean).forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
@@ -1571,9 +1515,6 @@ cardsPerPage.addEventListener("change", generateCards);
 printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
 printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
 printExtrasButton.addEventListener("click", () => printExport("extras"));
-downloadFullSizeButton.addEventListener("click", () => downloadPdf("cards-full"));
-downloadTwoUpButton.addEventListener("click", () => downloadPdf("cards-two-up"));
-downloadExtrasButton.addEventListener("click", () => downloadPdf("extras"));
 resetButton.addEventListener("click", resetSettings);
 
 window.addEventListener("resize", updatePreviewScale);
