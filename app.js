@@ -1182,6 +1182,11 @@ function renderInstructions() {
 
 function renderTips() {
   const page = tipsTemplate.content.firstElementChild.cloneNode(true);
+  const songCount = parseItems(inputs.items.value).length;
+  const countCheck = page.querySelector(".playlist-count-check");
+  countCheck.textContent = songCount > 0
+    ? `Before the game starts, check the playlist shows ${songCount} song${songCount === 1 ? "" : "s"} and that they are playable.`
+    : "Before the game starts, check that every playlist track is visible and playable.";
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
   return page;
 }

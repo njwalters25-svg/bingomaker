@@ -1083,8 +1083,8 @@ button:disabled {
 }
 
 .markers-page-small .markers-grid {
-  grid-template-columns: repeat(11, 1fr);
-  grid-template-rows: repeat(9, 1fr);
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(11, 1fr);
   gap: 8px;
 }
 
@@ -1787,8 +1787,8 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   .markers-page-small .markers-grid,
   body[data-cards-per-page="2"] .markers-page-small .markers-grid {
-    grid-template-columns: repeat(11, minmax(0, 1fr));
-    grid-template-rows: repeat(9, minmax(0, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-rows: repeat(11, minmax(0, 1fr));
     gap: 7px;
   }
 
