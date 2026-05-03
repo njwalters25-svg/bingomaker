@@ -1134,6 +1134,19 @@ button:disabled {
   object-fit: contain;
 }
 
+.thank-you-page {
+  display: grid;
+  padding: 0;
+  background: #fff;
+}
+
+.thank-you-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .marker-occasion {
   display: -webkit-box;
   overflow: hidden;
@@ -1708,6 +1721,15 @@ body[data-cards-per-page="2"] .bingo-card footer {
     height: auto;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  .thank-you-frame {
+    height: var(--page-height) !important;
+  }
+
+  .thank-you-page {
+    height: 100%;
+    padding: 0;
   }
 
   .extra-frame:last-child,

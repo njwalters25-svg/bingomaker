@@ -6,6 +6,7 @@ const instructionsTemplate = document.querySelector("#instructionsTemplate");
 const tipsTemplate = document.querySelector("#tipsTemplate");
 const masterListTemplate = document.querySelector("#masterListTemplate");
 const markersTemplate = document.querySelector("#markersTemplate");
+const thankYouTemplate = document.querySelector("#thankYouTemplate");
 const statusMessage = document.querySelector("#statusMessage");
 const cardTotal = document.querySelector("#cardTotal");
 const listHelp = document.querySelector("#listHelp");
@@ -1044,6 +1045,9 @@ function createExtraFrame(page) {
   if (page.classList.contains("instructions-page")) {
     frame.classList.add("instructions-frame");
   }
+  if (page.classList.contains("thank-you-page")) {
+    frame.classList.add("thank-you-frame");
+  }
   frame.append(page);
   return frame;
 }
@@ -1310,6 +1314,10 @@ function renderMarkers() {
   return [renderMarkersPage("large"), renderMarkersPage("small")];
 }
 
+function renderThankYou() {
+  return thankYouTemplate.content.firstElementChild.cloneNode(true);
+}
+
 function renderExtras(items) {
   extrasContainer.replaceChildren();
   document.body.dataset.hasExtras = "false";
@@ -1324,6 +1332,8 @@ function renderExtras(items) {
   renderMarkers().forEach((page) => {
     extrasContainer.append(createExtraFrame(page));
   });
+
+  extrasContainer.append(createExtraFrame(renderThankYou()));
 
   if (extrasContainer.children.length > 0) {
     document.body.dataset.hasExtras = "true";
