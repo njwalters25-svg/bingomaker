@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260503-square-two-up" />
+    <link rel="stylesheet" href="styles.css?v=20260503-playlist-instructions" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -69,6 +69,29 @@
             <input id="headerImage" type="file" accept="image/*" />
             <span class="hint">Upload your Ideogram header for the card top.</span>
           </label>
+
+          <fieldset class="full-span">
+            <legend>Playlist links</legend>
+            <p class="fieldset-hint">Add the two Spotify links and QR images for the instructions PDF.</p>
+            <div class="playlist-grid">
+              <label>
+                Full Spotify playlist link
+                <input id="spotifyFullUrl" type="url" placeholder="https://open.spotify.com/playlist/..." />
+              </label>
+              <label>
+                Full playlist QR code
+                <input id="spotifyFullQr" type="file" accept="image/*" />
+              </label>
+              <label>
+                Embedded preview link
+                <input id="spotifyPreviewUrl" type="url" placeholder="https://yourwebsite.com/..." />
+              </label>
+              <label>
+                Preview QR code
+                <input id="spotifyPreviewQr" type="file" accept="image/*" />
+              </label>
+            </div>
+          </fieldset>
 
           <label>
             Number of cards
@@ -224,22 +247,31 @@
     <template id="instructionsTemplate">
       <article class="extra-page instructions-page">
         <header>
-          <p class="extra-kicker">Game guide</p>
+          <img class="instructions-brand-image" alt="" />
+          <p class="extra-kicker">Music bingo instructions</p>
           <h3>How to play</h3>
-          <p class="extra-subtitle">A quick host guide for running your bingo game smoothly.</p>
+          <p class="extra-subtitle">Print your cards, open the playlist, and mark each song as it plays.</p>
         </header>
-        <ol>
-          <li>Print the bingo cards and give one card to each player.</li>
-          <li>Print the master checklist for the host to use as the call sheet.</li>
-          <li>Choose your winning pattern before the game starts.</li>
-          <li>Call items in any order and tick each one off as it is used.</li>
-          <li>Players cover matching squares with markers, counters, or a pen.</li>
-          <li>The first player to complete the chosen pattern calls &ldquo;Bingo!&rdquo;</li>
-        </ol>
-        <section>
-          <h4>Common winning patterns</h4>
-          <p>One row, one column, a diagonal line, four corners, or a full house.</p>
-        </section>
+        <div class="instructions-content">
+          <section class="music-access">
+            <h4>Choose your music option</h4>
+            <div class="playlist-links"></div>
+          </section>
+          <section class="how-to-play">
+            <h4>Quick start</h4>
+            <ol>
+              <li>Print the bingo cards and give one card to each player.</li>
+              <li>Open the Spotify playlist or embedded preview link.</li>
+              <li>Play songs in order, on shuffle, or from the master checklist.</li>
+              <li>Players mark the matching song square on their card.</li>
+              <li>First to complete a row, column, diagonal, four corners, or full house calls &ldquo;Bingo!&rdquo;</li>
+            </ol>
+          </section>
+          <section class="music-note">
+            <h4>Host note</h4>
+            <p>Spotify may show different tracks depending on device, region, or sync settings. Check the playlist before playing and use the master checklist to follow along during the game.</p>
+          </section>
+        </div>
         <footer></footer>
       </article>
     </template>
@@ -269,6 +301,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="app.js?v=20260503-square-two-up"></script>
+    <script src="app.js?v=20260503-playlist-instructions"></script>
   </body>
 </html>

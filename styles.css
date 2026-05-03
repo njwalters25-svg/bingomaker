@@ -280,6 +280,7 @@ textarea:focus {
 
 .free-square-controls,
 .free-preset-grid,
+.playlist-grid,
 .scheme-grid,
 .custom-colors,
 .design-grid,
@@ -291,6 +292,10 @@ textarea:focus {
 
 .free-preset-grid {
   grid-template-columns: repeat(3, 1fr);
+}
+
+.playlist-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .free-preset-option {
@@ -836,21 +841,115 @@ button:disabled {
 
 .instructions-page ol {
   display: grid;
-  gap: 18px;
+  gap: 10px;
   margin: 0;
-  padding-left: 32px;
+  padding-left: 24px;
 }
 
 .instructions-page section {
-  align-self: end;
-  padding: 20px;
+  padding: 16px;
   border: 2px solid var(--accent-2);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--accent-soft) 35%, #fff);
+  background: #fff;
 }
 
 .instructions-page section p {
   margin: 0;
+}
+
+.instructions-page {
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+}
+
+.instructions-brand-image {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.instructions-content {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 14px;
+  min-height: 0;
+}
+
+.music-access {
+  display: grid;
+  gap: 12px;
+}
+
+.playlist-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.playlist-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+}
+
+.playlist-card h5 {
+  margin: 0 0 6px;
+  color: var(--accent-strong);
+  font-size: 18px;
+  line-height: 1.05;
+}
+
+.playlist-card p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.playlist-card a {
+  display: block;
+  color: #0645ad;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.playlist-card a.missing-link {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.playlist-qr {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.playlist-qr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.how-to-play li,
+.music-note p {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .master-list {

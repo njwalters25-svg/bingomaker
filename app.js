@@ -11,6 +11,8 @@ const listHelp = document.querySelector("#listHelp");
 const qualityWarnings = document.querySelector("#qualityWarnings");
 const headerImageInput = document.querySelector("#headerImage");
 const freeImageInput = document.querySelector("#freeImage");
+const spotifyFullQrInput = document.querySelector("#spotifyFullQr");
+const spotifyPreviewQrInput = document.querySelector("#spotifyPreviewQr");
 const freePresetGrid = document.querySelector("#freePresetGrid");
 const printButton = document.querySelector("#printButton");
 const downloadFullSizeButton = document.querySelector("#downloadFullSizeButton");
@@ -26,6 +28,8 @@ const highlightColor = document.querySelector("#highlightColor");
 let freeImageData = "";
 let selectedFreePreset = "text";
 let headerImageData = "";
+let spotifyFullQrData = "";
+let spotifyPreviewQrData = "";
 let isRestoringSettings = false;
 let currentCards = [];
 
@@ -43,6 +47,8 @@ const inputs = {
   count: document.querySelector("#cardCount"),
   items: document.querySelector("#itemList"),
   freeText: document.querySelector("#freeText"),
+  spotifyFullUrl: document.querySelector("#spotifyFullUrl"),
+  spotifyPreviewUrl: document.querySelector("#spotifyPreviewUrl"),
   footerText: document.querySelector("#footerText"),
   includeInstructions: document.querySelector("#includeInstructions"),
   includeMasterList: document.querySelector("#includeMasterList"),
@@ -119,6 +125,10 @@ function getSettingsSnapshot() {
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
+    spotifyFullUrl: inputs.spotifyFullUrl.value,
+    spotifyPreviewUrl: inputs.spotifyPreviewUrl.value,
+    spotifyFullQrData,
+    spotifyPreviewQrData,
     freePreset: selectedFreePreset,
     footerText: inputs.footerText.value,
     includeInstructions: inputs.includeInstructions.checked,
@@ -157,6 +167,10 @@ function restoreSettings() {
     inputs.count.value = savedSettings.count || inputs.count.value;
     inputs.items.value = savedSettings.items ?? inputs.items.value;
     inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
+    inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
+    inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
+    spotifyFullQrData = savedSettings.spotifyFullQrData || "";
+    spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
     selectedFreePreset = savedSettings.freePreset || selectedFreePreset;
     inputs.footerText.value = savedSettings.footerText ?? inputs.footerText.value;
     inputs.includeInstructions.checked = savedSettings.includeInstructions ?? inputs.includeInstructions.checked;
@@ -183,6 +197,8 @@ function resetSettings() {
   inputs.count.value = "100";
   inputs.items.value = "";
   inputs.freeText.value = "FREE";
+  inputs.spotifyFullUrl.value = "";
+  inputs.spotifyPreviewUrl.value = "";
   selectedFreePreset = "text";
   inputs.footerText.value = "";
   inputs.includeInstructions.checked = true;
@@ -194,7 +210,11 @@ function resetSettings() {
   highlightColor.value = "#137b80";
   freeImageData = "";
   headerImageData = "";
+  spotifyFullQrData = "";
+  spotifyPreviewQrData = "";
   freeImageInput.value = "";
+  spotifyFullQrInput.value = "";
+  spotifyPreviewQrInput.value = "";
   updateFreePresetSelection();
   headerImageInput.value = "";
   isRestoringSettings = false;
@@ -1048,8 +1068,83 @@ function updateFreeSquarePreview() {
   renderHelpfulChecks(getHelpfulChecks(items, requestedCount));
 }
 
+function setOptionalLink(anchor, url) {
+  const cleanUrl = url.trim();
+  if (!cleanUrl) {
+    anchor.removeAttribute("href");
+    anchor.textContent = "Add link before exporting";
+    anchor.classList.add("missing-link");
+    return;
+  }
+
+  anchor.href = cleanUrl;
+  anchor.textContent = cleanUrl;
+  anchor.classList.remove("missing-link");
+}
+
+function createPlaylistCard({ title, description, url, qrData, qrAlt }) {
+  const card = document.createElement("div");
+  card.className = "playlist-card";
+
+  const text = document.createElement("div");
+  text.className = "playlist-card-text";
+
+  const heading = document.createElement("h5");
+  heading.textContent = title;
+
+  const copy = document.createElement("p");
+  copy.textContent = description;
+
+  const link = document.createElement("a");
+  link.target = "_blank";
+  link.rel = "noopener";
+  setOptionalLink(link, url);
+
+  text.append(heading, copy, link);
+
+  const qr = document.createElement("div");
+  qr.className = "playlist-qr";
+  if (qrData) {
+    const image = document.createElement("img");
+    image.src = qrData;
+    image.alt = qrAlt;
+    qr.append(image);
+  } else {
+    qr.textContent = "QR";
+    qr.classList.add("missing-qr");
+  }
+
+  card.append(text, qr);
+  return card;
+}
+
 function renderInstructions() {
   const page = instructionsTemplate.content.firstElementChild.cloneNode(true);
+  const brandImage = page.querySelector(".instructions-brand-image");
+  if (headerImageData) {
+    brandImage.src = headerImageData;
+    brandImage.alt = getProductName() || "Music bingo";
+  } else {
+    brandImage.remove();
+  }
+
+  const playlistLinks = page.querySelector(".playlist-links");
+  playlistLinks.append(
+    createPlaylistCard({
+      title: "Full Spotify playlist",
+      description: "Use this playlist for the full game. Shuffle is fine, or follow the master checklist.",
+      url: inputs.spotifyFullUrl.value,
+      qrData: spotifyFullQrData,
+      qrAlt: "QR code for the full Spotify playlist",
+    }),
+    createPlaylistCard({
+      title: "Embedded preview playlist",
+      description: "Use this option for shorter song previews without needing guests to log in.",
+      url: inputs.spotifyPreviewUrl.value,
+      qrData: spotifyPreviewQrData,
+      qrAlt: "QR code for the embedded preview playlist",
+    }),
+  );
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
   return page;
 }
@@ -1299,6 +1394,36 @@ headerImageInput.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
+function handleQrUpload(input, updateData) {
+  const file = input.files[0];
+  if (!file) {
+    updateData("");
+    generateCards();
+    saveSettings();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    updateData(reader.result);
+    generateCards();
+    saveSettings();
+  });
+  reader.readAsDataURL(file);
+}
+
+spotifyFullQrInput.addEventListener("change", () => {
+  handleQrUpload(spotifyFullQrInput, (value) => {
+    spotifyFullQrData = value;
+  });
+});
+
+spotifyPreviewQrInput.addEventListener("change", () => {
+  handleQrUpload(spotifyPreviewQrInput, (value) => {
+    spotifyPreviewQrData = value;
+  });
+});
+
 [primaryColor, highlightColor].forEach((control) => {
   control.addEventListener("input", () => {
     updateCustomColors();
@@ -1319,9 +1444,10 @@ cardsPerPage.addEventListener("change", generateCards);
   control.addEventListener("change", generateCards);
 });
 
-[inputs.productName, inputs.footerText].filter(Boolean).forEach((control) => {
+[inputs.productName, inputs.footerText, inputs.spotifyFullUrl, inputs.spotifyPreviewUrl].filter(Boolean).forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
+    generateCards();
     saveSettings();
   });
 });
