@@ -1811,8 +1811,8 @@ body[data-cards-per-page="2"] .bingo-card footer {
     box-shadow: none !important;
   }
 
-  .bingo-card:last-child {
-    page-break-after: auto;
+  .card-frame:last-child .bingo-card {
+    page-break-after: avoid;
   }
 
   body[data-cards-per-page="2"] .bingo-card {
@@ -1822,7 +1822,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
     page-break-after: auto;
   }
 
-  body[data-has-extras="true"] .bingo-card:last-child {
+  body[data-has-extras="true"] .card-frame:last-child .bingo-card {
     page-break-after: always;
   }
 
