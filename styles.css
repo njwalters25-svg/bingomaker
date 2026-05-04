@@ -689,6 +689,8 @@ button:disabled {
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .square.free img {
