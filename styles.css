@@ -21,6 +21,8 @@
   --cell-bg: #fff;
   --page-width: 8.5in;
   --page-height: 11in;
+  --page-width-val: 8.5;
+  --page-height-val: 11;
   --screen-page-width: 816px;
   --screen-page-height: 1056px;
   --page-padding: 30px 42px 26px;
@@ -1200,6 +1202,7 @@ button:disabled {
 
 .pdf-export-sheet.two-up {
   grid-template-columns: repeat(2, 1fr);
+  align-items: center;
 }
 
 .pdf-export-area .bingo-card,
@@ -1463,6 +1466,8 @@ body[data-page="a4"] {
   --page-height: 297mm;
   --screen-page-width: 794px;
   --screen-page-height: 1123px;
+  --page-width-val: 210;
+  --page-height-val: 297;
 }
 
 body[data-cards-per-page="2"] {
@@ -1816,9 +1821,9 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 
   body[data-cards-per-page="2"] .bingo-card {
-    width: calc((var(--page-height) / 2) - 0.08in);
-    height: calc(var(--page-width) - 0.12in);
-    margin: 0.06in 0.04in;
+    width: calc(var(--page-height) / 2 - 0.08in);
+    height: calc(var(--page-height) / 2 / var(--page-width-val) * var(--page-height-val) - 0.08in);
+    margin: auto 0.04in;
     page-break-after: auto;
   }
 
@@ -1904,7 +1909,8 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 
   body[data-cards-per-page="2"] .card-frame {
-    display: block;
+    display: flex !important;
+    align-items: center;
     width: calc(var(--page-height) / 2);
     height: var(--page-width) !important;
     font-size: 1rem;
@@ -1912,20 +1918,23 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 
   body[data-cards-per-page="2"] .card-frame .bingo-card {
-    width: calc(var(--page-height) / 2);
-    height: var(--page-width);
-    margin: 0;
+    width: calc(var(--page-height) / 2 - 0.08in);
+    height: calc(var(--page-height) / 2 / var(--page-width-val) * var(--page-height-val) - 0.08in);
+    margin: 0 0.04in;
   }
 
-  body[data-cards-per-page="2"] .card-frame:nth-child(2n) .bingo-card {
+  body[data-cards-per-page="2"] .card-frame:nth-child(2n) {
+    break-after: page;
     page-break-after: always;
   }
 
-  body[data-cards-per-page="2"] .card-frame:last-child .bingo-card {
+  body[data-cards-per-page="2"] .card-frame:last-child {
+    break-after: auto;
     page-break-after: auto;
   }
 
-  body[data-has-extras="true"][data-cards-per-page="2"] .card-frame:last-child .bingo-card {
+  body[data-has-extras="true"][data-cards-per-page="2"] .card-frame:last-child {
+    break-after: page;
     page-break-after: always;
   }
 }

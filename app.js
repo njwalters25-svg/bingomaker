@@ -501,13 +501,15 @@ function fitAllSquareText() {
 function getCurrentPageSize() {
   const [pageWidth, pageHeight] = pageDimensions[pageSize.value];
   const isTwoUp = cardsPerPage.value === "2";
+  const cardWidth = isTwoUp ? pageHeight / 2 : pageWidth;
+  const cardHeight = isTwoUp ? (pageHeight / 2) * (pageHeight / pageWidth) : pageHeight;
   return {
     pageWidth,
     pageHeight,
     sheetWidth: isTwoUp ? pageHeight : pageWidth,
     sheetHeight: isTwoUp ? pageWidth : pageHeight,
-    cardWidth: isTwoUp ? pageHeight / 2 : pageWidth,
-    cardHeight: isTwoUp ? pageWidth : pageHeight,
+    cardWidth,
+    cardHeight,
     orientation: isTwoUp ? "landscape" : "portrait",
   };
 }
@@ -1346,7 +1348,7 @@ function updatePreviewScale() {
   const [pageWidth, pageHeight] = pageDimensions[pageSize.value];
   const isTwoUp = cardsPerPage.value === "2";
   const cardWidth = isTwoUp ? pageHeight / 2 : pageWidth;
-  const cardHeight = isTwoUp ? pageWidth : pageHeight;
+  const cardHeight = isTwoUp ? (pageHeight / 2) * (pageHeight / pageWidth) : pageHeight;
   const extraWidth = isTwoUp ? pageHeight : pageWidth;
   const extraHeight = isTwoUp ? pageWidth : pageHeight;
   [document.documentElement, document.body].forEach((target) => {
