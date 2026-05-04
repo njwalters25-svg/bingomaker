@@ -1822,9 +1822,13 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   body[data-cards-per-page="2"] .bingo-card {
     width: calc(var(--page-height) / 2 - 0.08in);
-    height: calc(var(--page-height) / 2 / var(--page-width-val) * var(--page-height-val) - 0.08in);
+    height: calc(var(--two-up-card-height) - 0.08in);
     margin: auto 0.04in;
     page-break-after: auto;
+  }
+
+  body[data-cards-per-page="2"] .bingo-grid {
+    aspect-ratio: auto;
   }
 
   body[data-has-extras="true"] .card-frame:last-child .bingo-card {
@@ -1919,7 +1923,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   body[data-cards-per-page="2"] .card-frame .bingo-card {
     width: calc(var(--page-height) / 2 - 0.08in);
-    height: calc(var(--page-height) / 2 / var(--page-width-val) * var(--page-height-val) - 0.08in);
+    height: calc(var(--two-up-card-height) - 0.08in);
     margin: 0 0.04in;
   }
 

@@ -1354,6 +1354,7 @@ function updatePreviewScale() {
   [document.documentElement, document.body].forEach((target) => {
     target.style.setProperty("--screen-page-width", `${cardWidth}px`);
     target.style.setProperty("--screen-page-height", `${cardHeight}px`);
+    target.style.setProperty("--two-up-card-height", `${Math.round(cardHeight)}px`);
   });
 
   requestAnimationFrame(() => {
