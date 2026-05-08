@@ -895,6 +895,19 @@ function applyExportMode(exportType) {
   }
 }
 
+async function waitForPrintableImages(container = document) {
+  const images = [...container.querySelectorAll("img")];
+  await Promise.all(images.map((image) => {
+    if (image.complete && image.naturalWidth > 0) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", resolve, { once: true });
+    });
+  }));
+}
+
 async function downloadPdf(exportType = "current") {
   const previousCardsPerPage = cardsPerPage.value;
 
@@ -902,6 +915,7 @@ async function downloadPdf(exportType = "current") {
   updateDesignSettings();
   generateCards();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  await waitForPrintableImages(document.body);
 
   if (currentCards.length === 0) {
     setStatus("Add at least 24 unique list items before downloading a PDF.", true);
@@ -978,6 +992,7 @@ async function printExport(exportType) {
   updateDesignSettings();
   generateCards();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  await waitForPrintableImages(document.body);
   isRestoringSettings = false;
 
   if ((exportType === "cards-full" || exportType === "cards-two-up") && currentCards.length === 0) {

@@ -8,3 +8,5 @@ deployment:
     - /bin/cp robots.txt $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/public/free-square
     - /bin/cp -R public/free-square/* $DEPLOYPATH/public/free-square/
+    - /bin/mkdir -p $DEPLOYPATH/public/thank-you
+    - /bin/cp -R public/thank-you/* $DEPLOYPATH/public/thank-you/
