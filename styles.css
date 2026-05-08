@@ -1993,7 +1993,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
     aspect-ratio: auto;
   }
 
-  body[data-has-extras="true"] .card-frame:last-child .bingo-card {
+  body[data-has-extras="true"]:not([data-print-export="cards"]) .card-frame:last-child .bingo-card {
     page-break-after: always;
   }
 
@@ -2099,7 +2099,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
     page-break-after: auto;
   }
 
-  body[data-has-extras="true"][data-cards-per-page="2"] .card-frame:last-child {
+  body[data-has-extras="true"]:not([data-print-export="cards"])[data-cards-per-page="2"] .card-frame:last-child {
     break-after: page;
     page-break-after: always;
   }
