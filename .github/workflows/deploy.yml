@@ -8,27 +8,45 @@ on:
 
 jobs:
   deploy:
-    name: Upload site files
+    name: Pull and deploy cPanel repo
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Prepare deploy folder
+      - name: Update cPanel Git repository
+        env:
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+          CPANEL_DOMAIN: ${{ secrets.CPANEL_DOMAIN }}
+          CPANEL_PATH: ${{ secrets.CPANEL_PATH }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
         run: |
-          mkdir -p deploy/public
-          cp index.html styles.css app.js robots.txt .htaccess deploy/
-          cp -R public/free-square deploy/public/free-square
-          cp -R public/thank-you deploy/public/thank-you
+          set -euo pipefail
 
-      - name: Upload to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: ./deploy/
-          server-dir: ${{ secrets.CPANEL_FTP_SERVER_DIR }}
-          log-level: minimal
+          response="$(
+            curl --fail --silent --show-error --get \
+              --header "Authorization: cpanel ${CPANEL_USERNAME}:${CPANEL_API_TOKEN}" \
+              --data-urlencode "repository_root=${CPANEL_PATH}" \
+              --data-urlencode "branch=main" \
+              "https://${CPANEL_DOMAIN}:2083/execute/VersionControl/update"
+          )"
+
+          echo "${response}" | jq .
+          test "$(echo "${response}" | jq -r '.result.status')" = "1"
+
+      - name: Deploy cPanel Git repository
+        env:
+          CPANEL_API_TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+          CPANEL_DOMAIN: ${{ secrets.CPANEL_DOMAIN }}
+          CPANEL_PATH: ${{ secrets.CPANEL_PATH }}
+          CPANEL_USERNAME: ${{ secrets.CPANEL_USERNAME }}
+        run: |
+          set -euo pipefail
+
+          response="$(
+            curl --fail --silent --show-error --get \
+              --header "Authorization: cpanel ${CPANEL_USERNAME}:${CPANEL_API_TOKEN}" \
+              --data-urlencode "repository_root=${CPANEL_PATH}" \
+              "https://${CPANEL_DOMAIN}:2083/execute/VersionControlDeployment/create"
+          )"
+
+          echo "${response}" | jq .
+          test "$(echo "${response}" | jq -r '.result.status')" = "1"
