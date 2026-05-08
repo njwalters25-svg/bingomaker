@@ -30,7 +30,7 @@ jobs:
           )"
 
           echo "${response}" | jq .
-          test "$(echo "${response}" | jq -r '.result.status')" = "1"
+          test "$(echo "${response}" | jq -r '.result.status // .status')" = "1"
 
       - name: Deploy cPanel Git repository
         env:
@@ -49,4 +49,4 @@ jobs:
           )"
 
           echo "${response}" | jq .
-          test "$(echo "${response}" | jq -r '.result.status')" = "1"
+          test "$(echo "${response}" | jq -r '.result.status // .status')" = "1"
