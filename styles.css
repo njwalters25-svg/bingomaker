@@ -1140,15 +1140,59 @@ button:disabled {
 
 .thank-you-page {
   display: grid;
-  padding: 0;
+  padding: 54px 62px;
   background: #fff;
 }
 
-.thank-you-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.thank-you-content {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.thank-you-page header {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 18px;
+  border-bottom: 5px solid var(--accent);
+  text-align: center;
+}
+
+.thank-you-page h4 {
+  margin-bottom: 8px;
+}
+
+.thank-you-page p,
+.thank-you-page li {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.36;
+}
+
+.thank-you-page ul {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-left: 24px;
+}
+
+.thank-you-page section {
+  padding: 18px;
+  border: 2px solid var(--accent-2);
+  border-radius: 8px;
+}
+
+.thank-you-offer {
+  background: color-mix(in srgb, var(--accent-soft) 28%, #fff);
+}
+
+.thank-you-offer a {
+  display: inline-block;
+  margin-top: 8px;
+  color: #0645ad;
+  font-size: 22px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
 }
 
 .marker-occasion {
@@ -1736,7 +1780,34 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   .thank-you-page {
     height: 100%;
-    padding: 0;
+    padding: 46px 58px;
+  }
+
+  .thank-you-content {
+    gap: 15px;
+  }
+
+  .thank-you-page header {
+    padding-bottom: 14px;
+    border-bottom-width: 4px;
+  }
+
+  .thank-you-page h3 {
+    font-size: 52px;
+  }
+
+  .thank-you-page section {
+    padding: 15px;
+  }
+
+  .thank-you-page p,
+  .thank-you-page li {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .thank-you-offer a {
+    font-size: 20px;
   }
 
   .extra-frame:last-child,
