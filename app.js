@@ -522,15 +522,32 @@ function getProductNameForFilename() {
     .replace(/(^-|-$)/g, "") || "bingo";
 }
 
+function getProductNameForTitle() {
+  return getProductName()
+    .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim() || "Bingo";
+}
+
 function getPdfFilename(exportType = "current") {
   const productName = getProductNameForFilename();
   const suffixes = {
     "cards-full": "bingo-cards",
     "cards-two-up": "bingo-cards-2-to-a-page",
-    extras: "instructions-playlist",
+    extras: "instructions",
     current: cardsPerPage.value === "2" ? "bingo-cards-2-to-a-page" : "bingo-cards",
   };
   return `${productName}-${suffixes[exportType] || suffixes.current}.pdf`;
+}
+
+function getPrintDocumentTitle(exportType) {
+  const productName = getProductNameForTitle();
+  const suffixes = {
+    "cards-full": "Bingo Cards",
+    "cards-two-up": "Bingo Cards 2 to a page",
+    extras: "Instructions",
+  };
+  return `${productName} ${suffixes[exportType] || "Bingo Cards"}`;
 }
 
 function cloneForPdf(page, width, height) {
@@ -985,6 +1002,7 @@ async function downloadPdf(exportType = "current") {
 
 async function printExport(exportType) {
   const previousCardsPerPage = cardsPerPage.value;
+  const previousTitle = document.title;
 
   isRestoringSettings = true;
   applyExportMode(exportType);
@@ -998,6 +1016,7 @@ async function printExport(exportType) {
   if ((exportType === "cards-full" || exportType === "cards-two-up") && currentCards.length === 0) {
     setStatus("Add at least 24 unique list items before printing cards.", true);
     delete document.body.dataset.printExport;
+    document.title = previousTitle;
     restoreExportSettings(previousCardsPerPage);
     return;
   }
@@ -1005,6 +1024,7 @@ async function printExport(exportType) {
   const restoreAfterPrint = () => {
     window.removeEventListener("afterprint", restoreAfterPrint);
     delete document.body.dataset.printExport;
+    document.title = previousTitle;
     isRestoringSettings = true;
     restoreExportSettings(previousCardsPerPage);
     isRestoringSettings = false;
@@ -1012,6 +1032,7 @@ async function printExport(exportType) {
 
   window.addEventListener("afterprint", restoreAfterPrint, { once: true });
   requestAnimationFrame(() => {
+    document.title = getPrintDocumentTitle(exportType);
     window.print();
     setTimeout(() => {
       if (document.body.dataset.printExport) {
