@@ -1153,51 +1153,13 @@ button:disabled {
 }
 
 .thank-you-brand {
-  display: grid;
-  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
-  gap: 24px;
-  align-items: center;
-  min-height: 148px;
-  padding: 22px 28px;
-  background:
-    radial-gradient(circle at 12% 22%, rgba(255, 255, 255, 0.68), transparent 28%),
-    linear-gradient(135deg, #e7bd58 0%, #f5df8e 46%, #d99a33 100%);
+  display: block;
 }
 
-.thank-you-logo {
-  display: grid;
-  justify-items: start;
-  color: #0d0d0d;
-  line-height: 0.9;
-}
-
-.thank-you-logo span {
-  font-size: 34px;
-  font-weight: 500;
-}
-
-.thank-you-logo strong {
-  margin-top: 6px;
-  border-top: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  font-size: 26px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  line-height: 1.15;
-  text-transform: uppercase;
-}
-
-.thank-you-tagline {
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-  color: #171717;
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-  text-align: center;
-  text-transform: uppercase;
+.thank-you-brand img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .thank-you-intro {
@@ -1860,23 +1822,6 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   .thank-you-content {
     gap: 18px;
-  }
-
-  .thank-you-brand {
-    min-height: 138px;
-    padding: 20px 26px;
-  }
-
-  .thank-you-logo span {
-    font-size: 32px;
-  }
-
-  .thank-you-logo strong {
-    font-size: 25px;
-  }
-
-  .thank-you-tagline {
-    font-size: 18px;
   }
 
   .thank-you-intro {
