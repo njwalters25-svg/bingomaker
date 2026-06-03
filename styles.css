@@ -1920,7 +1920,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   .square {
     background: #fff !important;
-    box-shadow: 3px 3px 0 rgba(36, 36, 36, 0.18) !important;
+    box-shadow: 2px 2px 1px rgba(36, 36, 36, 0.11) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -1941,7 +1941,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 
   body[data-cards-per-page="2"] .square {
-    box-shadow: 2px 2px 0 rgba(36, 36, 36, 0.16) !important;
+    box-shadow: 1.5px 1.5px 1px rgba(36, 36, 36, 0.1) !important;
   }
 
   body[data-has-extras="true"]:not([data-print-export="cards"]) .card-frame:last-child .bingo-card {
