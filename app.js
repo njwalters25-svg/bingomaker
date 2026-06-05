@@ -135,6 +135,7 @@ function getSettingsSnapshot() {
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
+    freeImageData,
     headerImageData,
     markerImageData,
     spotifyFullUrl: inputs.spotifyFullUrl.value,
@@ -162,13 +163,14 @@ function applySettingsSnapshot(savedSettings) {
   inputs.count.value = savedSettings.count || "100";
   inputs.items.value = savedSettings.items ?? "";
   inputs.freeText.value = savedSettings.freeText || "FREE";
+  freeImageData = savedSettings.freeImageData || "";
   headerImageData = savedSettings.headerImageData || "";
   markerImageData = savedSettings.markerImageData || "";
   inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
   inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
   spotifyFullQrData = savedSettings.spotifyFullQrData || "";
   spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
-  selectedFreePreset = savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || "text");
+  selectedFreePreset = savedSettings.freeImageData ? "custom" : (savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || "text"));
   inputs.footerText.value = savedSettings.footerText ?? "";
   pageSize.value = savedSettings.pageSize || "letter";
   cardsPerPage.value = savedSettings.cardsPerPage || "2";
@@ -176,6 +178,9 @@ function applySettingsSnapshot(savedSettings) {
   highlightColor.value = savedSettings.highlightColor || "#137b80";
   headerImageInput.value = "";
   markerImageInput.value = "";
+  if (freeImageInput) {
+    freeImageInput.value = "";
+  }
   spotifyFullQrInput.value = "";
   spotifyPreviewQrInput.value = "";
   updateFreePresetSelection();
@@ -489,6 +494,10 @@ function resetTextFitClasses(square) {
 }
 
 function getFreeImageSrc() {
+  if (selectedFreePreset === "custom" && freeImageData) {
+    return freeImageData;
+  }
+
   return freePresetImages[selectedFreePreset] || "";
 }
 
