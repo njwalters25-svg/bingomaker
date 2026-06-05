@@ -230,6 +230,39 @@ textarea:focus {
   grid-column: 1 / -1;
 }
 
+.saved-games {
+  background: color-mix(in srgb, var(--tool-accent-soft) 45%, #fff);
+}
+
+.saved-games-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.saved-games-grid label {
+  grid-column: 1 / -1;
+}
+
+.saved-games-grid button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--tool-line);
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.saved-games-grid #saveGameButton {
+  background: var(--tool-accent);
+  color: #fff;
+}
+
+.saved-games-grid #deleteSavedGameButton {
+  color: #a72424;
+}
+
 .free-square-controls,
 .free-preset-grid,
 .playlist-grid,

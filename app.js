@@ -21,6 +21,11 @@ const printFullSizeButton = document.querySelector("#printFullSizeButton");
 const printTwoUpButton = document.querySelector("#printTwoUpButton");
 const printExtrasButton = document.querySelector("#printExtrasButton");
 const resetButton = document.querySelector("#resetButton");
+const savedGameSelect = document.querySelector("#savedGameSelect");
+const saveGameButton = document.querySelector("#saveGameButton");
+const loadSavedGameButton = document.querySelector("#loadSavedGameButton");
+const newCloudGameButton = document.querySelector("#newCloudGameButton");
+const deleteSavedGameButton = document.querySelector("#deleteSavedGameButton");
 const pageSize = document.querySelector("#pageSize");
 const cardsPerPage = document.querySelector("#cardsPerPage");
 const printPageStyle = document.querySelector("#printPageStyle");
@@ -35,8 +40,13 @@ let spotifyFullQrData = "";
 let spotifyPreviewQrData = "";
 let isRestoringSettings = false;
 let currentCards = [];
+let savedGames = [];
+let selectedCloudGameId = "";
 
 const storageKey = "allOccasionsBingoMakerSettings";
+const supabaseUrl = "https://idlihjucxernlbwkndca.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkbGloanVjeGVybmxid2tuZGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTc0NDAsImV4cCI6MjA5NjIzMzQ0MH0.dlbkCbpin2GhnJQgZurgUa0KZqeZx7P3pDukd1ZMFYk";
+const supabaseClient = window.supabase?.createClient(supabaseUrl, supabaseAnonKey) || null;
 const pdfExportScale = 1.35;
 const pdfJpegQuality = 0.84;
 const etsyMaxFileSizeMb = 20;
@@ -125,6 +135,7 @@ function getSettingsSnapshot() {
     count: inputs.count.value,
     items: inputs.items.value,
     freeText: inputs.freeText.value,
+    headerImageData,
     markerImageData,
     spotifyFullUrl: inputs.spotifyFullUrl.value,
     spotifyPreviewUrl: inputs.spotifyPreviewUrl.value,
@@ -137,6 +148,43 @@ function getSettingsSnapshot() {
     primaryColor: primaryColor.value,
     highlightColor: highlightColor.value,
   };
+}
+
+function applySettingsSnapshot(savedSettings) {
+  if (!savedSettings) {
+    return;
+  }
+
+  isRestoringSettings = true;
+  if (inputs.productName) {
+    inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? "";
+  }
+  inputs.count.value = savedSettings.count || "100";
+  inputs.items.value = savedSettings.items ?? "";
+  inputs.freeText.value = savedSettings.freeText || "FREE";
+  headerImageData = savedSettings.headerImageData || "";
+  markerImageData = savedSettings.markerImageData || "";
+  inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
+  inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
+  spotifyFullQrData = savedSettings.spotifyFullQrData || "";
+  spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
+  selectedFreePreset = savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || "text");
+  inputs.footerText.value = savedSettings.footerText ?? "";
+  pageSize.value = savedSettings.pageSize || "letter";
+  cardsPerPage.value = savedSettings.cardsPerPage || "2";
+  primaryColor.value = savedSettings.primaryColor || "#e33c2f";
+  highlightColor.value = savedSettings.highlightColor || "#137b80";
+  headerImageInput.value = "";
+  markerImageInput.value = "";
+  spotifyFullQrInput.value = "";
+  spotifyPreviewQrInput.value = "";
+  updateFreePresetSelection();
+  isRestoringSettings = false;
+
+  applyCurrentColors();
+  updateDesignSettings();
+  updateListHelp();
+  generateCards();
 }
 
 function saveSettings() {
@@ -158,24 +206,7 @@ function restoreSettings() {
       return;
     }
 
-    isRestoringSettings = true;
-    if (inputs.productName) {
-      inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? inputs.productName.value;
-    }
-    inputs.count.value = savedSettings.count || inputs.count.value;
-    inputs.items.value = savedSettings.items ?? inputs.items.value;
-    inputs.freeText.value = savedSettings.freeText || inputs.freeText.value;
-    markerImageData = savedSettings.markerImageData || "";
-    inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
-    inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
-    spotifyFullQrData = savedSettings.spotifyFullQrData || "";
-    spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
-    selectedFreePreset = savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || selectedFreePreset);
-    inputs.footerText.value = savedSettings.footerText ?? inputs.footerText.value;
-    pageSize.value = savedSettings.pageSize || pageSize.value;
-    cardsPerPage.value = savedSettings.cardsPerPage || cardsPerPage.value;
-    primaryColor.value = savedSettings.primaryColor || primaryColor.value;
-    highlightColor.value = savedSettings.highlightColor || highlightColor.value;
+    applySettingsSnapshot(savedSettings);
   } catch {
     localStorage.removeItem(storageKey);
   } finally {
@@ -185,6 +216,10 @@ function restoreSettings() {
 
 function resetSettings() {
   localStorage.removeItem(storageKey);
+  selectedCloudGameId = "";
+  if (savedGameSelect) {
+    savedGameSelect.value = "";
+  }
   isRestoringSettings = true;
 
   if (inputs.productName) {
@@ -221,6 +256,146 @@ function resetSettings() {
   updateListHelp();
   generateCards();
   setStatus("Saved settings cleared. Paste a list to start again.");
+}
+
+function setCloudButtonsBusy(isBusy) {
+  [saveGameButton, loadSavedGameButton, newCloudGameButton, deleteSavedGameButton].forEach((button) => {
+    if (button) {
+      button.disabled = isBusy;
+    }
+  });
+}
+
+function renderSavedGameOptions() {
+  if (!savedGameSelect) {
+    return;
+  }
+
+  savedGameSelect.replaceChildren();
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = savedGames.length ? "Choose a saved game" : "No saved games yet";
+  savedGameSelect.append(placeholder);
+
+  savedGames.forEach((game) => {
+    const option = document.createElement("option");
+    option.value = game.id;
+    option.textContent = game.name || "Untitled bingo";
+    savedGameSelect.append(option);
+  });
+
+  savedGameSelect.value = selectedCloudGameId;
+}
+
+async function loadSavedGames() {
+  if (!supabaseClient) {
+    setStatus("Supabase could not load. Check the internet connection and refresh.", true);
+    return;
+  }
+
+  setCloudButtonsBusy(true);
+  const { data, error } = await supabaseClient
+    .from("bingo_games")
+    .select("id, name, updated_at")
+    .order("updated_at", { ascending: false });
+  setCloudButtonsBusy(false);
+
+  if (error) {
+    console.error(error);
+    setStatus(`Saved games could not load: ${error.message}`, true);
+    return;
+  }
+
+  savedGames = data || [];
+  renderSavedGameOptions();
+}
+
+async function saveCloudGame({ asNew = false } = {}) {
+  if (!supabaseClient) {
+    setStatus("Supabase could not load. Check the internet connection and refresh.", true);
+    return;
+  }
+
+  const name = getProductName() || "Untitled Bingo";
+  const payload = {
+    name,
+    data: getSettingsSnapshot(),
+    updated_at: new Date().toISOString(),
+  };
+
+  setCloudButtonsBusy(true);
+  const query = asNew || !selectedCloudGameId
+    ? supabaseClient.from("bingo_games").insert(payload).select("id").single()
+    : supabaseClient.from("bingo_games").update(payload).eq("id", selectedCloudGameId).select("id").single();
+  const { data, error } = await query;
+  setCloudButtonsBusy(false);
+
+  if (error) {
+    console.error(error);
+    setStatus(`Game could not be saved: ${error.message}`, true);
+    return;
+  }
+
+  selectedCloudGameId = data.id;
+  await loadSavedGames();
+  setStatus(`Saved "${name}" to Supabase.`);
+}
+
+async function loadSelectedCloudGame() {
+  if (!supabaseClient || !savedGameSelect?.value) {
+    setStatus("Choose a saved game to load.", true);
+    return;
+  }
+
+  setCloudButtonsBusy(true);
+  const { data, error } = await supabaseClient
+    .from("bingo_games")
+    .select("id, name, data")
+    .eq("id", savedGameSelect.value)
+    .single();
+  setCloudButtonsBusy(false);
+
+  if (error) {
+    console.error(error);
+    setStatus(`Game could not be loaded: ${error.message}`, true);
+    return;
+  }
+
+  selectedCloudGameId = data.id;
+  applySettingsSnapshot(data.data);
+  saveSettings();
+  renderSavedGameOptions();
+  setStatus(`Loaded "${data.name || "Untitled bingo"}".`);
+}
+
+async function deleteSelectedCloudGame() {
+  if (!supabaseClient || !savedGameSelect?.value) {
+    setStatus("Choose a saved game to delete.", true);
+    return;
+  }
+
+  const game = savedGames.find((savedGame) => savedGame.id === savedGameSelect.value);
+  const confirmed = window.confirm(`Delete "${game?.name || "this saved game"}" from Supabase?`);
+  if (!confirmed) {
+    return;
+  }
+
+  setCloudButtonsBusy(true);
+  const { error } = await supabaseClient
+    .from("bingo_games")
+    .delete()
+    .eq("id", savedGameSelect.value);
+  setCloudButtonsBusy(false);
+
+  if (error) {
+    console.error(error);
+    setStatus(`Game could not be deleted: ${error.message}`, true);
+    return;
+  }
+
+  selectedCloudGameId = "";
+  await loadSavedGames();
+  setStatus("Saved game deleted.");
 }
 
 function updateListHelp() {
@@ -1475,6 +1650,7 @@ headerImageInput.addEventListener("change", () => {
   reader.addEventListener("load", () => {
     headerImageData = reader.result;
     generateCards();
+    saveSettings();
   });
   reader.readAsDataURL(file);
 });
@@ -1566,6 +1742,13 @@ printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
 printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
 printExtrasButton.addEventListener("click", () => printExport("extras"));
 resetButton.addEventListener("click", resetSettings);
+savedGameSelect?.addEventListener("change", () => {
+  selectedCloudGameId = savedGameSelect.value;
+});
+saveGameButton?.addEventListener("click", () => saveCloudGame());
+newCloudGameButton?.addEventListener("click", () => saveCloudGame({ asNew: true }));
+loadSavedGameButton?.addEventListener("click", loadSelectedCloudGame);
+deleteSavedGameButton?.addEventListener("click", deleteSelectedCloudGame);
 
 window.addEventListener("resize", updatePreviewScale);
 
@@ -1575,3 +1758,4 @@ applyCurrentColors();
 updateDesignSettings();
 updateListHelp();
 loadFreePresetManifest();
+loadSavedGames();
