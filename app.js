@@ -546,7 +546,7 @@ async function loadFreePresetManifest() {
   } catch (error) {
     console.warn(error);
   } finally {
-    if (selectedFreePreset !== "text" && !freePresetImages[selectedFreePreset]) {
+    if (selectedFreePreset !== "text" && selectedFreePreset !== "custom" && !freePresetImages[selectedFreePreset]) {
       selectedFreePreset = "text";
     }
     updateFreePresetSelection();
@@ -1642,9 +1642,36 @@ freePresetGrid.addEventListener("change", (event) => {
   }
 
   selectedFreePreset = event.target.value;
-  freeImageData = "";
+  if (selectedFreePreset !== "custom") {
+    freeImageData = "";
+    if (freeImageInput) {
+      freeImageInput.value = "";
+    }
+  }
   generateCards();
   saveSettings();
+});
+
+freeImageInput?.addEventListener("change", () => {
+  const file = freeImageInput.files[0];
+  if (!file) {
+    freeImageData = "";
+    selectedFreePreset = "text";
+    updateFreePresetSelection();
+    generateCards();
+    saveSettings();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    freeImageData = reader.result;
+    selectedFreePreset = "custom";
+    updateFreePresetSelection();
+    generateCards();
+    saveSettings();
+  });
+  reader.readAsDataURL(file);
 });
 
 headerImageInput.addEventListener("change", () => {
