@@ -33,6 +33,7 @@ const primaryColor = document.querySelector("#primaryColor");
 const highlightColor = document.querySelector("#highlightColor");
 
 let freeImageData = "";
+let freeImageAspectRatio = 1;
 let selectedFreePreset = "text";
 let headerImageData = "";
 let markerImageData = "";
@@ -136,6 +137,7 @@ function getSettingsSnapshot() {
     items: inputs.items.value,
     freeText: inputs.freeText.value,
     freeImageData,
+    freeImageAspectRatio,
     headerImageData,
     markerImageData,
     spotifyFullUrl: inputs.spotifyFullUrl.value,
@@ -164,6 +166,7 @@ function applySettingsSnapshot(savedSettings) {
   inputs.items.value = savedSettings.items ?? "";
   inputs.freeText.value = savedSettings.freeText || "FREE";
   freeImageData = savedSettings.freeImageData || "";
+  freeImageAspectRatio = Number(savedSettings.freeImageAspectRatio) || 1;
   headerImageData = savedSettings.headerImageData || "";
   markerImageData = savedSettings.markerImageData || "";
   inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
@@ -242,6 +245,7 @@ function resetSettings() {
   primaryColor.value = "#e33c2f";
   highlightColor.value = "#137b80";
   freeImageData = "";
+  freeImageAspectRatio = 1;
   headerImageData = "";
   markerImageData = "";
   spotifyFullQrData = "";
@@ -915,7 +919,13 @@ function drawBingoCardPdf(pdf, cardItems, x, y, width, height) {
     if (isFree && freeImageData) {
       try {
         const imageFormat = freeImageData.includes("image/jpeg") || freeImageData.includes("image/jpg") ? "JPEG" : "PNG";
-        pdf.addImage(freeImageData, imageFormat, cellX + cellSize * 0.14, cellY + cellSize * 0.14, cellSize * 0.72, cellSize * 0.72);
+        const imageBox = cellSize * 0.72;
+        const imageRatio = freeImageAspectRatio > 0 ? freeImageAspectRatio : 1;
+        const imageWidth = imageRatio >= 1 ? imageBox : imageBox * imageRatio;
+        const imageHeight = imageRatio >= 1 ? imageBox / imageRatio : imageBox;
+        const imageX = cellX + (cellSize - imageWidth) / 2;
+        const imageY = cellY + (cellSize - imageHeight) / 2;
+        pdf.addImage(freeImageData, imageFormat, imageX, imageY, imageWidth, imageHeight);
       } catch {
         drawFittedText(pdf, inputs.freeText.value.trim() || "FREE", cellX + 6, cellY + 6, cellSize - 12, cellSize - 12, {
           maxSize: 18 * scale,
@@ -1656,6 +1666,7 @@ freeImageInput?.addEventListener("change", () => {
   const file = freeImageInput.files[0];
   if (!file) {
     freeImageData = "";
+    freeImageAspectRatio = 1;
     selectedFreePreset = "text";
     updateFreePresetSelection();
     generateCards();
@@ -1667,9 +1678,20 @@ freeImageInput?.addEventListener("change", () => {
   reader.addEventListener("load", () => {
     freeImageData = reader.result;
     selectedFreePreset = "custom";
-    updateFreePresetSelection();
-    generateCards();
-    saveSettings();
+    const image = new Image();
+    image.addEventListener("load", () => {
+      freeImageAspectRatio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1;
+      updateFreePresetSelection();
+      generateCards();
+      saveSettings();
+    });
+    image.addEventListener("error", () => {
+      freeImageAspectRatio = 1;
+      updateFreePresetSelection();
+      generateCards();
+      saveSettings();
+    });
+    image.src = freeImageData;
   });
   reader.readAsDataURL(file);
 });
