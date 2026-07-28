@@ -1966,7 +1966,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   body[data-cards-per-page="2"] .bingo-card {
     width: calc(var(--page-height) / 2 - 0.08in);
-    height: calc(var(--two-up-card-height) - 0.08in);
+    height: calc(var(--page-width) - 0.08in);
     margin: auto 0.04in;
     page-break-after: auto;
   }
@@ -2071,7 +2071,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
   body[data-cards-per-page="2"] .card-frame .bingo-card {
     width: calc(var(--page-height) / 2 - 0.08in);
-    height: calc(var(--two-up-card-height) - 0.08in);
+    height: calc(var(--page-width) - 0.08in);
     margin: 0 0.04in;
   }
 
