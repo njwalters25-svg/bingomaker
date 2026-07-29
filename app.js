@@ -306,6 +306,7 @@ async function loadSavedGames() {
   const { data, error } = await supabaseClient
     .from("bingo_games")
     .select("id, name, updated_at")
+    .order("name", { ascending: true, nullsFirst: false })
     .order("updated_at", { ascending: false });
   setCloudButtonsBusy(false);
 
