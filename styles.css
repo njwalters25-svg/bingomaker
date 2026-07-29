@@ -1651,6 +1651,7 @@ body[data-cards-per-page="2"] .bingo-grid {
 }
 
 body[data-cards-per-page="2"] .square {
+  aspect-ratio: 1 / 1;
   padding: 7px;
   border-radius: 14px;
   box-shadow: 3px 3px 4px rgba(36, 36, 36, 0.2);
@@ -1676,6 +1677,7 @@ body[data-cards-per-page="2"] .bingo-grid {
   align-self: start;
   justify-self: stretch;
   aspect-ratio: auto;
+  grid-template-rows: repeat(5, auto);
   gap: 8px;
   padding: 5px 26px 8px;
 }
