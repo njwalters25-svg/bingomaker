@@ -54,6 +54,8 @@ const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const supabaseClient = window.supabase?.createClient(supabaseUrl, supabaseAnonKey) || null;
 const pdfExportScale = 1.35;
 const pdfJpegQuality = 0.84;
+const productionPdfExportScale = 0.8;
+const productionPdfJpegQuality = 0.58;
 const etsyMaxFileSizeMb = 20;
 const pngExportScale = 1.5;
 
@@ -1386,7 +1388,12 @@ async function exportPngSamplePack() {
   }
 }
 
-async function createPdfBlobFromCurrentLayout(exportType = "current") {
+async function createPdfBlobFromCurrentLayout(exportType = "current", options = {}) {
+  const {
+    scale = pdfExportScale,
+    jpegQuality = pdfJpegQuality,
+  } = options;
+
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await waitForPrintableImages(document.body);
 
@@ -1417,13 +1424,13 @@ async function createPdfBlobFromCurrentLayout(exportType = "current") {
 
       const canvas = await html2canvas(sheet, {
         backgroundColor: "#ffffff",
-        scale: pdfExportScale,
+        scale,
         useCORS: true,
         allowTaint: true,
         logging: false,
         onclone: addPdfExportOverrides,
       });
-      const image = canvas.toDataURL("image/jpeg", pdfJpegQuality);
+      const image = canvas.toDataURL("image/jpeg", jpegQuality);
       pdf.addImage(image, "JPEG", 0, 0, sizing.sheetWidth, sizing.sheetHeight);
     }
 
@@ -1498,7 +1505,10 @@ async function createProductionPdfForCount(cardCount, exportType, packageCards) 
   renderCurrentOutput();
 
   try {
-    return await createPdfBlobFromCurrentLayout(exportType);
+    return await createPdfBlobFromCurrentLayout(exportType, {
+      scale: productionPdfExportScale,
+      jpegQuality: productionPdfJpegQuality,
+    });
   } finally {
     inputs.count.value = previousCount;
     currentCards = previousCards;
@@ -1559,6 +1569,9 @@ async function exportProductionFolders() {
       setStatus(`Creating ${cardCount} card instructions PDF...`);
       const instructionsPdf = await createProductionPdfForCount(cardCount, "extras", packageCards);
       await writeBlobToDirectory(packageFolder, getProductionPdfFilename(cardCount, "instructions"), instructionsPdf.blob);
+
+      const totalSizeMb = fullPdf.sizeMb + twoUpPdf.sizeMb + instructionsPdf.sizeMb;
+      setStatus(`Saved ${cardCount} card package at about ${totalSizeMb.toFixed(1)} MB.`);
     }
 
     setStatus(`Saved production PDFs to "${getProductionFolderName()}".`);
