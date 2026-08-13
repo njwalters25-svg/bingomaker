@@ -468,7 +468,8 @@ button {
 #printFullSizeButton,
 #printTwoUpButton,
 #printExtrasButton,
-#pngSamplePackButton {
+#pngSamplePackButton,
+#productionFolderButton {
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);

@@ -21,6 +21,7 @@ const printFullSizeButton = document.querySelector("#printFullSizeButton");
 const printTwoUpButton = document.querySelector("#printTwoUpButton");
 const printExtrasButton = document.querySelector("#printExtrasButton");
 const pngSamplePackButton = document.querySelector("#pngSamplePackButton");
+const productionFolderButton = document.querySelector("#productionFolderButton");
 const resetButton = document.querySelector("#resetButton");
 const savedGameSelect = document.querySelector("#savedGameSelect");
 const saveGameButton = document.querySelector("#saveGameButton");
@@ -795,6 +796,14 @@ function getProductNameForTitle() {
     .trim() || "Bingo";
 }
 
+function getProductionFolderName() {
+  return getProductNameForTitle();
+}
+
+function getProductionFileBaseName() {
+  return getProductNameForTitle();
+}
+
 function getPdfFilename(exportType = "current") {
   const productName = getProductNameForFilename();
   const suffixes = {
@@ -814,6 +823,16 @@ function getPrintDocumentTitle(exportType) {
     extras: "Instructions",
   };
   return `${productName} ${suffixes[exportType] || "Bingo Cards"}`;
+}
+
+function getProductionPdfFilename(cardCount, fileType) {
+  const baseName = getProductionFileBaseName();
+  const suffixes = {
+    full: "Bingo Cards",
+    twoUp: "Bingo Cards 2 to a page",
+    instructions: "Instructions",
+  };
+  return `${baseName} ${suffixes[fileType]}.pdf`;
 }
 
 function cloneForPdf(page, width, height) {
@@ -1164,12 +1183,14 @@ function setPdfBusy(isBusy) {
   printTwoUpButton.disabled = isBusy;
   printExtrasButton.disabled = isBusy;
   pngSamplePackButton.disabled = isBusy;
+  productionFolderButton.disabled = isBusy;
   form.querySelector("#generateButton").disabled = isBusy;
   resetButton.disabled = isBusy;
   printFullSizeButton.textContent = isBusy ? "Preparing..." : "Print full size cards";
   printTwoUpButton.textContent = isBusy ? "Preparing..." : "Print 2-up cards";
   printExtrasButton.textContent = isBusy ? "Preparing..." : "Print instructions";
   pngSamplePackButton.textContent = isBusy ? "Preparing..." : "PNG sample pack";
+  productionFolderButton.textContent = isBusy ? "Preparing..." : "Export production folders";
 }
 
 function restoreExportSettings(previousCardsPerPage) {
@@ -1365,33 +1386,9 @@ async function exportPngSamplePack() {
   }
 }
 
-async function downloadPdf(exportType = "current") {
-  const previousCardsPerPage = cardsPerPage.value;
-
-  if (!validateReadyToExport(exportType)) {
-    return;
-  }
-
-  applyExportMode(exportType);
-  updateDesignSettings();
-  renderCurrentOutput();
+async function createPdfBlobFromCurrentLayout(exportType = "current") {
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await waitForPrintableImages(document.body);
-
-  if (currentCards.length === 0) {
-    setStatus("Add at least 24 unique list items before downloading a PDF.", true);
-    restoreExportSettings(previousCardsPerPage);
-    return;
-  }
-
-  if (!window.html2canvas || !window.jspdf?.jsPDF) {
-    setStatus("The PDF maker is still loading. Please try again in a moment.", true);
-    restoreExportSettings(previousCardsPerPage);
-    return;
-  }
-
-  setPdfBusy(true);
-  setStatus("Creating your PDF...");
 
   const { exportArea, sizing } = createPdfExportArea({
     includeCards: exportType !== "extras",
@@ -1430,17 +1427,149 @@ async function downloadPdf(exportType = "current") {
       pdf.addImage(image, "JPEG", 0, 0, sizing.sheetWidth, sizing.sheetHeight);
     }
 
+    const blob = pdf.output("blob");
+    const sizeMb = pdf.output("arraybuffer").byteLength / (1024 * 1024);
+    return {
+      blob,
+      pageCount: sheets.length,
+      sizeMb,
+    };
+  } finally {
+    exportArea.remove();
+  }
+}
+
+async function downloadPdf(exportType = "current") {
+  const previousCardsPerPage = cardsPerPage.value;
+
+  if (!validateReadyToExport(exportType)) {
+    return;
+  }
+
+  applyExportMode(exportType);
+  updateDesignSettings();
+  renderCurrentOutput();
+
+  if (currentCards.length === 0) {
+    setStatus("Add at least 24 unique list items before downloading a PDF.", true);
+    restoreExportSettings(previousCardsPerPage);
+    return;
+  }
+
+  if (!window.html2canvas || !window.jspdf?.jsPDF) {
+    setStatus("The PDF maker is still loading. Please try again in a moment.", true);
+    restoreExportSettings(previousCardsPerPage);
+    return;
+  }
+
+  setPdfBusy(true);
+  setStatus("Creating your PDF...");
+
+  try {
+    const pdfResult = await createPdfBlobFromCurrentLayout(exportType);
     const filename = getPdfFilename(exportType);
-    const pdfSizeMb = pdf.output("arraybuffer").byteLength / (1024 * 1024);
-    pdf.save(filename);
-    setStatus(`Downloaded ${sheets.length} PDF page${sheets.length === 1 ? "" : "s"} at about ${pdfSizeMb.toFixed(1)} MB${pdfSizeMb > etsyMaxFileSizeMb ? ". Etsy limit is 20 MB, so split this set or reduce card count." : "."}`, pdfSizeMb > etsyMaxFileSizeMb);
+    downloadBlob(pdfResult.blob, filename);
+    setStatus(`Downloaded ${pdfResult.pageCount} PDF page${pdfResult.pageCount === 1 ? "" : "s"} at about ${pdfResult.sizeMb.toFixed(1)} MB${pdfResult.sizeMb > etsyMaxFileSizeMb ? ". Etsy limit is 20 MB, so split this set or reduce card count." : "."}`, pdfResult.sizeMb > etsyMaxFileSizeMb);
   } catch (error) {
     console.error(error);
     setStatus("The PDF could not be created. Please use Print or save PDF instead.", true);
   } finally {
-    exportArea.remove();
     setPdfBusy(false);
     restoreExportSettings(previousCardsPerPage);
+  }
+}
+
+async function writeBlobToDirectory(directoryHandle, filename, blob) {
+  const fileHandle = await directoryHandle.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+async function createProductionPdfForCount(cardCount, exportType, packageCards) {
+  const previousCount = inputs.count.value;
+  const previousCards = currentCards;
+  const previousDirty = generatedSettingsDirty;
+  inputs.count.value = String(cardCount);
+  currentCards = packageCards;
+  generatedSettingsDirty = false;
+  applyExportMode(exportType);
+  updateDesignSettings();
+  renderCurrentOutput();
+
+  try {
+    return await createPdfBlobFromCurrentLayout(exportType);
+  } finally {
+    inputs.count.value = previousCount;
+    currentCards = previousCards;
+    generatedSettingsDirty = previousDirty;
+  }
+}
+
+async function exportProductionFolders() {
+  if (!validateReadyToExport("current")) {
+    return;
+  }
+
+  if (!window.showDirectoryPicker) {
+    setStatus("Folder export needs Chrome or Edge. Use a browser that supports choosing a folder.", true);
+    return;
+  }
+
+  if (!window.html2canvas || !window.jspdf?.jsPDF) {
+    setStatus("The PDF maker is still loading. Please try again in a moment.", true);
+    return;
+  }
+
+  const previousCardsPerPage = cardsPerPage.value;
+  let rootHandle;
+
+  try {
+    rootHandle = await window.showDirectoryPicker({
+      id: "bingo-production-export",
+      mode: "readwrite",
+      startIn: "documents",
+    });
+  } catch (error) {
+    if (error?.name !== "AbortError") {
+      console.error(error);
+      setStatus("The folder could not be selected.", true);
+    }
+    return;
+  }
+
+  setPdfBusy(true);
+  setStatus("Creating production folders...");
+
+  try {
+    const gameFolder = await rootHandle.getDirectoryHandle(getProductionFolderName(), { create: true });
+
+    for (const cardCount of [100, 200, 300]) {
+      const packageFolder = await gameFolder.getDirectoryHandle(`${cardCount} Cards`, { create: true });
+      const packageCards = makeUniqueCards(currentItems, cardCount);
+
+      setStatus(`Creating ${cardCount} card full-size PDF...`);
+      const fullPdf = await createProductionPdfForCount(cardCount, "cards-full", packageCards);
+      await writeBlobToDirectory(packageFolder, getProductionPdfFilename(cardCount, "full"), fullPdf.blob);
+
+      setStatus(`Creating ${cardCount} card 2-up PDF...`);
+      const twoUpPdf = await createProductionPdfForCount(cardCount, "cards-two-up", packageCards);
+      await writeBlobToDirectory(packageFolder, getProductionPdfFilename(cardCount, "twoUp"), twoUpPdf.blob);
+
+      setStatus(`Creating ${cardCount} card instructions PDF...`);
+      const instructionsPdf = await createProductionPdfForCount(cardCount, "extras", packageCards);
+      await writeBlobToDirectory(packageFolder, getProductionPdfFilename(cardCount, "instructions"), instructionsPdf.blob);
+    }
+
+    setStatus(`Saved production PDFs to "${getProductionFolderName()}".`);
+  } catch (error) {
+    console.error(error);
+    setStatus("The production folders could not be created. Check folder permissions and try again.", true);
+  } finally {
+    cardsPerPage.value = previousCardsPerPage;
+    updateDesignSettings();
+    renderCurrentOutput();
+    setPdfBusy(false);
   }
 }
 
@@ -2083,6 +2212,7 @@ printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
 printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
 printExtrasButton.addEventListener("click", () => printExport("extras"));
 pngSamplePackButton.addEventListener("click", exportPngSamplePack);
+productionFolderButton.addEventListener("click", exportProductionFolders);
 resetButton.addEventListener("click", resetSettings);
 savedGameSelect?.addEventListener("change", () => {
   selectedCloudGameId = savedGameSelect.value;
