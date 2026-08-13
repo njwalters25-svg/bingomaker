@@ -41,6 +41,8 @@ let spotifyFullQrData = "";
 let spotifyPreviewQrData = "";
 let isRestoringSettings = false;
 let currentCards = [];
+let currentItems = [];
+let generatedSettingsDirty = false;
 let savedGames = [];
 let selectedCloudGameId = "";
 
@@ -135,6 +137,9 @@ function getSettingsSnapshot() {
     productName: inputs.productName?.value || "",
     count: inputs.count.value,
     items: inputs.items.value,
+    currentItems,
+    currentCards,
+    generatedSettingsDirty,
     freeText: inputs.freeText.value,
     freeImageData,
     freeImageAspectRatio,
@@ -164,6 +169,9 @@ function applySettingsSnapshot(savedSettings) {
   }
   inputs.count.value = savedSettings.count || "100";
   inputs.items.value = savedSettings.items ?? "";
+  currentItems = Array.isArray(savedSettings.currentItems) ? savedSettings.currentItems : [];
+  currentCards = Array.isArray(savedSettings.currentCards) ? savedSettings.currentCards : [];
+  generatedSettingsDirty = Boolean(savedSettings.generatedSettingsDirty);
   inputs.freeText.value = savedSettings.freeText || "FREE";
   freeImageData = savedSettings.freeImageData || "";
   freeImageAspectRatio = Number(savedSettings.freeImageAspectRatio) || 1;
@@ -192,7 +200,13 @@ function applySettingsSnapshot(savedSettings) {
   applyCurrentColors();
   updateDesignSettings();
   updateListHelp();
-  generateCards();
+  if (currentCards.length > 0 && currentItems.length > 0) {
+    renderCurrentOutput();
+    renderHelpfulChecks(getHelpfulChecks(currentItems, getRequestedCardCount()));
+    setStatus(`Loaded ${currentCards.length} saved card${currentCards.length === 1 ? "" : "s"}.`);
+  } else {
+    generateCards();
+  }
 }
 
 function saveSettings() {
@@ -244,6 +258,9 @@ function resetSettings() {
   cardsPerPage.value = "2";
   primaryColor.value = "#e33c2f";
   highlightColor.value = "#137b80";
+  currentCards = [];
+  currentItems = [];
+  generatedSettingsDirty = false;
   freeImageData = "";
   freeImageAspectRatio = 1;
   headerImageData = "";
@@ -435,6 +452,10 @@ function getHelpfulChecks(items, requestedCount) {
     checks.push("For better variety across lots of cards, 50-75 items works better than a short list.");
   }
 
+  if (items.length !== 75) {
+    checks.push(`This list has ${items.length} unique song${items.length === 1 ? "" : "s"}. For your Etsy packs, it should be exactly 75. Check for duplicates or missing songs.`);
+  }
+
   if (requestedCount > 30 && items.length < 60) {
     checks.push("You are making quite a few cards from this list. Add more items if you want the cards to feel more different.");
   }
@@ -459,6 +480,56 @@ function renderHelpfulChecks(checks) {
     item.textContent = check;
     qualityWarnings.append(item);
   });
+}
+
+function getProductionChecklistMissingItems() {
+  const missing = [];
+
+  if (!headerImageData) {
+    missing.push("header image");
+  }
+  if (!markerImageData) {
+    missing.push("bingo marker image");
+  }
+  if (!inputs.spotifyFullUrl.value.trim()) {
+    missing.push("full Spotify playlist link");
+  }
+  if (!inputs.spotifyPreviewUrl.value.trim()) {
+    missing.push("embedded preview playlist link");
+  }
+  if (!spotifyFullQrData) {
+    missing.push("full playlist QR code");
+  }
+  if (!spotifyPreviewQrData) {
+    missing.push("preview playlist QR code");
+  }
+
+  return missing;
+}
+
+function validateReadyToExport(exportType) {
+  if (generatedSettingsDirty) {
+    setStatus("Your song list or card count changed. Click Generate cards before printing or saving PDFs.", true);
+    return false;
+  }
+
+  if ((exportType === "cards-full" || exportType === "cards-two-up" || exportType === "current") && currentCards.length === 0) {
+    setStatus("Click Generate cards before printing or saving PDFs.", true);
+    return false;
+  }
+
+  if (currentItems.length !== 75) {
+    setStatus(`This game has ${currentItems.length || parseItems(inputs.items.value).length} unique song${currentItems.length === 1 ? "" : "s"}. You need exactly 75 before exporting. Check for duplicates, then click Generate cards.`, true);
+    return false;
+  }
+
+  const missingItems = getProductionChecklistMissingItems();
+  if (missingItems.length > 0) {
+    setStatus(`Add these before exporting: ${missingItems.join(", ")}.`, true);
+    return false;
+  }
+
+  return true;
 }
 
 function updateDesignSettings() {
@@ -555,7 +626,11 @@ async function loadFreePresetManifest() {
       selectedFreePreset = "text";
     }
     updateFreePresetSelection();
-    generateCards();
+    if (currentCards.length > 0 || currentItems.length > 0) {
+      renderCurrentOutput();
+    } else {
+      generateCards();
+    }
   }
 }
 
@@ -1096,7 +1171,7 @@ function setPdfBusy(isBusy) {
 function restoreExportSettings(previousCardsPerPage) {
   cardsPerPage.value = previousCardsPerPage;
   updateDesignSettings();
-  generateCards();
+  renderCurrentOutput();
 }
 
 function applyExportMode(exportType) {
@@ -1123,9 +1198,13 @@ async function waitForPrintableImages(container = document) {
 async function downloadPdf(exportType = "current") {
   const previousCardsPerPage = cardsPerPage.value;
 
+  if (!validateReadyToExport(exportType)) {
+    return;
+  }
+
   applyExportMode(exportType);
   updateDesignSettings();
-  generateCards();
+  renderCurrentOutput();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await waitForPrintableImages(document.body);
 
@@ -1199,11 +1278,15 @@ async function printExport(exportType) {
   const previousCardsPerPage = cardsPerPage.value;
   const previousTitle = document.title;
 
+  if (!validateReadyToExport(exportType)) {
+    return;
+  }
+
   isRestoringSettings = true;
   applyExportMode(exportType);
   document.body.dataset.printExport = exportType === "extras" ? "extras" : "cards";
   updateDesignSettings();
-  generateCards();
+  renderCurrentOutput();
   await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   await waitForPrintableImages(document.body);
   isRestoringSettings = false;
@@ -1270,6 +1353,28 @@ function renderCards(cards) {
   cardTotal.textContent = `${cards.length} card${cards.length === 1 ? "" : "s"}`;
   fitAllSquareText();
   updatePreviewScale();
+}
+
+function renderCurrentOutput() {
+  if (currentCards.length > 0) {
+    renderCards(currentCards);
+  }
+
+  if (currentItems.length > 0) {
+    renderExtras(currentItems);
+  }
+}
+
+function markCardsNeedRegeneration() {
+  generatedSettingsDirty = true;
+  updateListHelp();
+  const items = parseItems(inputs.items.value);
+  const requestedCount = getRequestedCardCount();
+  renderHelpfulChecks(getHelpfulChecks(items, requestedCount));
+
+  if (currentCards.length > 0) {
+    setStatus("Your list or card count changed. Click Generate cards before printing or saving PDFs.", true);
+  }
 }
 
 function createExtraFrame(page) {
@@ -1613,6 +1718,7 @@ function generateCards() {
 
   if (items.length < 24) {
     currentCards = [];
+    currentItems = [];
     cardsContainer.replaceChildren();
     extrasContainer.replaceChildren();
     renderHelpfulChecks([]);
@@ -1626,14 +1732,17 @@ function generateCards() {
 
   const cards = makeUniqueCards(items, requestedCount);
   currentCards = cards;
+  currentItems = items;
+  generatedSettingsDirty = false;
   renderCards(cards);
   renderExtras(items);
   renderHelpfulChecks(getHelpfulChecks(items, requestedCount));
 
+  const countWarning = items.length === 75 ? "" : ` You have ${items.length} unique songs; Etsy packs should have exactly 75.`;
   const note = cards.length === requestedCount
     ? `Generated ${cards.length} unique card${cards.length === 1 ? "" : "s"} from ${items.length} items.`
     : `Generated ${cards.length} unique cards before combinations ran out. Add more items for more variety.`;
-  setStatus(note);
+  setStatus(`${note}${countWarning}`, items.length !== 75);
   saveSettings();
 }
 
@@ -1643,7 +1752,7 @@ form.addEventListener("submit", (event) => {
 });
 
 inputs.items.addEventListener("input", () => {
-  updateListHelp();
+  markCardsNeedRegeneration();
   saveSettings();
 });
 
@@ -1659,7 +1768,7 @@ freePresetGrid.addEventListener("change", (event) => {
       freeImageInput.value = "";
     }
   }
-  generateCards();
+  renderCurrentOutput();
   saveSettings();
 });
 
@@ -1670,7 +1779,7 @@ freeImageInput?.addEventListener("change", () => {
     freeImageAspectRatio = 1;
     selectedFreePreset = "text";
     updateFreePresetSelection();
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
     return;
   }
@@ -1683,13 +1792,13 @@ freeImageInput?.addEventListener("change", () => {
     image.addEventListener("load", () => {
       freeImageAspectRatio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1;
       updateFreePresetSelection();
-      generateCards();
+      renderCurrentOutput();
       saveSettings();
     });
     image.addEventListener("error", () => {
       freeImageAspectRatio = 1;
       updateFreePresetSelection();
-      generateCards();
+      renderCurrentOutput();
       saveSettings();
     });
     image.src = freeImageData;
@@ -1701,14 +1810,15 @@ headerImageInput.addEventListener("change", () => {
   const file = headerImageInput.files[0];
   if (!file) {
     headerImageData = "";
-    generateCards();
+    renderCurrentOutput();
+    saveSettings();
     return;
   }
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     headerImageData = reader.result;
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
   });
   reader.readAsDataURL(file);
@@ -1718,7 +1828,7 @@ markerImageInput.addEventListener("change", () => {
   const file = markerImageInput.files[0];
   if (!file) {
     markerImageData = "";
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
     return;
   }
@@ -1726,7 +1836,7 @@ markerImageInput.addEventListener("change", () => {
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     markerImageData = reader.result;
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
   });
   reader.readAsDataURL(file);
@@ -1736,7 +1846,7 @@ function handleQrUpload(input, updateData) {
   const file = input.files[0];
   if (!file) {
     updateData("");
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
     return;
   }
@@ -1744,7 +1854,7 @@ function handleQrUpload(input, updateData) {
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     updateData(reader.result);
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
   });
   reader.readAsDataURL(file);
@@ -1772,16 +1882,15 @@ spotifyPreviewQrInput.addEventListener("change", () => {
 [pageSize, cardsPerPage].forEach((control) => {
   control.addEventListener("change", () => {
     updateDesignSettings();
+    renderCurrentOutput();
     saveSettings();
   });
 });
 
-cardsPerPage.addEventListener("change", generateCards);
-
 [inputs.productName, inputs.footerText, inputs.spotifyFullUrl, inputs.spotifyPreviewUrl].filter(Boolean).forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
-    generateCards();
+    renderCurrentOutput();
     saveSettings();
   });
 });
@@ -1794,7 +1903,10 @@ cardsPerPage.addEventListener("change", generateCards);
 });
 
 [inputs.count].forEach((control) => {
-  control.addEventListener("input", saveSettings);
+  control.addEventListener("input", () => {
+    markCardsNeedRegeneration();
+    saveSettings();
+  });
 });
 
 printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
