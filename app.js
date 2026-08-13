@@ -20,6 +20,7 @@ const freePresetGrid = document.querySelector("#freePresetGrid");
 const printFullSizeButton = document.querySelector("#printFullSizeButton");
 const printTwoUpButton = document.querySelector("#printTwoUpButton");
 const printExtrasButton = document.querySelector("#printExtrasButton");
+const pngSamplePackButton = document.querySelector("#pngSamplePackButton");
 const resetButton = document.querySelector("#resetButton");
 const savedGameSelect = document.querySelector("#savedGameSelect");
 const saveGameButton = document.querySelector("#saveGameButton");
@@ -53,6 +54,7 @@ const supabaseClient = window.supabase?.createClient(supabaseUrl, supabaseAnonKe
 const pdfExportScale = 1.35;
 const pdfJpegQuality = 0.84;
 const etsyMaxFileSizeMb = 20;
+const pngExportScale = 1.5;
 
 function getControl(primarySelector, fallbackSelector = null) {
   return document.querySelector(primarySelector) || (fallbackSelector ? document.querySelector(fallbackSelector) : null);
@@ -1161,11 +1163,13 @@ function setPdfBusy(isBusy) {
   printFullSizeButton.disabled = isBusy;
   printTwoUpButton.disabled = isBusy;
   printExtrasButton.disabled = isBusy;
+  pngSamplePackButton.disabled = isBusy;
   form.querySelector("#generateButton").disabled = isBusy;
   resetButton.disabled = isBusy;
   printFullSizeButton.textContent = isBusy ? "Preparing..." : "Print full size cards";
   printTwoUpButton.textContent = isBusy ? "Preparing..." : "Print 2-up cards";
   printExtrasButton.textContent = isBusy ? "Preparing..." : "Print instructions";
+  pngSamplePackButton.textContent = isBusy ? "Preparing..." : "PNG sample pack";
 }
 
 function restoreExportSettings(previousCardsPerPage) {
@@ -1193,6 +1197,172 @@ async function waitForPrintableImages(container = document) {
       image.addEventListener("error", resolve, { once: true });
     });
   }));
+}
+
+function createPngExportArea(width, height) {
+  const exportArea = document.createElement("div");
+  exportArea.className = "pdf-export-area png-export-area";
+  exportArea.style.width = `${width}px`;
+  exportArea.style.minHeight = `${height}px`;
+  exportArea.style.setProperty("--screen-page-width", `${width}px`);
+  exportArea.style.setProperty("--screen-page-height", `${height}px`);
+  return exportArea;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function canvasToBlob(canvas, type = "image/png", quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("Canvas could not be exported."));
+      }
+    }, type, quality);
+  });
+}
+
+async function renderElementToPngBlob(element) {
+  await waitForPrintableImages(element);
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+
+  const canvas = await html2canvas(element, {
+    backgroundColor: "#ffffff",
+    scale: pngExportScale,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    onclone: addPdfExportOverrides,
+  });
+  return canvasToBlob(canvas);
+}
+
+async function addElementPngToZip(zip, filename, element, width, height) {
+  const exportArea = createPngExportArea(width, height);
+  exportArea.append(element);
+  document.body.append(exportArea);
+
+  try {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const blob = await renderElementToPngBlob(element);
+    zip.file(filename, blob);
+  } finally {
+    exportArea.remove();
+  }
+}
+
+async function withTemporaryCardLayout(cardsPerPageValue, callback) {
+  const previousCardsPerPage = cardsPerPage.value;
+  cardsPerPage.value = cardsPerPageValue;
+  updateDesignSettings();
+  renderCurrentOutput();
+
+  try {
+    return await callback();
+  } finally {
+    restoreExportSettings(previousCardsPerPage);
+  }
+}
+
+function createTwoUpSampleSheet(cardElements, startIndex, sizing) {
+  const sheet = createPdfSheet(sizing.sheetWidth, sizing.sheetHeight, true);
+  sheet.append(cloneForPdf(cardElements[startIndex], sizing.cardWidth, sizing.cardHeight));
+  if (cardElements[startIndex + 1]) {
+    sheet.append(cloneForPdf(cardElements[startIndex + 1], sizing.cardWidth, sizing.cardHeight));
+  }
+  return sheet;
+}
+
+function renderInstructionsForCount(cardCount) {
+  const previousCount = inputs.count.value;
+  inputs.count.value = String(cardCount);
+  try {
+    return renderInstructions();
+  } finally {
+    inputs.count.value = previousCount;
+  }
+}
+
+async function exportPngSamplePack() {
+  if (!validateReadyToExport("current")) {
+    return;
+  }
+
+  if (!window.html2canvas || !window.JSZip) {
+    setStatus("The PNG exporter is still loading. Please try again in a moment.", true);
+    return;
+  }
+
+  const originalCardsPerPage = cardsPerPage.value;
+  const zip = new JSZip();
+  const baseName = getProductNameForFilename();
+
+  setPdfBusy(true);
+  setStatus("Creating PNG sample pack...");
+
+  try {
+    await withTemporaryCardLayout("1", async () => {
+      const sizing = getCurrentPageSize();
+      const cards = [...cardsContainer.querySelectorAll(".bingo-card")].slice(0, 20);
+      for (const [index, card] of cards.entries()) {
+        const clone = cloneForPdf(card, sizing.cardWidth, sizing.cardHeight);
+        await addElementPngToZip(zip, `full-size-cards/${String(index + 1).padStart(2, "0")}-${baseName}-card.png`, clone, sizing.cardWidth, sizing.cardHeight);
+        setStatus(`Creating PNG sample pack... full-size card ${index + 1} of ${cards.length}`);
+      }
+    });
+
+    await withTemporaryCardLayout("2", async () => {
+      const sizing = getCurrentPageSize();
+      const cards = [...cardsContainer.querySelectorAll(".bingo-card")].slice(0, 4);
+      for (let index = 0; index < Math.min(2, Math.ceil(cards.length / 2)); index += 1) {
+        const sheet = createTwoUpSampleSheet(cards, index * 2, sizing);
+        await addElementPngToZip(zip, `two-up-cards/${String(index + 1).padStart(2, "0")}-${baseName}-2-up.png`, sheet, sizing.sheetWidth, sizing.sheetHeight);
+        setStatus(`Creating PNG sample pack... 2-up sheet ${index + 1}`);
+      }
+    });
+
+    await withTemporaryCardLayout("1", async () => {
+      const sizing = getCurrentPageSize();
+      const markerPages = renderMarkers();
+      for (const [index, page] of markerPages.entries()) {
+        await addElementPngToZip(zip, `extras/${baseName}-bingo-markers-${index === 0 ? "large" : "small"}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
+      }
+
+      const masterPages = renderMasterList(currentItems);
+      for (const [index, page] of masterPages.entries()) {
+        await addElementPngToZip(zip, `extras/${String(index + 1).padStart(2, "0")}-${baseName}-master-checklist.png`, page, sizing.sheetWidth, sizing.sheetHeight);
+      }
+
+      for (const cardCount of [100, 200, 300]) {
+        const page = renderInstructionsForCount(cardCount);
+        await addElementPngToZip(zip, `instructions/${baseName}-instructions-${cardCount}-cards.png`, page, sizing.sheetWidth, sizing.sheetHeight);
+      }
+    });
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    downloadBlob(blob, `${baseName}-png-sample-pack.zip`);
+    setStatus("Downloaded PNG sample pack.");
+  } catch (error) {
+    console.error(error);
+    setStatus("The PNG sample pack could not be created. Please try again.", true);
+  } finally {
+    cardsPerPage.value = originalCardsPerPage;
+    updateDesignSettings();
+    renderCurrentOutput();
+    setPdfBusy(false);
+  }
 }
 
 async function downloadPdf(exportType = "current") {
@@ -1912,6 +2082,7 @@ spotifyPreviewQrInput.addEventListener("change", () => {
 printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
 printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
 printExtrasButton.addEventListener("click", () => printExport("extras"));
+pngSamplePackButton.addEventListener("click", exportPngSamplePack);
 resetButton.addEventListener("click", resetSettings);
 savedGameSelect?.addEventListener("change", () => {
   selectedCloudGameId = savedGameSelect.value;
