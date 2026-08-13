@@ -79,6 +79,7 @@ let freePresetImages = {};
 const pageDimensions = {
   letter: [816, 1056],
   a4: [794, 1123],
+  "5x7": [480, 672],
 };
 
 function parseItems(value) {
@@ -538,6 +539,10 @@ function validateReadyToExport(exportType) {
 }
 
 function updateDesignSettings() {
+  if (pageSize.value === "5x7" && cardsPerPage.value === "2") {
+    cardsPerPage.value = "1";
+  }
+
   document.body.dataset.page = pageSize.value;
   document.body.dataset.cardsPerPage = cardsPerPage.value;
   const printSizes = {
@@ -548,6 +553,9 @@ function updateDesignSettings() {
     a4: {
       1: "210mm 297mm",
       2: "297mm 210mm",
+    },
+    "5x7": {
+      1: "5in 7in",
     },
   };
   printPageStyle.textContent = `@page { size: ${printSizes[pageSize.value][cardsPerPage.value]}; margin: 0; }`;
@@ -1195,16 +1203,32 @@ function setPdfBusy(isBusy) {
   productionFolderButton.textContent = isBusy ? "Preparing..." : "Export production folders";
 }
 
-function restoreExportSettings(previousCardsPerPage) {
-  cardsPerPage.value = previousCardsPerPage;
+function getExportSettingsSnapshot() {
+  return {
+    pageSize: pageSize.value,
+    cardsPerPage: cardsPerPage.value,
+  };
+}
+
+function restoreExportSettings(previousSettings) {
+  pageSize.value = previousSettings.pageSize;
+  cardsPerPage.value = previousSettings.cardsPerPage;
   updateDesignSettings();
   renderCurrentOutput();
 }
 
 function applyExportMode(exportType) {
-  if (exportType === "cards-full" || exportType === "extras") {
+  if (exportType === "cards-full") {
+    cardsPerPage.value = "1";
+  } else if (exportType === "extras") {
+    if (pageSize.value === "5x7") {
+      pageSize.value = "letter";
+    }
     cardsPerPage.value = "1";
   } else if (exportType === "cards-two-up") {
+    if (pageSize.value === "5x7") {
+      pageSize.value = "letter";
+    }
     cardsPerPage.value = "2";
   }
 }
@@ -1287,7 +1311,7 @@ async function addElementPngToZip(zip, filename, element, width, height) {
 }
 
 async function withTemporaryCardLayout(cardsPerPageValue, callback) {
-  const previousCardsPerPage = cardsPerPage.value;
+  const previousSettings = getExportSettingsSnapshot();
   cardsPerPage.value = cardsPerPageValue;
   updateDesignSettings();
   renderCurrentOutput();
@@ -1295,7 +1319,7 @@ async function withTemporaryCardLayout(cardsPerPageValue, callback) {
   try {
     return await callback();
   } finally {
-    restoreExportSettings(previousCardsPerPage);
+    restoreExportSettings(previousSettings);
   }
 }
 
@@ -1447,7 +1471,7 @@ async function createPdfBlobFromCurrentLayout(exportType = "current", options = 
 }
 
 async function downloadPdf(exportType = "current") {
-  const previousCardsPerPage = cardsPerPage.value;
+  const previousSettings = getExportSettingsSnapshot();
 
   if (!validateReadyToExport(exportType)) {
     return;
@@ -1459,13 +1483,13 @@ async function downloadPdf(exportType = "current") {
 
   if (currentCards.length === 0) {
     setStatus("Add at least 24 unique list items before downloading a PDF.", true);
-    restoreExportSettings(previousCardsPerPage);
+    restoreExportSettings(previousSettings);
     return;
   }
 
   if (!window.html2canvas || !window.jspdf?.jsPDF) {
     setStatus("The PDF maker is still loading. Please try again in a moment.", true);
-    restoreExportSettings(previousCardsPerPage);
+    restoreExportSettings(previousSettings);
     return;
   }
 
@@ -1482,7 +1506,7 @@ async function downloadPdf(exportType = "current") {
     setStatus("The PDF could not be created. Please use Print or save PDF instead.", true);
   } finally {
     setPdfBusy(false);
-    restoreExportSettings(previousCardsPerPage);
+    restoreExportSettings(previousSettings);
   }
 }
 
@@ -1531,7 +1555,7 @@ async function exportProductionFolders() {
     return;
   }
 
-  const previousCardsPerPage = cardsPerPage.value;
+  const previousSettings = getExportSettingsSnapshot();
   let rootHandle;
 
   try {
@@ -1579,15 +1603,13 @@ async function exportProductionFolders() {
     console.error(error);
     setStatus("The production folders could not be created. Check folder permissions and try again.", true);
   } finally {
-    cardsPerPage.value = previousCardsPerPage;
-    updateDesignSettings();
-    renderCurrentOutput();
+    restoreExportSettings(previousSettings);
     setPdfBusy(false);
   }
 }
 
 async function printExport(exportType) {
-  const previousCardsPerPage = cardsPerPage.value;
+  const previousSettings = getExportSettingsSnapshot();
   const previousTitle = document.title;
 
   if (!validateReadyToExport(exportType)) {
@@ -1607,7 +1629,7 @@ async function printExport(exportType) {
     setStatus("Add at least 24 unique list items before printing cards.", true);
     delete document.body.dataset.printExport;
     document.title = previousTitle;
-    restoreExportSettings(previousCardsPerPage);
+    restoreExportSettings(previousSettings);
     return;
   }
 
@@ -1616,7 +1638,7 @@ async function printExport(exportType) {
     delete document.body.dataset.printExport;
     document.title = previousTitle;
     isRestoringSettings = true;
-    restoreExportSettings(previousCardsPerPage);
+    restoreExportSettings(previousSettings);
     isRestoringSettings = false;
   };
 

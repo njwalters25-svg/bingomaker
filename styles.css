@@ -1588,6 +1588,96 @@ body[data-page="a4"] {
   --page-height-val: 297;
 }
 
+body[data-page="5x7"] {
+  --page-width: 5in;
+  --page-height: 7in;
+  --screen-page-width: 480px;
+  --screen-page-height: 672px;
+  --page-width-val: 5;
+  --page-height-val: 7;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .cards-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .bingo-card {
+  grid-template-rows: 150px 1fr 20px;
+  padding: 16px 16px 20px;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .bingo-card::before {
+  inset: 16px;
+  border-width: 3px;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .card-header {
+  padding: 0;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .bingo-grid {
+  align-self: start;
+  justify-self: stretch;
+  aspect-ratio: auto;
+  grid-template-rows: repeat(5, auto);
+  gap: 8px;
+  padding: 5px 24px 8px;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square {
+  aspect-ratio: 1 / 1;
+  padding: 6px;
+  border-radius: 14px;
+  box-shadow: 3px 3px 4px rgba(36, 36, 36, 0.2);
+  font-size: 7.2pt;
+  line-height: 1.08;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .music-square {
+  gap: 10px;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square.text-medium {
+  font-size: 6.5pt;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square.text-long {
+  font-size: 5.8pt;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square.text-xlong {
+  font-size: 5.3pt;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square.free {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-width: 1.5px;
+  font-size: 11px;
+  line-height: 1.02;
+  letter-spacing: 0;
+  overflow-wrap: break-word;
+  text-align: center;
+  word-break: normal;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square.free.text-medium {
+  font-size: 8px;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .square.free.text-long,
+body[data-page="5x7"][data-cards-per-page="1"] .square.free.text-xlong {
+  font-size: 7px;
+  line-height: 1;
+}
+
+body[data-page="5x7"][data-cards-per-page="1"] .bingo-card footer {
+  padding-top: 3px;
+  font-size: 11px;
+}
+
 body[data-cards-per-page="2"] {
   --page-padding: 20px 28px 14px;
 }
