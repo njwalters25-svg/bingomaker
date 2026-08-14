@@ -1602,7 +1602,7 @@ body[data-page="5x7"][data-cards-per-page="1"] .cards-grid {
 }
 
 body[data-page="5x7"][data-cards-per-page="1"] .bingo-card {
-  grid-template-rows: 150px 1fr 20px;
+  grid-template-rows: 142px 1fr 20px;
   padding: 16px 16px 20px;
 }
 
@@ -1616,12 +1616,13 @@ body[data-page="5x7"][data-cards-per-page="1"] .card-header {
 }
 
 body[data-page="5x7"][data-cards-per-page="1"] .bingo-grid {
-  align-self: start;
+  align-self: stretch;
   justify-self: stretch;
+  align-content: space-between;
   aspect-ratio: auto;
   grid-template-rows: repeat(5, auto);
-  gap: 8px;
-  padding: 5px 24px 8px;
+  gap: 8px 9px;
+  padding: 14px 18px 20px;
 }
 
 body[data-page="5x7"][data-cards-per-page="1"] .square {
