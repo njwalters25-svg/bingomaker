@@ -1622,7 +1622,7 @@ body[data-page="5x7"][data-cards-per-page="1"] .bingo-grid {
   aspect-ratio: auto;
   grid-template-rows: repeat(5, auto);
   gap: 8px 9px;
-  padding: 14px 18px 20px;
+  padding: 26px 18px 8px;
 }
 
 body[data-page="5x7"][data-cards-per-page="1"] .square {
