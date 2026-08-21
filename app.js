@@ -1336,7 +1336,9 @@ function renderInstructionsForCount(cardCount) {
   const previousCount = inputs.count.value;
   inputs.count.value = String(cardCount);
   try {
-    return renderInstructions();
+    const page = renderInstructions();
+    page.classList.add("png-sample-instructions-page");
+    return page;
   } finally {
     inputs.count.value = previousCount;
   }

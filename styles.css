@@ -892,6 +892,13 @@ button:disabled {
   object-position: center;
 }
 
+.png-sample-instructions-page .instructions-brand-image {
+  justify-self: center;
+  width: auto;
+  max-width: 72%;
+  max-height: 86px;
+}
+
 .instructions-content {
   display: grid;
   grid-template-rows: auto auto auto auto;
