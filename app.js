@@ -1124,7 +1124,7 @@ function drawMasterListPdf(pdf, sizing, pageIndex, items) {
   addPdfPage(pdf, sizing, pageIndex);
   const margin = sizing.sheetWidth * 0.055;
   const sortedItems = [...items].sort((first, second) => first.localeCompare(second, undefined, { sensitivity: "base" }));
-  drawFittedText(pdf, "Master checklist", margin, 42, sizing.sheetWidth - margin * 2, 54, {
+  drawFittedText(pdf, "Complete Songlist", margin, 42, sizing.sheetWidth - margin * 2, 54, {
     maxSize: 40,
     font: "times",
     style: "bold",
