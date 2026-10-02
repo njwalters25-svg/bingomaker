@@ -980,6 +980,44 @@ button:disabled {
   font-weight: 900;
 }
 
+.instructions-page.has-youtube-playlist .playlist-links {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.instructions-page.has-youtube-playlist .playlist-card {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  gap: 7px;
+  padding: 8px;
+}
+
+.instructions-page.has-youtube-playlist .playlist-card-text {
+  width: 100%;
+}
+
+.instructions-page.has-youtube-playlist .playlist-card h5 {
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.instructions-page.has-youtube-playlist .playlist-card p {
+  margin-bottom: 5px;
+  font-size: 10.5px;
+  line-height: 1.18;
+}
+
+.instructions-page.has-youtube-playlist .playlist-card a {
+  font-size: 9.5px;
+  line-height: 1.12;
+}
+
+.instructions-page.has-youtube-playlist .playlist-qr {
+  width: 82px;
+  height: 82px;
+  font-size: 18px;
+}
+
 .tips-page {
   gap: 20px;
 }

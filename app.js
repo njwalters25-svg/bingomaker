@@ -16,6 +16,7 @@ const markerImageInput = document.querySelector("#markerImage");
 const freeImageInput = document.querySelector("#freeImage");
 const spotifyFullQrInput = document.querySelector("#spotifyFullQr");
 const spotifyPreviewQrInput = document.querySelector("#spotifyPreviewQr");
+const youtubePlaylistQrInput = document.querySelector("#youtubePlaylistQr");
 const freePresetGrid = document.querySelector("#freePresetGrid");
 const printFullSizeButton = document.querySelector("#printFullSizeButton");
 const printTwoUpButton = document.querySelector("#printTwoUpButton");
@@ -41,6 +42,7 @@ let headerImageData = "";
 let markerImageData = "";
 let spotifyFullQrData = "";
 let spotifyPreviewQrData = "";
+let youtubePlaylistQrData = "";
 let isRestoringSettings = false;
 let currentCards = [];
 let currentItems = [];
@@ -70,6 +72,7 @@ const inputs = {
   freeText: document.querySelector("#freeText"),
   spotifyFullUrl: document.querySelector("#spotifyFullUrl"),
   spotifyPreviewUrl: document.querySelector("#spotifyPreviewUrl"),
+  youtubePlaylistUrl: document.querySelector("#youtubePlaylistUrl"),
   footerText: document.querySelector("#footerText"),
 };
 
@@ -153,8 +156,10 @@ function getSettingsSnapshot() {
     markerImageData,
     spotifyFullUrl: inputs.spotifyFullUrl.value,
     spotifyPreviewUrl: inputs.spotifyPreviewUrl.value,
+    youtubePlaylistUrl: inputs.youtubePlaylistUrl.value,
     spotifyFullQrData,
     spotifyPreviewQrData,
+    youtubePlaylistQrData,
     freePreset: selectedFreePreset,
     footerText: inputs.footerText.value,
     pageSize: pageSize.value,
@@ -185,8 +190,10 @@ function applySettingsSnapshot(savedSettings) {
   markerImageData = savedSettings.markerImageData || "";
   inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
   inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
+  inputs.youtubePlaylistUrl.value = savedSettings.youtubePlaylistUrl || "";
   spotifyFullQrData = savedSettings.spotifyFullQrData || "";
   spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
+  youtubePlaylistQrData = savedSettings.youtubePlaylistQrData || "";
   selectedFreePreset = savedSettings.freeImageData ? "custom" : (savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || "text"));
   inputs.footerText.value = savedSettings.footerText ?? "";
   pageSize.value = savedSettings.pageSize || "letter";
@@ -200,6 +207,7 @@ function applySettingsSnapshot(savedSettings) {
   }
   spotifyFullQrInput.value = "";
   spotifyPreviewQrInput.value = "";
+  youtubePlaylistQrInput.value = "";
   updateFreePresetSelection();
   isRestoringSettings = false;
 
@@ -258,6 +266,7 @@ function resetSettings() {
   inputs.freeText.value = "FREE";
   inputs.spotifyFullUrl.value = "";
   inputs.spotifyPreviewUrl.value = "";
+  inputs.youtubePlaylistUrl.value = "";
   selectedFreePreset = "text";
   inputs.footerText.value = "";
   pageSize.value = "letter";
@@ -273,11 +282,13 @@ function resetSettings() {
   markerImageData = "";
   spotifyFullQrData = "";
   spotifyPreviewQrData = "";
+  youtubePlaylistQrData = "";
   if (freeImageInput) {
     freeImageInput.value = "";
   }
   spotifyFullQrInput.value = "";
   spotifyPreviewQrInput.value = "";
+  youtubePlaylistQrInput.value = "";
   updateFreePresetSelection();
   headerImageInput.value = "";
   markerImageInput.value = "";
@@ -1810,6 +1821,10 @@ function createPlaylistCard({ title, description, url, qrData, qrAlt }) {
   return card;
 }
 
+function hasCompleteYoutubePlaylist() {
+  return Boolean(inputs.youtubePlaylistUrl.value.trim() && youtubePlaylistQrData);
+}
+
 function getRequestedCardCount() {
   return Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
 }
@@ -1824,22 +1839,31 @@ function renderInstructions() {
     brandImage.remove();
   }
 
+  const hasYoutubePlaylist = hasCompleteYoutubePlaylist();
+  if (hasYoutubePlaylist) {
+    page.classList.add("has-youtube-playlist");
+  }
+
   const includedList = page.querySelector(".included-pack ul");
-  [
+  const includedItems = [
     `${getRequestedCardCount()} full-size bingo cards`,
     `${getRequestedCardCount()} bingo cards, 2 to a page`,
     "Spotify playlist link and QR code",
     "Embedded preview playlist link and QR code",
     "Master calling checklist",
     "Bingo markers in 2 sizes",
-  ].forEach((item) => {
+  ];
+  if (hasYoutubePlaylist) {
+    includedItems.splice(4, 0, "YouTube playlist link and QR code");
+  }
+  includedItems.forEach((item) => {
     const listItem = document.createElement("li");
     listItem.textContent = item;
     includedList.append(listItem);
   });
 
   const playlistLinks = page.querySelector(".playlist-links");
-  playlistLinks.append(
+  const playlistCards = [
     createPlaylistCard({
       title: "Full Spotify playlist",
       description: "Open the playlist and press the main Play button. Shuffle is fine, or follow the master checklist.",
@@ -1847,6 +1871,19 @@ function renderInstructions() {
       qrData: spotifyFullQrData,
       qrAlt: "QR code for the full Spotify playlist",
     }),
+  ];
+
+  if (hasYoutubePlaylist) {
+    playlistCards.push(createPlaylistCard({
+      title: "YouTube playlist",
+      description: "Use the playlist Play button so the host stays inside the playlist.",
+      url: inputs.youtubePlaylistUrl.value,
+      qrData: youtubePlaylistQrData,
+      qrAlt: "QR code for the YouTube playlist",
+    }));
+  }
+
+  playlistCards.push(
     createPlaylistCard({
       title: "Embedded preview playlist",
       description: "Use this option for shorter song previews if the host does not want to log in.",
@@ -1855,6 +1892,21 @@ function renderInstructions() {
       qrAlt: "QR code for the embedded preview playlist",
     }),
   );
+
+  playlistLinks.append(...playlistCards);
+
+  const quickStartItems = page.querySelectorAll(".how-to-play li");
+  if (quickStartItems[1]) {
+    quickStartItems[1].textContent = hasYoutubePlaylist
+      ? "Open the Spotify playlist, YouTube playlist, or embedded preview link."
+      : "Open the Spotify playlist or embedded preview link.";
+  }
+  if (quickStartItems[2]) {
+    quickStartItems[2].textContent = hasYoutubePlaylist
+      ? "Press the main Play button on the playlist. Do not click individual song or video titles."
+      : "Press the main Play button on the playlist. Do not click individual song titles.";
+  }
+
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
   return page;
 }
@@ -2208,6 +2260,12 @@ spotifyPreviewQrInput.addEventListener("change", () => {
   });
 });
 
+youtubePlaylistQrInput.addEventListener("change", () => {
+  handleQrUpload(youtubePlaylistQrInput, (value) => {
+    youtubePlaylistQrData = value;
+  });
+});
+
 [primaryColor, highlightColor].forEach((control) => {
   control.addEventListener("input", () => {
     updateCustomColors();
@@ -2223,7 +2281,7 @@ spotifyPreviewQrInput.addEventListener("change", () => {
   });
 });
 
-[inputs.productName, inputs.footerText, inputs.spotifyFullUrl, inputs.spotifyPreviewUrl].filter(Boolean).forEach((control) => {
+[inputs.productName, inputs.footerText, inputs.spotifyFullUrl, inputs.spotifyPreviewUrl, inputs.youtubePlaylistUrl].filter(Boolean).forEach((control) => {
   control.addEventListener("input", () => {
     updateHeadingPreview();
     renderCurrentOutput();

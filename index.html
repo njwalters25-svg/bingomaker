@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800;900&family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260821-png-instructions-header" />
+    <link rel="stylesheet" href="styles.css?v=20261002-youtube-playlist" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -94,7 +94,7 @@
 
           <fieldset class="full-span">
             <legend>Playlist links</legend>
-            <p class="fieldset-hint">Add the two Spotify links and QR images for the instructions PDF.</p>
+            <p class="fieldset-hint">Add Spotify links and QR images. YouTube is optional and only appears when both its link and QR code are added.</p>
             <div class="playlist-grid">
               <label>
                 Full Spotify playlist link
@@ -111,6 +111,14 @@
               <label>
                 Preview QR code
                 <input id="spotifyPreviewQr" type="file" accept="image/*" />
+              </label>
+              <label>
+                YouTube playlist link
+                <input id="youtubePlaylistUrl" type="url" placeholder="https://www.youtube.com/playlist?list=..." />
+              </label>
+              <label>
+                YouTube playlist QR code
+                <input id="youtubePlaylistQr" type="file" accept="image/*" />
               </label>
             </div>
           </fieldset>
@@ -376,6 +384,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20260821-png-instructions-header"></script>
+    <script src="app.js?v=20261002-youtube-playlist"></script>
   </body>
 </html>
