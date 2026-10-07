@@ -94,14 +94,14 @@
 
           <fieldset class="full-span">
             <legend>Playlist links</legend>
-            <p class="fieldset-hint">Add Spotify links and QR images. YouTube is optional and only appears when both its link and QR code are added.</p>
+            <p class="fieldset-hint">Add playlist links. QR codes are generated automatically; uploads are optional fallbacks.</p>
             <div class="playlist-grid">
               <label>
                 Full Spotify playlist link
                 <input id="spotifyFullUrl" type="url" placeholder="https://open.spotify.com/playlist/..." />
               </label>
               <label>
-                Full playlist QR code
+                Full playlist QR override
                 <input id="spotifyFullQr" type="file" accept="image/*" />
               </label>
               <label>
@@ -109,7 +109,7 @@
                 <input id="spotifyPreviewUrl" type="url" placeholder="https://yourwebsite.com/..." />
               </label>
               <label>
-                Preview QR code
+                Preview QR override
                 <input id="spotifyPreviewQr" type="file" accept="image/*" />
               </label>
               <label>
@@ -117,7 +117,7 @@
                 <input id="youtubePlaylistUrl" type="url" placeholder="https://www.youtube.com/playlist?list=..." />
               </label>
               <label>
-                YouTube playlist QR code
+                YouTube QR override
                 <input id="youtubePlaylistQr" type="file" accept="image/*" />
               </label>
             </div>
@@ -383,7 +383,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20261002-youtube-playlist"></script>
+    <script src="app.js?v=20261007-auto-qr"></script>
   </body>
 </html>

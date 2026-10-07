@@ -514,10 +514,10 @@ function getProductionChecklistMissingItems() {
   if (!inputs.spotifyPreviewUrl.value.trim()) {
     missing.push("embedded preview playlist link");
   }
-  if (!spotifyFullQrData) {
+  if (!getSpotifyFullQrData()) {
     missing.push("full playlist QR code");
   }
-  if (!spotifyPreviewQrData) {
+  if (!getSpotifyPreviewQrData()) {
     missing.push("preview playlist QR code");
   }
 
@@ -1290,6 +1290,21 @@ function canvasToBlob(canvas, type = "image/png", quality) {
   });
 }
 
+function dataUrlToBlob(dataUrl) {
+  const [metadata, data] = dataUrl.split(",");
+  const mimeMatch = metadata.match(/^data:([^;]+);base64$/);
+  if (!mimeMatch || !data) {
+    throw new Error("Unsupported data URL.");
+  }
+
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new Blob([bytes], { type: mimeMatch[1] });
+}
+
 async function renderElementToPngBlob(element) {
   await waitForPrintableImages(element);
   if (document.fonts?.ready) {
@@ -1373,6 +1388,14 @@ async function exportPngSamplePack() {
   setStatus("Creating PNG sample pack...");
 
   try {
+    const previewQrData = getSpotifyPreviewQrData();
+    if (previewQrData) {
+      zip.file("assets/preview-qr.png", dataUrlToBlob(previewQrData));
+    }
+    if (markerImageData) {
+      zip.file("assets/bingo-marker.png", dataUrlToBlob(markerImageData));
+    }
+
     await withTemporaryCardLayout("1", async () => {
       const sizing = getCurrentPageSize();
       const cards = [...cardsContainer.querySelectorAll(".bingo-card")].slice(0, 20);
@@ -1785,6 +1808,61 @@ function setOptionalLink(anchor, url) {
   anchor.classList.remove("missing-link");
 }
 
+function createQrDataUrl(value) {
+  const cleanValue = value.trim();
+  if (!cleanValue || typeof window.qrcode !== "function" || !document.createElement) {
+    return "";
+  }
+
+  try {
+    const qr = window.qrcode(0, "M");
+    qr.addData(cleanValue);
+    qr.make();
+
+    const moduleCount = qr.getModuleCount();
+    const margin = 4;
+    const scale = 8;
+    const size = (moduleCount + margin * 2) * scale;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+
+    const context = canvas.getContext("2d");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, size, size);
+    context.fillStyle = "#000000";
+
+    for (let row = 0; row < moduleCount; row += 1) {
+      for (let column = 0; column < moduleCount; column += 1) {
+        if (qr.isDark(row, column)) {
+          context.fillRect((column + margin) * scale, (row + margin) * scale, scale, scale);
+        }
+      }
+    }
+
+    return canvas.toDataURL("image/png");
+  } catch (error) {
+    console.warn("QR code could not be generated.", error);
+    return "";
+  }
+}
+
+function getEffectiveQrData(url, fallbackQrData = "") {
+  return createQrDataUrl(url) || fallbackQrData;
+}
+
+function getSpotifyFullQrData() {
+  return getEffectiveQrData(inputs.spotifyFullUrl.value, spotifyFullQrData);
+}
+
+function getSpotifyPreviewQrData() {
+  return getEffectiveQrData(inputs.spotifyPreviewUrl.value, spotifyPreviewQrData);
+}
+
+function getYoutubePlaylistQrData() {
+  return getEffectiveQrData(inputs.youtubePlaylistUrl.value, youtubePlaylistQrData);
+}
+
 function createPlaylistCard({ title, description, url, qrData, qrAlt }) {
   const card = document.createElement("div");
   card.className = "playlist-card";
@@ -1822,7 +1900,7 @@ function createPlaylistCard({ title, description, url, qrData, qrAlt }) {
 }
 
 function hasCompleteYoutubePlaylist() {
-  return Boolean(inputs.youtubePlaylistUrl.value.trim() && youtubePlaylistQrData);
+  return Boolean(inputs.youtubePlaylistUrl.value.trim() && getYoutubePlaylistQrData());
 }
 
 function getRequestedCardCount() {
@@ -1863,12 +1941,15 @@ function renderInstructions() {
   });
 
   const playlistLinks = page.querySelector(".playlist-links");
+  const spotifyFullQr = getSpotifyFullQrData();
+  const spotifyPreviewQr = getSpotifyPreviewQrData();
+  const youtubePlaylistQr = getYoutubePlaylistQrData();
   const playlistCards = [
     createPlaylistCard({
       title: "Full Spotify playlist",
       description: "Open the playlist and press the main Play button. Shuffle is fine, or follow the master checklist.",
       url: inputs.spotifyFullUrl.value,
-      qrData: spotifyFullQrData,
+      qrData: spotifyFullQr,
       qrAlt: "QR code for the full Spotify playlist",
     }),
   ];
@@ -1878,7 +1959,7 @@ function renderInstructions() {
       title: "YouTube playlist",
       description: "Use the playlist Play button so the host stays inside the playlist.",
       url: inputs.youtubePlaylistUrl.value,
-      qrData: youtubePlaylistQrData,
+      qrData: youtubePlaylistQr,
       qrAlt: "QR code for the YouTube playlist",
     }));
   }
@@ -1888,7 +1969,7 @@ function renderInstructions() {
       title: "Embedded preview playlist",
       description: "Use this option for shorter song previews if the host does not want to log in.",
       url: inputs.spotifyPreviewUrl.value,
-      qrData: spotifyPreviewQrData,
+      qrData: spotifyPreviewQr,
       qrAlt: "QR code for the embedded preview playlist",
     }),
   );
