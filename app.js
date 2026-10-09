@@ -104,6 +104,9 @@ let currentItems = [];
 let generatedSettingsDirty = false;
 let savedGames = [];
 let selectedCloudGameId = "";
+let brandEditions = {};
+let activeEditionBrandId = defaultBrand.id;
+let editionRevision = 0;
 
 const storageKey = "allOccasionsBingoMakerSettings";
 const supabaseUrl = "https://idlihjucxernlbwkndca.supabase.co";
@@ -196,15 +199,8 @@ function getProductName() {
   return inputs.productName?.value?.trim() || "";
 }
 
-function getSettingsSnapshot() {
+function getEditionSettings() {
   return {
-    brandId: getCurrentBrand().id,
-    productName: inputs.productName?.value || "",
-    count: inputs.count.value,
-    items: inputs.items.value,
-    currentItems,
-    currentCards,
-    generatedSettingsDirty,
     freeText: inputs.freeText.value,
     freeImageData,
     freeImageAspectRatio,
@@ -218,11 +214,62 @@ function getSettingsSnapshot() {
     youtubePlaylistQrData,
     freePreset: selectedFreePreset,
     footerText: inputs.footerText.value,
-    pageSize: pageSize.value,
-    cardsPerPage: cardsPerPage.value,
     primaryColor: primaryColor.value,
     highlightColor: highlightColor.value,
   };
+}
+
+function getSettingsSnapshot() {
+  const edition = getEditionSettings();
+  brandEditions[activeEditionBrandId] = edition;
+  return {
+    brandId: activeEditionBrandId,
+    editions: structuredClone(brandEditions),
+    productName: inputs.productName?.value || "",
+    count: inputs.count.value,
+    items: inputs.items.value,
+    currentItems,
+    currentCards,
+    generatedSettingsDirty,
+    pageSize: pageSize.value,
+    cardsPerPage: cardsPerPage.value,
+    // Keep the active edition at the top level for older saved-game readers.
+    ...edition,
+  };
+}
+
+function applyEditionSettings(edition = {}) {
+  editionRevision += 1;
+  inputs.freeText.value = edition.freeText || "FREE";
+  freeImageData = edition.freeImageData || "";
+  freeImageAspectRatio = Number(edition.freeImageAspectRatio) || 1;
+  headerImageData = edition.headerImageData || "";
+  markerImageData = edition.markerImageData || "";
+  inputs.spotifyFullUrl.value = edition.spotifyFullUrl || "";
+  inputs.spotifyPreviewUrl.value = edition.spotifyPreviewUrl || "";
+  inputs.youtubePlaylistUrl.value = edition.youtubePlaylistUrl || "";
+  spotifyFullQrData = edition.spotifyFullQrData || "";
+  spotifyPreviewQrData = edition.spotifyPreviewQrData || "";
+  youtubePlaylistQrData = edition.youtubePlaylistQrData || "";
+  selectedFreePreset = edition.freeImageData ? "custom" : (edition.freePreset === "custom" ? "text" : (edition.freePreset || "text"));
+  inputs.footerText.value = edition.footerText ?? "";
+  primaryColor.value = edition.primaryColor || "#e33c2f";
+  highlightColor.value = edition.highlightColor || "#137b80";
+  [headerImageInput, markerImageInput, freeImageInput, spotifyFullQrInput, spotifyPreviewQrInput, youtubePlaylistQrInput].forEach((input) => {
+    if (input) input.value = "";
+  });
+  updateFreePresetSelection();
+}
+
+function switchBrandEdition() {
+  brandEditions[activeEditionBrandId] = getEditionSettings();
+  activeEditionBrandId = getCurrentBrand().id;
+  applyEditionSettings(brandEditions[activeEditionBrandId]);
+  applyBrandConfiguration(document);
+  applyCurrentColors();
+  renderCurrentOutput();
+  updateDesignSettings();
+  saveSettings();
 }
 
 function applySettingsSnapshot(savedSettings) {
@@ -232,6 +279,16 @@ function applySettingsSnapshot(savedSettings) {
 
   isRestoringSettings = true;
   brandSelect.value = brands[savedSettings.brandId] ? savedSettings.brandId : defaultBrand.id;
+  activeEditionBrandId = getCurrentBrand().id;
+  brandEditions = {};
+  for (const brandId of Object.keys(brands)) {
+    const edition = savedSettings.editions?.[brandId];
+    if (edition && typeof edition === "object" && !Array.isArray(edition)) {
+      brandEditions[brandId] = structuredClone(edition);
+    }
+  }
+  // Legacy games belong to their saved brand, or Printables when no brand was saved.
+  applyEditionSettings(brandEditions[activeEditionBrandId] || savedSettings);
   applyBrandConfiguration(document);
   if (inputs.productName) {
     inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? "";
@@ -242,23 +299,8 @@ function applySettingsSnapshot(savedSettings) {
   currentItems = Array.isArray(savedSettings.currentItems) ? savedSettings.currentItems : [];
   currentCards = Array.isArray(savedSettings.currentCards) ? savedSettings.currentCards : [];
   generatedSettingsDirty = Boolean(savedSettings.generatedSettingsDirty);
-  inputs.freeText.value = savedSettings.freeText || "FREE";
-  freeImageData = savedSettings.freeImageData || "";
-  freeImageAspectRatio = Number(savedSettings.freeImageAspectRatio) || 1;
-  headerImageData = savedSettings.headerImageData || "";
-  markerImageData = savedSettings.markerImageData || "";
-  inputs.spotifyFullUrl.value = savedSettings.spotifyFullUrl || "";
-  inputs.spotifyPreviewUrl.value = savedSettings.spotifyPreviewUrl || "";
-  inputs.youtubePlaylistUrl.value = savedSettings.youtubePlaylistUrl || "";
-  spotifyFullQrData = savedSettings.spotifyFullQrData || "";
-  spotifyPreviewQrData = savedSettings.spotifyPreviewQrData || "";
-  youtubePlaylistQrData = savedSettings.youtubePlaylistQrData || "";
-  selectedFreePreset = savedSettings.freeImageData ? "custom" : (savedSettings.freePreset === "custom" ? "text" : (savedSettings.freePreset || "text"));
-  inputs.footerText.value = savedSettings.footerText ?? "";
   pageSize.value = savedSettings.pageSize || "letter";
   cardsPerPage.value = savedSettings.cardsPerPage || "2";
-  primaryColor.value = savedSettings.primaryColor || "#e33c2f";
-  highlightColor.value = savedSettings.highlightColor || "#137b80";
   headerImageInput.value = "";
   markerImageInput.value = "";
   if (freeImageInput) {
@@ -310,6 +352,9 @@ function restoreSettings() {
 }
 
 function resetSettings() {
+  brandEditions = {};
+  activeEditionBrandId = defaultBrand.id;
+  editionRevision += 1;
   brandSelect.value = defaultBrand.id;
   applyBrandConfiguration(document);
   localStorage.removeItem(storageKey);
@@ -2306,6 +2351,7 @@ freePresetGrid.addEventListener("change", (event) => {
 });
 
 freeImageInput?.addEventListener("change", () => {
+  const uploadRevision = editionRevision;
   const file = freeImageInput.files[0];
   if (!file) {
     freeImageData = "";
@@ -2319,16 +2365,19 @@ freeImageInput?.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
+    if (uploadRevision !== editionRevision) return;
     freeImageData = reader.result;
     selectedFreePreset = "custom";
     const image = new Image();
     image.addEventListener("load", () => {
+      if (uploadRevision !== editionRevision) return;
       freeImageAspectRatio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1;
       updateFreePresetSelection();
       renderCurrentOutput();
       saveSettings();
     });
     image.addEventListener("error", () => {
+      if (uploadRevision !== editionRevision) return;
       freeImageAspectRatio = 1;
       updateFreePresetSelection();
       renderCurrentOutput();
@@ -2340,6 +2389,7 @@ freeImageInput?.addEventListener("change", () => {
 });
 
 headerImageInput.addEventListener("change", () => {
+  const uploadRevision = editionRevision;
   const file = headerImageInput.files[0];
   if (!file) {
     headerImageData = "";
@@ -2350,6 +2400,7 @@ headerImageInput.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
+    if (uploadRevision !== editionRevision) return;
     headerImageData = reader.result;
     renderCurrentOutput();
     saveSettings();
@@ -2358,6 +2409,7 @@ headerImageInput.addEventListener("change", () => {
 });
 
 markerImageInput.addEventListener("change", () => {
+  const uploadRevision = editionRevision;
   const file = markerImageInput.files[0];
   if (!file) {
     markerImageData = "";
@@ -2368,6 +2420,7 @@ markerImageInput.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
+    if (uploadRevision !== editionRevision) return;
     markerImageData = reader.result;
     renderCurrentOutput();
     saveSettings();
@@ -2376,6 +2429,7 @@ markerImageInput.addEventListener("change", () => {
 });
 
 function handleQrUpload(input, updateData) {
+  const uploadRevision = editionRevision;
   const file = input.files[0];
   if (!file) {
     updateData("");
@@ -2386,6 +2440,7 @@ function handleQrUpload(input, updateData) {
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
+    if (uploadRevision !== editionRevision) return;
     updateData(reader.result);
     renderCurrentOutput();
     saveSettings();
@@ -2474,11 +2529,7 @@ document.querySelector("#cardCountPresets").addEventListener("click", (event) =>
   });
 });
 
-brandSelect.addEventListener("change", () => {
-  applyBrandConfiguration(document);
-  updatePreviewScale();
-  saveSettings();
-});
+brandSelect.addEventListener("change", switchBrandEdition);
 
 printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
 printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
