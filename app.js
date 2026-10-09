@@ -1490,7 +1490,10 @@ async function exportPngSamplePack() {
   const originalCardsPerPage = cardsPerPage.value;
   const zip = new JSZip();
   const baseName = getProductNameForFilename();
+  const brandId = getCurrentBrand().id;
+  const previousBrandDisabled = brandSelect.disabled;
 
+  brandSelect.disabled = true;
   setPdfBusy(true);
   setStatus("Creating PNG sample pack...");
 
@@ -1508,7 +1511,7 @@ async function exportPngSamplePack() {
       const cards = [...cardsContainer.querySelectorAll(".bingo-card")].slice(0, 20);
       for (const [index, card] of cards.entries()) {
         const clone = cloneForPdf(card, sizing.cardWidth, sizing.cardHeight);
-        await addElementPngToZip(zip, `full-size-cards/${String(index + 1).padStart(2, "0")}-${baseName}-card.png`, clone, sizing.cardWidth, sizing.cardHeight);
+        await addElementPngToZip(zip, `full-size-cards/card-${String(index + 1).padStart(2, "0")}.png`, clone, sizing.cardWidth, sizing.cardHeight);
         setStatus(`Creating PNG sample pack... full-size card ${index + 1} of ${cards.length}`);
       }
     });
@@ -1518,7 +1521,7 @@ async function exportPngSamplePack() {
       const cards = [...cardsContainer.querySelectorAll(".bingo-card")].slice(0, 4);
       for (let index = 0; index < Math.min(2, Math.ceil(cards.length / 2)); index += 1) {
         const sheet = createTwoUpSampleSheet(cards, index * 2, sizing);
-        await addElementPngToZip(zip, `two-up-cards/${String(index + 1).padStart(2, "0")}-${baseName}-2-up.png`, sheet, sizing.sheetWidth, sizing.sheetHeight);
+        await addElementPngToZip(zip, `two-up-cards/two-up-${String(index + 1).padStart(2, "0")}.png`, sheet, sizing.sheetWidth, sizing.sheetHeight);
         setStatus(`Creating PNG sample pack... 2-up sheet ${index + 1}`);
       }
     });
@@ -1527,27 +1530,28 @@ async function exportPngSamplePack() {
       const sizing = getCurrentPageSize();
       const markerPages = renderMarkers();
       for (const [index, page] of markerPages.entries()) {
-        await addElementPngToZip(zip, `extras/${baseName}-bingo-markers-${index === 0 ? "large" : "small"}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
+        await addElementPngToZip(zip, `extras/bingo-markers-${index === 0 ? "large" : "small"}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }
 
       const masterPages = renderMasterList(currentItems);
       for (const [index, page] of masterPages.entries()) {
-        await addElementPngToZip(zip, `extras/${String(index + 1).padStart(2, "0")}-${baseName}-master-checklist.png`, page, sizing.sheetWidth, sizing.sheetHeight);
+        await addElementPngToZip(zip, `extras/complete-songlist-${String(index + 1).padStart(2, "0")}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }
 
       for (const cardCount of [100, 200, 300]) {
         const page = renderInstructionsForCount(cardCount);
-        await addElementPngToZip(zip, `instructions/${baseName}-instructions-${cardCount}-cards.png`, page, sizing.sheetWidth, sizing.sheetHeight);
+        await addElementPngToZip(zip, `instructions/instructions-${cardCount}-cards.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }
     });
 
     const blob = await zip.generateAsync({ type: "blob" });
-    downloadBlob(blob, `${baseName}-png-sample-pack.zip`);
+    downloadBlob(blob, `${baseName}-${brandId}-png-sample-pack.zip`);
     setStatus("Downloaded PNG sample pack.");
   } catch (error) {
     console.error(error);
     setStatus("The PNG sample pack could not be created. Please try again.", true);
   } finally {
+    brandSelect.disabled = previousBrandDisabled;
     cardsPerPage.value = originalCardsPerPage;
     updateDesignSettings();
     renderCurrentOutput();
