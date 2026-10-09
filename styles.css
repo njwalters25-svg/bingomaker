@@ -329,6 +329,29 @@ textarea:focus {
   gap: 12px;
 }
 
+.card-count-presets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.card-count-presets button {
+  padding: 10px 4px;
+}
+
+.card-count-presets button[aria-pressed="true"] {
+  background: var(--tool-accent);
+  color: #fff;
+}
+
+#customCardCount {
+  margin-top: 12px;
+}
+
+#customCardCount[hidden] {
+  display: none;
+}
+
 .check-option {
   grid-template-columns: auto 1fr;
   align-items: center;

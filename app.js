@@ -179,6 +179,7 @@ function applySettingsSnapshot(savedSettings) {
     inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? "";
   }
   inputs.count.value = savedSettings.count || "100";
+  updateCardCountPresets();
   inputs.items.value = savedSettings.items ?? "";
   currentItems = Array.isArray(savedSettings.currentItems) ? savedSettings.currentItems : [];
   currentCards = Array.isArray(savedSettings.currentCards) ? savedSettings.currentCards : [];
@@ -262,6 +263,7 @@ function resetSettings() {
     inputs.productName.value = "";
   }
   inputs.count.value = "100";
+  updateCardCountPresets();
   inputs.items.value = "";
   inputs.freeText.value = "FREE";
   inputs.spotifyFullUrl.value = "";
@@ -2377,6 +2379,32 @@ youtubePlaylistQrInput.addEventListener("change", () => {
   });
 });
 
+function updateCardCountPresets(customSelected = false) {
+  const value = inputs.count.value;
+  const selected = !customSelected && ["50", "100", "200", "300"].includes(value) ? value : "custom";
+  document.querySelectorAll("#cardCountPresets button").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.count === selected));
+  });
+  document.querySelector("#customCardCount").hidden = selected !== "custom";
+}
+
+document.querySelector("#cardCountPresets").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-count]");
+  if (!button) return;
+  if (button.dataset.count === "custom") {
+    updateCardCountPresets(true);
+    inputs.count.focus();
+    inputs.count.select();
+    return;
+  }
+  if (inputs.count.value !== button.dataset.count) {
+    inputs.count.value = button.dataset.count;
+    markCardsNeedRegeneration();
+    saveSettings();
+  }
+  updateCardCountPresets();
+});
+
 [inputs.count].forEach((control) => {
   control.addEventListener("input", () => {
     markCardsNeedRegeneration();
@@ -2401,6 +2429,7 @@ deleteSavedGameButton?.addEventListener("click", deleteSelectedCloudGame);
 window.addEventListener("resize", updatePreviewScale);
 
 restoreSettings();
+updateCardCountPresets();
 updateFreePresetSelection();
 applyCurrentColors();
 updateDesignSettings();

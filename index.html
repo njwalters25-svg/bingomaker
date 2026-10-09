@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800;900&family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20261002-youtube-playlist" />
+    <link rel="stylesheet" href="styles.css?v=20261009-card-count-presets" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -123,15 +123,20 @@
             </div>
           </fieldset>
 
-          <label>
-            Number of cards
-            <input id="cardCount" type="number" min="1" max="300" step="1" value="100" list="cardCountOptions" />
-            <datalist id="cardCountOptions">
-              <option value="100"></option>
-              <option value="200"></option>
-              <option value="300"></option>
-            </datalist>
-          </label>
+          <fieldset class="full-span">
+            <legend>Number of cards</legend>
+            <div id="cardCountPresets" class="card-count-presets" role="group" aria-label="Number of cards">
+              <button type="button" data-count="50" aria-pressed="false">50</button>
+              <button type="button" data-count="100" aria-pressed="true">100</button>
+              <button type="button" data-count="200" aria-pressed="false">200</button>
+              <button type="button" data-count="300" aria-pressed="false">300</button>
+              <button type="button" data-count="custom" aria-pressed="false">Other</button>
+            </div>
+            <label id="customCardCount" hidden>
+              Custom number of cards (1-300)
+              <input id="cardCount" type="text" inputmode="numeric" pattern="[0-9]+" value="100" />
+            </label>
+          </fieldset>
 
           <label class="full-span">
             Paste your bingo list
@@ -385,6 +390,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20261007-auto-qr"></script>
+    <script src="app.js?v=20261009-card-count-presets"></script>
   </body>
 </html>
