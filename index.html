@@ -75,6 +75,14 @@
           </fieldset>
 
           <label class="full-span">
+            Brand
+            <select id="brandSelect">
+              <option value="all-occasions-printables">All Occasions Printables</option>
+              <option value="all-occasions-bingo">All Occasions Bingo</option>
+            </select>
+          </label>
+
+          <label class="full-span">
             Bingo name
             <input id="productName" type="text" placeholder="e.g. 70s Music Bingo" maxlength="80" />
             <span class="hint">Used for filenames and markers. The card header comes from your uploaded image.</span>
@@ -362,7 +370,7 @@
             </ul>
           </section>
 
-          <section class="thank-you-offer">
+          <section class="thank-you-offer" data-brand-offer>
             <h4>Get 50% Off Your Next Order</h4>
             <p>Join our mailing list and your 50% discount code will be sent instantly:</p>
             <a data-brand-discount target="_blank" rel="noopener"></a>
@@ -390,6 +398,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20261009-brand-configuration"></script>
+    <script src="app.js?v=20261009-bingo-brand"></script>
   </body>
 </html>

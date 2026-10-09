@@ -44,7 +44,24 @@ const defaultBrand = Object.freeze({
   discountPath: "/save",
 });
 
-function applyBrandConfiguration(root, brand = defaultBrand) {
+const brands = Object.freeze({
+  [defaultBrand.id]: defaultBrand,
+  "all-occasions-bingo": Object.freeze({
+    id: "all-occasions-bingo",
+    name: "All Occasions Bingo",
+    websiteUrl: "",
+    etsyUrl: "https://alloccasionsbingo.etsy.com",
+    thankYouBannerUrl: "public/thank-you/all-occasions-bingo-banner.png",
+    discountPath: "",
+  }),
+});
+const brandSelect = document.querySelector("#brandSelect");
+
+function getCurrentBrand() {
+  return brands[brandSelect.value] || defaultBrand;
+}
+
+function applyBrandConfiguration(root, brand = getCurrentBrand()) {
   root.querySelectorAll("[data-brand-shop]").forEach((link) => {
     link.href = brand.etsyUrl;
     link.textContent = brand.name;
@@ -53,10 +70,19 @@ function applyBrandConfiguration(root, brand = defaultBrand) {
     image.src = brand.thankYouBannerUrl;
     image.alt = brand.name;
   });
+  const hasDiscount = Boolean(brand.websiteUrl && brand.discountPath);
+  root.querySelectorAll("[data-brand-offer]").forEach((section) => {
+    section.hidden = !hasDiscount;
+  });
   root.querySelectorAll("[data-brand-discount]").forEach((link) => {
-    const url = new URL(brand.discountPath, brand.websiteUrl);
-    link.href = url.href;
-    link.textContent = `${url.host}${url.pathname}`;
+    if (hasDiscount) {
+      const url = new URL(brand.discountPath, brand.websiteUrl);
+      link.href = url.href;
+      link.textContent = `${url.host}${url.pathname}`;
+    } else {
+      link.removeAttribute("href");
+      link.textContent = "";
+    }
   });
   root.querySelectorAll("[data-brand-etsy]").forEach((link) => {
     link.href = brand.etsyUrl;
@@ -172,6 +198,7 @@ function getProductName() {
 
 function getSettingsSnapshot() {
   return {
+    brandId: getCurrentBrand().id,
     productName: inputs.productName?.value || "",
     count: inputs.count.value,
     items: inputs.items.value,
@@ -204,6 +231,8 @@ function applySettingsSnapshot(savedSettings) {
   }
 
   isRestoringSettings = true;
+  brandSelect.value = brands[savedSettings.brandId] ? savedSettings.brandId : defaultBrand.id;
+  applyBrandConfiguration(document);
   if (inputs.productName) {
     inputs.productName.value = savedSettings.productName ?? savedSettings.occasion ?? "";
   }
@@ -281,6 +310,8 @@ function restoreSettings() {
 }
 
 function resetSettings() {
+  brandSelect.value = defaultBrand.id;
+  applyBrandConfiguration(document);
   localStorage.removeItem(storageKey);
   selectedCloudGameId = "";
   if (savedGameSelect) {
@@ -2441,6 +2472,12 @@ document.querySelector("#cardCountPresets").addEventListener("click", (event) =>
     markCardsNeedRegeneration();
     saveSettings();
   });
+});
+
+brandSelect.addEventListener("change", () => {
+  applyBrandConfiguration(document);
+  updatePreviewScale();
+  saveSettings();
 });
 
 printFullSizeButton.addEventListener("click", () => printExport("cards-full"));
