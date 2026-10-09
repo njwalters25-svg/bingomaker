@@ -35,6 +35,35 @@ const printPageStyle = document.querySelector("#printPageStyle");
 const primaryColor = document.querySelector("#primaryColor");
 const highlightColor = document.querySelector("#highlightColor");
 
+const defaultBrand = Object.freeze({
+  id: "all-occasions-printables",
+  name: "All Occasions Printables",
+  websiteUrl: "https://alloccasionsprintables.com",
+  etsyUrl: "https://alloccasionprints.etsy.com",
+  thankYouBannerUrl: "public/thank-you/banner.png?v=20260514",
+  discountPath: "/save",
+});
+
+function applyBrandConfiguration(root, brand = defaultBrand) {
+  root.querySelectorAll("[data-brand-shop]").forEach((link) => {
+    link.href = brand.etsyUrl;
+    link.textContent = brand.name;
+  });
+  root.querySelectorAll("[data-brand-banner]").forEach((image) => {
+    image.src = brand.thankYouBannerUrl;
+    image.alt = brand.name;
+  });
+  root.querySelectorAll("[data-brand-discount]").forEach((link) => {
+    const url = new URL(brand.discountPath, brand.websiteUrl);
+    link.href = url.href;
+    link.textContent = `${url.host}${url.pathname}`;
+  });
+  root.querySelectorAll("[data-brand-etsy]").forEach((link) => {
+    link.href = brand.etsyUrl;
+    link.textContent = new URL(brand.etsyUrl).host;
+  });
+}
+
 let freeImageData = "";
 let freeImageAspectRatio = 1;
 let selectedFreePreset = "text";
@@ -2124,7 +2153,9 @@ function renderMarkers() {
 }
 
 function renderThankYou() {
-  return thankYouTemplate.content.firstElementChild.cloneNode(true);
+  const page = thankYouTemplate.content.firstElementChild.cloneNode(true);
+  applyBrandConfiguration(page);
+  return page;
 }
 
 function renderExtras(items) {
@@ -2428,6 +2459,7 @@ deleteSavedGameButton?.addEventListener("click", deleteSelectedCloudGame);
 
 window.addEventListener("resize", updatePreviewScale);
 
+applyBrandConfiguration(document);
 restoreSettings();
 updateCardCountPresets();
 updateFreePresetSelection();
