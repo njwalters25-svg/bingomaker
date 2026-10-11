@@ -2102,12 +2102,57 @@ body[data-cards-per-page="2"] .bingo-card footer {
 }
 
 .bingo-pack.master-list-page .master-list {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--master-list-columns, 3), minmax(0, 1fr));
   min-height: 0;
   column-gap: 18px;
   row-gap: 7px;
   padding: 0;
 }
+
+.bingo-pack.master-list-page header {
+  grid-template-columns: minmax(0, 1fr) 180px;
+}
+
+.bingo-pack.master-list-page .bingo-pack-brand { grid-column: 1 / -1; }
+.bingo-pack.master-list-page header h3,
+.bingo-pack.master-list-page header .bingo-pack-game,
+.bingo-pack.master-list-page header .extra-subtitle { grid-column: 1; }
+.bingo-pack.master-list-page .bingo-pack-artwork {
+  grid-column: 2;
+  grid-row: 2 / 5;
+  align-self: center;
+  width: 100%;
+  max-width: 100%;
+  height: 60px;
+}
+
+.bingo-pack.master-list-page .bingo-songlist-column {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.bingo-pack.master-list-page .bingo-songlist-column .master-list-item { flex-shrink: 0; }
+.bingo-pack.master-list-page.bingo-songlist-compact .master-list-item {
+  font-size: 13.5px;
+  line-height: 1.15;
+}
+.bingo-pack.master-list-page.bingo-songlist-compact .bingo-songlist-column { gap: 4px; }
+
+.extra-page.bingo-pack.tips-page { gap: 22px; }
+.bingo-pack.tips-page .tips-grid { gap: 22px; align-content: start; }
+.bingo-pack.tips-page section {
+  padding: 0 0 0 14px;
+  border: 0;
+  border-left: 3px solid var(--bingo-teal);
+  border-radius: 0;
+}
+.bingo-pack.tips-page section:last-child { border-left-color: var(--bingo-pink); }
+.bingo-pack.tips-page h4 { margin-bottom: 9px; font-size: 24px; }
+.bingo-pack.tips-page li,
+.bingo-pack.tips-page p { font-size: 18px; line-height: 1.4; }
 
 .bingo-pack.master-list-page .master-list-item {
   grid-template-columns: 13px 20px minmax(0, 1fr);

@@ -2143,6 +2143,11 @@ function renderTips() {
     ? `Before the game starts, check the playlist shows ${songCount} song${songCount === 1 ? "" : "s"} and that they are playable.`
     : "Before the game starts, check that every playlist track is visible and playable.";
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
+  if (getCurrentBrand().id === "all-occasions-bingo") {
+    decorateBingoPackHeader(page, "Before You Start", "A few checks for a smooth-running game.", false);
+    const heading = page.querySelector(".tips-grid section:last-child h4");
+    if (heading) heading.textContent = "Music use note";
+  }
   return page;
 }
 
@@ -2187,15 +2192,25 @@ function decorateBingoPackHeader(page, title, subtitle, artwork = true) {
   header.append(heading, game, description);
 }
 
-function renderMasterListPage(items, startIndex, pageIndex, pageCount) {
+function renderMasterListPage(items, startIndex, pageIndex, pageCount, layout = {}) {
   const page = masterListTemplate.content.firstElementChild.cloneNode(true);
   const list = page.querySelector(".master-list");
   const subtitle = page.querySelector(".extra-subtitle");
   const isBingoBrand = getCurrentBrand().id === "all-occasions-bingo";
-  const columnCount = isBingoBrand ? 3 : getMasterListColumnCount(items.length);
+  const columnCount = isBingoBrand ? (layout.columns || 3) : getMasterListColumnCount(items.length);
   const rowCount = Math.ceil(items.length / columnCount);
 
   list.style.setProperty("--master-list-columns", columnCount);
+  if (isBingoBrand && layout.compact) page.classList.add("bingo-songlist-compact");
+  const columns = [];
+  if (isBingoBrand) {
+    for (let column = 0; column < columnCount; column += 1) {
+      const container = document.createElement("div");
+      container.className = "bingo-songlist-column";
+      columns.push(container);
+      list.append(container);
+    }
+  }
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
   if (!isBingoBrand && items.length > 76) {
     page.classList.add("master-list-ultra-compact");
@@ -2228,7 +2243,8 @@ function renderMasterListPage(items, startIndex, pageIndex, pageCount) {
     text.textContent = item;
 
     row.append(box, number, text);
-    list.append(row);
+    if (isBingoBrand) columns[column].append(row);
+    else list.append(row);
   });
   if (isBingoBrand) {
     decorateBingoPackHeader(page, "Complete Songlist", `${parseItems(inputs.items.value).length} songs - tick each song as it plays. Page ${pageIndex + 1} of ${pageCount}.`);
@@ -2263,6 +2279,15 @@ function renderBingoSonglist(items) {
   area.className = "bingo-pack-measure";
   document.body.append(area);
   try {
+    // Try the complete list first, using independent columns to avoid wasted row height.
+    if (items.length > 0 && items.length <= 84) {
+      for (const layout of [{ columns: 3 }, { columns: 3, compact: true }, { columns: 4, compact: true }]) {
+        const page = renderMasterListPage(items, 0, 0, 1, layout);
+        area.replaceChildren(page);
+        const list = page.querySelector(".master-list");
+        if (list.scrollHeight <= list.clientHeight + 1) return [page];
+      }
+    }
     let start = 0;
     while (start < items.length) {
       let low = 1;
