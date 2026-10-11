@@ -1923,6 +1923,265 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 }
 
+/* All Occasions Bingo printable pages; the Printables selectors remain unchanged. */
+.extra-page.bingo-pack {
+  --bingo-navy: #151c32;
+  --bingo-pink: #e9237c;
+  --bingo-teal: #127c83;
+  color: var(--bingo-navy);
+  font-family: "Alegreya Sans", Arial, sans-serif;
+  gap: 18px;
+  letter-spacing: 0;
+}
+
+.extra-page.bingo-pack header {
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--bingo-pink);
+  text-align: left;
+}
+
+.bingo-pack .bingo-pack-brand {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: var(--bingo-navy);
+  font-size: 20px;
+}
+
+.bingo-pack-brand span {
+  font-size: 14px;
+  color: var(--bingo-teal);
+}
+
+.extra-page.bingo-pack h3 {
+  font-family: "Alegreya Sans", Arial, sans-serif;
+  font-size: 36px;
+  line-height: 1.05;
+  text-transform: none;
+  color: var(--bingo-navy);
+}
+
+.extra-page.bingo-pack .bingo-pack-game {
+  margin: 0;
+  color: var(--bingo-teal);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.bingo-pack .instructions-brand-image,
+.bingo-pack .bingo-pack-artwork {
+  display: block;
+  justify-self: center;
+  width: 65%;
+  height: 64px;
+  max-width: 65%;
+  max-height: 64px;
+  object-fit: contain;
+}
+
+.extra-page.bingo-pack h4 {
+  color: var(--bingo-navy);
+  margin: 0 0 5px;
+  font-size: 21px;
+}
+
+.extra-page.bingo-pack p,
+.extra-page.bingo-pack li {
+  color: var(--bingo-navy);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.bingo-pack.instructions-page .instructions-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.extra-page.bingo-pack.instructions-page p,
+.extra-page.bingo-pack.instructions-page li {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.bingo-pack.instructions-page.has-youtube-playlist .instructions-content { gap: 8px; }
+.bingo-pack.instructions-page.has-youtube-playlist .instructions-brand-image { height: 48px; }
+.extra-page.bingo-pack.instructions-page.has-youtube-playlist p,
+.extra-page.bingo-pack.instructions-page.has-youtube-playlist li { font-size: 14px; }
+.bingo-pack.instructions-page.has-youtube-playlist h4 { font-size: 19px; }
+
+.bingo-pack.instructions-page.bingo-pack-compact .instructions-content { gap: 7px; }
+.bingo-pack.instructions-page.bingo-pack-compact .instructions-brand-image { height: 40px; }
+.extra-page.bingo-pack.instructions-page.bingo-pack-compact p,
+.extra-page.bingo-pack.instructions-page.bingo-pack-compact li { font-size: 14px; }
+.bingo-pack.instructions-page.bingo-pack-compact h4 { font-size: 19px; }
+.bingo-pack.instructions-page.bingo-pack-compact .how-to-play ol { gap: 3px; }
+
+.bingo-pack.instructions-page section {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.bingo-pack.instructions-page .included-pack {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d5dce1;
+}
+
+.bingo-pack.instructions-page .included-pack li {
+  font-size: 13px;
+}
+
+.bingo-pack .music-access {
+  gap: 5px;
+}
+
+.bingo-pack.instructions-page .playlist-links {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bingo-pack.instructions-page .playlist-card {
+  grid-template-columns: minmax(0, 1fr) 100px;
+  padding: 8px 0;
+  border: 0;
+  border-top: 2px solid var(--bingo-teal);
+  border-radius: 0;
+  gap: 10px;
+  align-items: start;
+}
+
+.bingo-pack.instructions-page .playlist-card h5 {
+  margin: 0 0 5px;
+  font-size: 17px;
+  color: var(--bingo-navy);
+}
+
+.bingo-pack.instructions-page .playlist-card p {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.bingo-pack.instructions-page .playlist-card a {
+  color: var(--bingo-teal);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.bingo-pack.instructions-page .playlist-qr {
+  width: 100px;
+  height: 100px;
+}
+
+.bingo-pack.instructions-page.has-youtube-playlist .playlist-card:nth-child(2) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.bingo-pack.instructions-page .how-to-play ol {
+  gap: 5px;
+}
+
+.bingo-pack.instructions-page .bingo-winning {
+  margin-top: 9px;
+  padding-left: 10px;
+  border-left: 3px solid var(--bingo-teal);
+}
+
+.bingo-pack.instructions-page .music-note {
+  padding-top: 8px;
+  border-top: 1px solid #d5dce1;
+}
+
+.bingo-pack.instructions-page .music-note p {
+  font-size: 14px;
+}
+
+.bingo-pack.master-list-page .master-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 0;
+  column-gap: 18px;
+  row-gap: 7px;
+  padding: 0;
+}
+
+.bingo-pack.master-list-page .master-list-item {
+  grid-template-columns: 13px 20px minmax(0, 1fr);
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.bingo-pack.master-list-page .check-box {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #73838a;
+  border-radius: 0;
+}
+
+.bingo-pack.master-list-page .master-number {
+  color: var(--bingo-teal);
+  font-size: 12px;
+}
+
+.bingo-pack .extra-subtitle {
+  margin: 0;
+  font-size: 16px;
+}
+
+.extra-page.bingo-pack.markers-page {
+  gap: 22px;
+}
+
+.bingo-pack.markers-page header {
+  height: 144px;
+  align-content: start;
+}
+
+.bingo-pack footer {
+  color: #526071;
+  font-size: 13px;
+}
+
+.bingo-pack-measure {
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.bingo-pack-measure .extra-page {
+  height: var(--screen-page-height);
+  transform: none;
+}
+
+@media print {
+  .instructions-frame.bingo-pack-frame {
+    height: calc(var(--page-height) - 0.02in) !important;
+    overflow: hidden;
+  }
+
+  .instructions-frame.bingo-pack-frame .bingo-pack.instructions-page {
+    height: 100%;
+    padding: 44px 54px 34px;
+    gap: 18px;
+  }
+
+  .bingo-pack.instructions-page header {
+    gap: 6px;
+    padding-bottom: 14px;
+  }
+
+  .bingo-pack.instructions-page h3 { font-size: 36px; }
+  .bingo-pack.instructions-page section { padding: 0; }
+}
+
 @page {
   margin: 0;
 }

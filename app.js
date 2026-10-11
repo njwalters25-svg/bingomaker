@@ -3,6 +3,7 @@ const cardsContainer = document.querySelector("#cards");
 const extrasContainer = document.querySelector("#extras");
 const cardTemplate = document.querySelector("#cardTemplate");
 const instructionsTemplate = document.querySelector("#instructionsTemplate");
+const bingoInstructionsTemplate = document.querySelector("#bingoInstructionsTemplate");
 const tipsTemplate = document.querySelector("#tipsTemplate");
 const masterListTemplate = document.querySelector("#masterListTemplate");
 const markersTemplate = document.querySelector("#markersTemplate");
@@ -1861,6 +1862,7 @@ function markCardsNeedRegeneration() {
 function createExtraFrame(page) {
   const frame = document.createElement("div");
   frame.className = "extra-frame";
+  if (page.classList.contains("bingo-pack")) frame.classList.add("bingo-pack-frame");
   if (page.classList.contains("instructions-page")) {
     frame.classList.add("instructions-frame");
   }
@@ -2019,7 +2021,14 @@ function getRequestedCardCount() {
 }
 
 function renderInstructions() {
-  const page = instructionsTemplate.content.firstElementChild.cloneNode(true);
+  const isBingoBrand = getCurrentBrand().id === "all-occasions-bingo";
+  const template = isBingoBrand ? bingoInstructionsTemplate : instructionsTemplate;
+  const page = template.content.firstElementChild.cloneNode(true);
+  if (isBingoBrand) {
+    page.querySelector(".bingo-pack-game").textContent = getProductName() || "Music Bingo";
+    const songCount = parseItems(inputs.items.value).length;
+    page.querySelector(".bingo-ready p").textContent = `Print your preferred cards and have markers ready. Before hosting, check that all ${songCount} songs are available and playable. Contact the seller if a song is missing or unavailable.`;
+  }
   const brandImage = page.querySelector(".instructions-brand-image");
   if (headerImageData) {
     brandImage.src = headerImageData;
@@ -2045,6 +2054,10 @@ function renderInstructions() {
   if (hasYoutubePlaylist) {
     includedItems.splice(4, 0, "YouTube playlist link and QR code");
   }
+  if (isBingoBrand) {
+    includedItems[3] = "Short-clips player link and QR code";
+    includedItems[hasYoutubePlaylist ? 5 : 4] = "Complete Songlist";
+  }
   includedItems.forEach((item) => {
     const listItem = document.createElement("li");
     listItem.textContent = item;
@@ -2057,8 +2070,8 @@ function renderInstructions() {
   const youtubePlaylistQr = getYoutubePlaylistQrData();
   const playlistCards = [
     createPlaylistCard({
-      title: "Full Spotify playlist",
-      description: "Open the playlist and press the main Play button. Shuffle is fine, or follow the master checklist.",
+      title: isBingoBrand ? "Full-song Spotify playlist" : "Full Spotify playlist",
+      description: isBingoBrand ? "Play full songs using the playlist's main Play button. Shuffle is fine, or follow the Complete Songlist." : "Open the playlist and press the main Play button. Shuffle is fine, or follow the master checklist.",
       url: inputs.spotifyFullUrl.value,
       qrData: spotifyFullQr,
       qrAlt: "QR code for the full Spotify playlist",
@@ -2077,8 +2090,8 @@ function renderInstructions() {
 
   playlistCards.push(
     createPlaylistCard({
-      title: "Embedded preview playlist",
-      description: "Use this option for shorter song previews if the host does not want to log in.",
+      title: isBingoBrand ? "Short-clips player" : "Embedded preview playlist",
+      description: isBingoBrand ? "Approximately 30-second song previews where available. The host opens this page for short-clips play." : "Use this option for shorter song previews if the host does not want to log in.",
       url: inputs.spotifyPreviewUrl.value,
       qrData: spotifyPreviewQr,
       qrAlt: "QR code for the embedded preview playlist",
@@ -2086,6 +2099,12 @@ function renderInstructions() {
   );
 
   playlistLinks.append(...playlistCards);
+  if (isBingoBrand) {
+    playlistCards.forEach((card) => {
+      const link = card.querySelector("a");
+      if (link.hasAttribute("href")) link.textContent = `Open ${card.querySelector("h5").textContent}`;
+    });
+  }
 
   const quickStartItems = page.querySelectorAll(".how-to-play li");
   if (quickStartItems[1]) {
@@ -2098,8 +2117,21 @@ function renderInstructions() {
       ? "Press the main Play button on the playlist. Do not click individual song or video titles."
       : "Press the main Play button on the playlist. Do not click individual song titles.";
   }
+  if (isBingoBrand) {
+    quickStartItems[1].textContent = hasYoutubePlaylist
+      ? "Open the Spotify playlist, YouTube playlist, or short-clips player."
+      : "Open the Spotify playlist or short-clips player.";
+  }
 
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
+  if (isBingoBrand) {
+    const area = document.createElement("div");
+    area.className = "bingo-pack-measure";
+    area.append(page);
+    document.body.append(area);
+    if (page.scrollHeight > page.clientHeight) page.classList.add("bingo-pack-compact");
+    area.remove();
+  }
   return page;
 }
 
@@ -2125,18 +2157,49 @@ function getMasterListColumnCount(itemCount) {
   return itemCount > 60 ? 4 : 3;
 }
 
+function decorateBingoPackHeader(page, title, subtitle, artwork = true) {
+  page.classList.add("bingo-pack");
+  const header = page.querySelector("header");
+  header.replaceChildren();
+  const brand = document.createElement("div");
+  brand.className = "bingo-pack-brand";
+  const name = document.createElement("strong");
+  name.textContent = "All Occasions Bingo";
+  const tagline = document.createElement("span");
+  tagline.textContent = "Print. Play. Bingo. Repeat!";
+  brand.append(name, tagline);
+  header.append(brand);
+  if (artwork && headerImageData) {
+    const image = document.createElement("img");
+    image.className = "bingo-pack-artwork";
+    image.src = headerImageData;
+    image.alt = getProductName() || "Music Bingo";
+    header.append(image);
+  }
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  const game = document.createElement("p");
+  game.className = "bingo-pack-game";
+  game.textContent = getProductName() || "Music Bingo";
+  const description = document.createElement("p");
+  description.className = "extra-subtitle";
+  description.textContent = subtitle;
+  header.append(heading, game, description);
+}
+
 function renderMasterListPage(items, startIndex, pageIndex, pageCount) {
   const page = masterListTemplate.content.firstElementChild.cloneNode(true);
   const list = page.querySelector(".master-list");
   const subtitle = page.querySelector(".extra-subtitle");
-  const columnCount = getMasterListColumnCount(items.length);
+  const isBingoBrand = getCurrentBrand().id === "all-occasions-bingo";
+  const columnCount = isBingoBrand ? 3 : getMasterListColumnCount(items.length);
   const rowCount = Math.ceil(items.length / columnCount);
 
   list.style.setProperty("--master-list-columns", columnCount);
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
-  if (items.length > 76) {
+  if (!isBingoBrand && items.length > 76) {
     page.classList.add("master-list-ultra-compact");
-  } else if (items.length > 54) {
+  } else if (!isBingoBrand && items.length > 54) {
     page.classList.add("master-list-compact");
   }
 
@@ -2167,11 +2230,17 @@ function renderMasterListPage(items, startIndex, pageIndex, pageCount) {
     row.append(box, number, text);
     list.append(row);
   });
+  if (isBingoBrand) {
+    decorateBingoPackHeader(page, "Complete Songlist", `${parseItems(inputs.items.value).length} songs - tick each song as it plays. Page ${pageIndex + 1} of ${pageCount}.`);
+  }
   return page;
 }
 
 function renderMasterList(items) {
   const sortedItems = [...items].sort((first, second) => first.localeCompare(second, undefined, { sensitivity: "base" }));
+  if (getCurrentBrand().id === "all-occasions-bingo") {
+    return renderBingoSonglist(sortedItems);
+  }
   const pageSize = getMasterListPageSize();
   const pageCount = Math.ceil(sortedItems.length / pageSize);
   const pages = [];
@@ -2188,6 +2257,42 @@ function renderMasterList(items) {
   return pages;
 }
 
+function renderBingoSonglist(items) {
+  const pages = [];
+  const area = document.createElement("div");
+  area.className = "bingo-pack-measure";
+  document.body.append(area);
+  try {
+    let start = 0;
+    while (start < items.length) {
+      let low = 1;
+      let high = Math.min(84, items.length - start);
+      let best = 1;
+      // Measure actual wrapped rows at the export dimensions rather than estimating text length.
+      while (low <= high) {
+        const count = Math.floor((low + high) / 2);
+        const page = renderMasterListPage(items.slice(start, start + count), start, pages.length, 1);
+        area.replaceChildren(page);
+        const list = page.querySelector(".master-list");
+        if (list.scrollHeight <= list.clientHeight + 1) {
+          best = count;
+          low = count + 1;
+        } else {
+          high = count - 1;
+        }
+      }
+      pages.push(renderMasterListPage(items.slice(start, start + best), start, pages.length, 1));
+      start += best;
+    }
+  } finally {
+    area.remove();
+  }
+  pages.forEach((page, index) => {
+    page.querySelector(".extra-subtitle").textContent = `${items.length} songs - tick each song as it plays. Page ${index + 1} of ${pages.length}.`;
+  });
+  return pages;
+}
+
 function renderMarkersPage(size = "large") {
   const page = markersTemplate.content.firstElementChild.cloneNode(true);
   const grid = page.querySelector(".markers-grid");
@@ -2200,6 +2305,18 @@ function renderMarkersPage(size = "large") {
     : "Cut these out for full-size cards or easier handling.";
   page.querySelector("footer").textContent = inputs.footerText.value.trim();
 
+  if (getCurrentBrand().id === "all-occasions-bingo") {
+    const area = document.createElement("div");
+    area.className = "bingo-pack-measure";
+    area.append(page);
+    document.body.append(area);
+    const headerHeight = page.querySelector("header").getBoundingClientRect().height;
+    const footerHeight = page.querySelector("footer").getBoundingClientRect().height;
+    area.remove();
+    decorateBingoPackHeader(page, "Bingo Markers", subtitle.textContent, false);
+    page.querySelector("header").style.height = `${headerHeight}px`;
+    page.querySelector("footer").style.height = `${footerHeight}px`;
+  }
   for (let marker = 0; marker < markerCount; marker += 1) {
     const token = document.createElement("span");
     token.className = "marker-token";

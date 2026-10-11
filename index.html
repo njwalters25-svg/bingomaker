@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800;900&family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20261009-card-count-presets" />
+    <link rel="stylesheet" href="styles.css?v=20261011-bingo-pack" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -293,6 +293,36 @@
       </article>
     </template>
 
+    <template id="bingoInstructionsTemplate">
+      <article class="extra-page instructions-page bingo-pack">
+        <header>
+          <div class="bingo-pack-brand"><strong>All Occasions Bingo</strong><span>Print. Play. Bingo. Repeat!</span></div>
+          <img class="instructions-brand-image" alt="" />
+          <h3>Music Bingo Instructions</h3>
+          <p class="bingo-pack-game"></p>
+        </header>
+        <div class="instructions-content">
+          <section class="included-pack"><h4>In your pack</h4><ul></ul></section>
+          <section class="bingo-ready"><h4>01 &nbsp; Get ready to play</h4><p></p></section>
+          <section class="music-access"><h4>02 &nbsp; Choose your music</h4><div class="playlist-links"></div></section>
+          <section class="how-to-play">
+            <h4>03 &nbsp; Play, mark and win</h4>
+            <ol>
+              <li>Give each player a bingo card and markers, or a pen.</li>
+              <li>Open the Spotify playlist or short-clips player.</li>
+              <li>Press the main Play button on the playlist. Do not click individual song titles.</li>
+              <li>Play in order, on shuffle, or using the Complete Songlist.</li>
+              <li>Players cover or mark the matching song square on their card.</li>
+              <li>The first to complete the agreed pattern calls &ldquo;Bingo!&rdquo; The host checks the marked songs against those played before confirming the win.</li>
+            </ol>
+            <p class="bingo-winning"><strong>Agree a winning pattern before starting:</strong> a row, column, diagonal, four corners, or full house (every square). Agree how to use the centre/free square before playing.</p>
+          </section>
+          <section class="music-note"><h4>Host note</h4><p>Spotify availability can vary by device, region, account or sync settings. Check the music before playing and follow along with the Complete Songlist. See the host-tips page for troubleshooting and music-use guidance.</p></section>
+        </div>
+        <footer></footer>
+      </article>
+    </template>
+
     <template id="tipsTemplate">
       <article class="extra-page tips-page">
         <header>
@@ -398,6 +428,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20261009-etsy-png-filenames"></script>
+    <script src="app.js?v=20261011-bingo-pack"></script>
   </body>
 </html>
