@@ -5,6 +5,7 @@ deployment:
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
+    - /bin/cp playlist-publisher.js $DEPLOYPATH
     - /bin/cp robots.txt $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/public/free-square
     - /bin/cp -R public/free-square/* $DEPLOYPATH/public/free-square/
