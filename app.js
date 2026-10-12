@@ -1502,6 +1502,14 @@ async function exportPngSamplePack() {
   setStatus("Creating PNG sample pack...");
 
   try {
+    if (brandId === "all-occasions-bingo") {
+      zip.file("assets/listing-data.json", JSON.stringify({
+        version: 1,
+        title: getProductName(),
+        previewUrl: inputs.spotifyPreviewUrl.value.trim(),
+        spotifyUrl: inputs.spotifyFullUrl.value.trim(),
+      }, null, 2));
+    }
     const previewQrData = getSpotifyPreviewQrData();
     if (previewQrData) {
       zip.file("assets/preview-qr.png", dataUrlToBlob(previewQrData));
@@ -1542,7 +1550,7 @@ async function exportPngSamplePack() {
         await addElementPngToZip(zip, `extras/complete-songlist-${String(index + 1).padStart(2, "0")}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }
 
-      for (const cardCount of [100, 200, 300]) {
+      for (const cardCount of [50, 100, 200, 300]) {
         const page = renderInstructionsForCount(cardCount);
         await addElementPngToZip(zip, `instructions/instructions-${cardCount}-cards.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }

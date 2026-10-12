@@ -18,6 +18,8 @@ async function runExport(brandId, cardCount = 20, fail = false) {
     cardsContainer: { querySelectorAll: () => cards },
     validateReadyToExport: () => true,
     getProductNameForFilename: () => "test-game",
+    getProductName: () => "Test Game",
+    inputs: { spotifyPreviewUrl: { value: "https://alloccasionsbingo.com/play/test-game/" }, spotifyFullUrl: { value: "https://open.spotify.com/playlist/3q2S3GW2PxyJMJ5oDSEyv1" } },
     getCurrentBrand: () => ({ id: brandId }),
     getSpotifyPreviewQrData: () => "preview-qr-source",
     dataUrlToBlob: data => data,
@@ -58,18 +60,20 @@ async function runExport(brandId, cardCount = 20, fail = false) {
     return;
   }
   assert.equal(context.download, `test-game-${brandId}-png-sample-pack.zip`);
-  assert.deepEqual(counts, [100, 200, 300]);
+  assert.deepEqual(counts, [50, 100, 200, 300]);
   const expected = [
+    ...(brandId === "all-occasions-bingo" ? ["assets/listing-data.json"] : []),
     "assets/preview-qr.png", "assets/bingo-marker.png",
     ...Array.from({ length: Math.min(cardCount, 20) }, (_, i) => `full-size-cards/card-${String(i + 1).padStart(2, "0")}.png`),
     ...Array.from({ length: Math.min(2, Math.ceil(cardCount / 2)) }, (_, i) => `two-up-cards/two-up-${String(i + 1).padStart(2, "0")}.png`),
     "extras/bingo-markers-large.png", "extras/bingo-markers-small.png",
     "extras/complete-songlist-01.png",
-    ...[100, 200, 300].map(count => `instructions/instructions-${count}-cards.png`),
+    ...[50, 100, 200, 300].map(count => `instructions/instructions-${count}-cards.png`),
   ];
   assert.deepEqual([...files.keys()], expected);
   assert.equal(files.get("assets/bingo-marker.png"), "marker-source");
   assert.equal(files.get("assets/preview-qr.png"), "preview-qr-source");
+  if (brandId === "all-occasions-bingo") assert.equal(JSON.parse(files.get("assets/listing-data.json")).previewUrl, context.inputs.spotifyPreviewUrl.value);
 }
 
 (async () => {
