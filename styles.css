@@ -1983,6 +1983,12 @@ body[data-cards-per-page="2"] .bingo-card footer {
   object-fit: contain;
 }
 
+/* Preserve intrinsic artwork proportions in canvas exports. */
+.bingo-pack .instructions-brand-image {
+  width: auto;
+  height: auto;
+}
+
 .extra-page.bingo-pack h4 {
   color: var(--bingo-navy);
   margin: 0 0 5px;
@@ -2010,13 +2016,13 @@ body[data-cards-per-page="2"] .bingo-card footer {
 }
 
 .bingo-pack.instructions-page.has-youtube-playlist .instructions-content { gap: 8px; }
-.bingo-pack.instructions-page.has-youtube-playlist .instructions-brand-image { height: 48px; }
+.bingo-pack.instructions-page.has-youtube-playlist .instructions-brand-image { max-height: 48px; }
 .extra-page.bingo-pack.instructions-page.has-youtube-playlist p,
 .extra-page.bingo-pack.instructions-page.has-youtube-playlist li { font-size: 14px; }
 .bingo-pack.instructions-page.has-youtube-playlist h4 { font-size: 19px; }
 
 .bingo-pack.instructions-page.bingo-pack-compact .instructions-content { gap: 7px; }
-.bingo-pack.instructions-page.bingo-pack-compact .instructions-brand-image { height: 40px; }
+.bingo-pack.instructions-page.bingo-pack-compact .instructions-brand-image { max-height: 40px; }
 .extra-page.bingo-pack.instructions-page.bingo-pack-compact p,
 .extra-page.bingo-pack.instructions-page.bingo-pack-compact li { font-size: 14px; }
 .bingo-pack.instructions-page.bingo-pack-compact h4 { font-size: 19px; }
