@@ -2214,6 +2214,7 @@ body[data-cards-per-page="2"] .bingo-card footer {
 
 @media print {
   .instructions-frame.bingo-pack-frame {
+    position: relative;
     height: calc(var(--page-height) - 0.02in) !important;
     overflow: hidden;
     break-inside: avoid;
@@ -2221,7 +2222,10 @@ body[data-cards-per-page="2"] .bingo-card footer {
   }
 
   .instructions-frame.bingo-pack-frame .bingo-pack.instructions-page {
-    /* Percentage heights can spill into a blank fragment in Chrome printing. */
+    /* Keep Chrome from fragmenting the nested grid after its fixed-height frame. */
+    position: absolute;
+    top: 0;
+    left: 0;
     height: calc(var(--page-height) - 0.02in);
     padding: 44px 54px 34px;
     gap: 18px;
