@@ -2213,20 +2213,17 @@ body[data-cards-per-page="2"] .bingo-card footer {
 }
 
 @media print {
+  .extras-preview:has(> .bingo-pack-frame) {
+    margin-top: 0;
+  }
+
   .instructions-frame.bingo-pack-frame {
-    position: relative;
     height: calc(var(--page-height) - 0.02in) !important;
     overflow: hidden;
-    break-inside: avoid;
-    page-break-inside: avoid;
   }
 
   .instructions-frame.bingo-pack-frame .bingo-pack.instructions-page {
-    /* Keep Chrome from fragmenting the nested grid after its fixed-height frame. */
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: calc(var(--page-height) - 0.02in);
+    height: 100%;
     padding: 44px 54px 34px;
     gap: 18px;
   }
