@@ -63,6 +63,9 @@ function getCurrentBrand() {
 }
 
 function applyBrandConfiguration(root, brand = getCurrentBrand()) {
+  root.querySelectorAll("[data-bingo-publishing]").forEach((control) => {
+    control.hidden = brand.id !== "all-occasions-bingo";
+  });
   root.querySelectorAll("[data-brand-shop]").forEach((link) => {
     link.href = brand.etsyUrl;
     link.textContent = brand.name;
