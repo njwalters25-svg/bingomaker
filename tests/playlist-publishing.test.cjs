@@ -23,6 +23,8 @@ vm.runInContext(fs.readFileSync(path.join(__dirname, '../playlist-publisher.js')
 context.inputs.etsyListingUrl = { value: '' };
 context.inputs.catalogueVisible = { checked: false };
 assert(context.isEtsyListingUrl('https://www.etsy.com/uk/listing/123456789/test'));
+assert(context.isEtsyListingUrl('https://alloccasionsbingo.etsy.com/listing/4594024039'));
+assert.equal(context.isEtsyListingUrl('https://alloccasionsbingo.etsy.com.evil.example/listing/4594024039'), false);
 for (const url of ['https://etsy.com.evil.example/listing/123', 'javascript:alert(1)', 'https://www.etsy.com/shop/test', 'https://user@www.etsy.com/listing/123']) assert.equal(context.isEtsyListingUrl(url), false);
 context.inputs.catalogueVisible.checked = true;
 context.beginPlaylistPublication(); assert.equal(context.opened, undefined);

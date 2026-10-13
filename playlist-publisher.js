@@ -8,7 +8,7 @@ function getCatalogueSettings() {
 function isEtsyListingUrl(value) {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && ["etsy.com", "www.etsy.com"].includes(url.hostname) && !url.username && !url.password && !url.port &&
+    return url.protocol === "https:" && ["etsy.com", "www.etsy.com", "alloccasionsbingo.etsy.com"].includes(url.hostname) && !url.username && !url.password && !url.port &&
       /^\/(?:[a-z]{2}\/)?listing\/\d+(?:\/.*)?$/.test(url.pathname);
   } catch { return false; }
 }
