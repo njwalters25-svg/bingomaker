@@ -135,6 +135,8 @@ const inputs = {
   spotifyFullUrl: document.querySelector("#spotifyFullUrl"),
   spotifyPreviewUrl: document.querySelector("#spotifyPreviewUrl"),
   youtubePlaylistUrl: document.querySelector("#youtubePlaylistUrl"),
+  etsyListingUrl: document.querySelector("#etsyListingUrl"),
+  catalogueVisible: document.querySelector("#catalogueVisible"),
   footerText: document.querySelector("#footerText"),
 };
 
@@ -213,6 +215,8 @@ function getEditionSettings() {
     spotifyFullUrl: inputs.spotifyFullUrl.value,
     spotifyPreviewUrl: inputs.spotifyPreviewUrl.value,
     youtubePlaylistUrl: inputs.youtubePlaylistUrl.value,
+    etsyListingUrl: inputs.etsyListingUrl?.value || "",
+    catalogueVisible: inputs.catalogueVisible?.checked === true,
     spotifyFullQrData,
     spotifyPreviewQrData,
     youtubePlaylistQrData,
@@ -252,6 +256,8 @@ function applyEditionSettings(edition = {}) {
   inputs.spotifyFullUrl.value = edition.spotifyFullUrl || "";
   inputs.spotifyPreviewUrl.value = edition.spotifyPreviewUrl || "";
   inputs.youtubePlaylistUrl.value = edition.youtubePlaylistUrl || "";
+  if (inputs.etsyListingUrl) inputs.etsyListingUrl.value = edition.etsyListingUrl || "";
+  if (inputs.catalogueVisible) inputs.catalogueVisible.checked = edition.catalogueVisible === true;
   spotifyFullQrData = edition.spotifyFullQrData || "";
   spotifyPreviewQrData = edition.spotifyPreviewQrData || "";
   youtubePlaylistQrData = edition.youtubePlaylistQrData || "";
@@ -378,6 +384,8 @@ function resetSettings() {
   inputs.spotifyFullUrl.value = "";
   inputs.spotifyPreviewUrl.value = "";
   inputs.youtubePlaylistUrl.value = "";
+  if (inputs.etsyListingUrl) inputs.etsyListingUrl.value = "";
+  if (inputs.catalogueVisible) inputs.catalogueVisible.checked = false;
   selectedFreePreset = "text";
   inputs.footerText.value = "";
   pageSize.value = "letter";
@@ -2706,6 +2714,10 @@ youtubePlaylistQrInput.addEventListener("change", () => {
     updateFreeSquarePreview();
     saveSettings();
   });
+});
+
+[inputs.etsyListingUrl, inputs.catalogueVisible].filter(Boolean).forEach((control) => {
+  control.addEventListener("change", saveSettings);
 });
 
 function updateCardCountPresets(customSelected = false) {

@@ -1,6 +1,18 @@
 const playlistPublishingOrigin = "https://alloccasionsbingo.com";
 let pendingPlaylistPublication = null;
 
+function getCatalogueSettings() {
+  return { etsy: inputs.etsyListingUrl?.value.trim() || "", visible: inputs.catalogueVisible?.checked === true ? "1" : "0" };
+}
+
+function isEtsyListingUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && ["etsy.com", "www.etsy.com"].includes(url.hostname) && !url.username && !url.password && !url.port &&
+      /^\/(?:[a-z]{2}\/)?listing\/\d+(?:\/.*)?$/.test(url.pathname);
+  } catch { return false; }
+}
+
 function getPublishingPlaylistId(value) {
   try {
     const url = new URL(value);
@@ -25,14 +37,19 @@ function beginPlaylistPublication() {
     return;
   }
   const nonce = crypto.randomUUID();
+  const catalogue = getCatalogueSettings();
+  if ((catalogue.etsy && !isEtsyListingUrl(catalogue.etsy)) || (catalogue.visible === "1" && !catalogue.etsy)) {
+    setStatus("Add a valid Etsy listing URL before showing this game in the catalogue.", true);
+    return;
+  }
   const url = new URL("/publisher/", playlistPublishingOrigin);
-  url.search = new URLSearchParams({game: selectedCloudGameId, title, playlist: playlistId, nonce, origin: location.origin});
+  url.search = new URLSearchParams({game: selectedCloudGameId, title, playlist: playlistId, nonce, origin: location.origin, ...catalogue});
   const popup = window.open(url.href, "_blank");
   if (!popup) {
     setStatus("Allow the publishing tab to open, then try again.", true);
     return;
   }
-  pendingPlaylistPublication = {popup, nonce, game: selectedCloudGameId, title, playlistId, revision: editionRevision};
+  pendingPlaylistPublication = {popup, nonce, game: selectedCloudGameId, title, playlistId, catalogue, revision: editionRevision};
   setStatus("Confirm Publish in the secure publishing tab. Your preview link will update afterward.");
 }
 
@@ -45,13 +62,13 @@ function receivePlaylistPublication(event) {
   try { url = new URL(data.url); } catch { return; }
   if (url.origin !== playlistPublishingOrigin || url.username || url.password || url.search || url.hash || !/^\/play\/[a-z0-9-]+\/$/.test(url.pathname)) return;
   pendingPlaylistPublication = null;
-  if (selectedCloudGameId !== pending.game || editionRevision !== pending.revision || getCurrentBrand().id !== "all-occasions-bingo" || getProductName() !== pending.title || getPublishingPlaylistId(inputs.spotifyFullUrl.value.trim()) !== pending.playlistId) {
+  if (selectedCloudGameId !== pending.game || editionRevision !== pending.revision || getCurrentBrand().id !== "all-occasions-bingo" || getProductName() !== pending.title || getPublishingPlaylistId(inputs.spotifyFullUrl.value.trim()) !== pending.playlistId || JSON.stringify(getCatalogueSettings()) !== JSON.stringify(pending.catalogue)) {
     setStatus(`Published ${pending.title}, but the open game changed. Its preview link was not replaced: ${url.href}`, true);
     return;
   }
   inputs.spotifyPreviewUrl.value = url.href;
   inputs.spotifyPreviewUrl.dispatchEvent(new Event("input", {bubbles: true}));
-  setStatus("Playlist page published. Preview link and QR updated; click Save game to keep the link in Supabase.");
+  setStatus("Playlist page and catalogue settings published; click Save current game to keep these settings in Supabase.");
 }
 
 document.querySelector("#publishPlaylistButton")?.addEventListener("click", beginPlaylistPublication);

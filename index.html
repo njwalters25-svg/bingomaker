@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700;800;900&family=Cherry+Bomb+One&family=Chewy&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20261012-print-gap" />
+    <link rel="stylesheet" href="styles.css?v=20261013-catalogue" />
     <style id="printPageStyle">@page { size: 8.5in 11in; margin: 0; }</style>
     <style>
       .scheme-grid {
@@ -130,6 +130,14 @@
               </label>
             </div>
             <button id="publishPlaylistButton" data-bingo-publishing hidden type="button">Publish playlist page</button>
+          </fieldset>
+
+          <fieldset class="full-span" data-bingo-publishing hidden>
+            <legend>Website catalogue</legend>
+            <label>Etsy listing URL
+              <input id="etsyListingUrl" type="url" placeholder="https://www.etsy.com/listing/..." />
+            </label>
+            <label class="catalogue-toggle"><input id="catalogueVisible" type="checkbox" /> Show in catalogue</label>
           </fieldset>
 
           <fieldset class="full-span">
@@ -429,7 +437,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=20261013-header-colors"></script>
-    <script src="playlist-publisher.js?v=20261012"></script>
+  <script src="app.js?v=20261013-catalogue"></script>
+    <script src="playlist-publisher.js?v=20261013-catalogue"></script>
   </body>
 </html>

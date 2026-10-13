@@ -374,6 +374,9 @@ textarea:focus {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.catalogue-toggle { display: flex; align-items: center; gap: 8px; }
+.catalogue-toggle input[type="checkbox"] { width: 18px; height: 18px; padding: 0; flex: 0 0 18px; }
+
 input[type="color"] {
   min-height: 42px;
   padding: 5px;
