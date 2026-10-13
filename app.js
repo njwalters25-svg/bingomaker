@@ -2545,9 +2545,63 @@ freeImageInput?.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
+function selectHeaderColors(pixels) {
+  const buckets = new Map();
+  for (let index = 0; index < pixels.length; index += 4) {
+    const rgb = [pixels[index], pixels[index + 1], pixels[index + 2]];
+    const brightest = Math.max(...rgb);
+    const darkest = Math.min(...rgb);
+    if (pixels[index + 3] < 192 || brightest < 45 || darkest > 235) continue;
+    const key = rgb.map(value => Math.floor(value / 32)).join(",");
+    const bucket = buckets.get(key) || { count: 0, sum: [0, 0, 0] };
+    bucket.count += 1;
+    rgb.forEach((value, channel) => { bucket.sum[channel] += value; });
+    buckets.set(key, bucket);
+  }
+  const candidates = [...buckets.values()].map(bucket => {
+    const rgb = bucket.sum.map(value => Math.round(value / bucket.count));
+    const saturation = (Math.max(...rgb) - Math.min(...rgb)) / Math.max(...rgb);
+    return { rgb, score: bucket.count * (0.1 + saturation * saturation), saturation };
+  });
+  const colourful = candidates.filter(candidate => candidate.saturation > 0.25);
+  const ranked = (colourful.length ? colourful : candidates).sort((a, b) => b.score - a.score);
+  if (!ranked.length) return null;
+  const first = ranked[0];
+  const second = ranked.find(candidate => Math.hypot(...candidate.rgb.map((value, channel) => value - first.rgb[channel])) >= 90) || first;
+  const toHex = candidate => `#${candidate.rgb.map(value => value.toString(16).padStart(2, "0")).join("")}`;
+  return [toHex(first), toHex(second)];
+}
+
+function suggestHeaderColors(data, file, uploadRevision, previousColors) {
+  const image = new Image();
+  image.addEventListener("load", () => {
+    // Ignore results from a different upload/edition or colours edited while decoding.
+    if (uploadRevision !== editionRevision || headerImageInput.files[0] !== file || headerImageData !== data ||
+        primaryColor.value !== previousColors[0] || highlightColor.value !== previousColors[1]) return;
+    try {
+      const canvas = document.createElement("canvas");
+      const ratio = Math.min(1, 160 / Math.max(image.naturalWidth, image.naturalHeight));
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const colors = selectHeaderColors(context.getImageData(0, 0, canvas.width, canvas.height).data);
+      if (!colors) return;
+      [primaryColor.value, highlightColor.value] = colors;
+      updateCustomColors();
+      saveSettings();
+    } catch (error) {
+      // Colour suggestions are optional; a valid header must still work without them.
+      console.warn("Header colour suggestions unavailable.", error);
+    }
+  });
+  image.src = data;
+}
+
 headerImageInput.addEventListener("change", () => {
   const uploadRevision = editionRevision;
   const file = headerImageInput.files[0];
+  const previousColors = [primaryColor.value, highlightColor.value];
   if (!file) {
     headerImageData = "";
     renderCurrentOutput();
@@ -2557,10 +2611,11 @@ headerImageInput.addEventListener("change", () => {
 
   const reader = new FileReader();
   reader.addEventListener("load", () => {
-    if (uploadRevision !== editionRevision) return;
+    if (uploadRevision !== editionRevision || headerImageInput.files[0] !== file) return;
     headerImageData = reader.result;
     renderCurrentOutput();
     saveSettings();
+    suggestHeaderColors(headerImageData, file, uploadRevision, previousColors);
   });
   reader.readAsDataURL(file);
 });
