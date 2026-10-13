@@ -19,9 +19,16 @@ const context = {
 context.getCurrentBrand = () => ({id: context.brand});
 context.getProductName = () => context.title;
 vm.createContext(context);
+const appSource = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
+vm.runInContext(appSource.slice(appSource.indexOf('function normalizeEtsyListingUrl('), appSource.indexOf('function getSettingsSnapshot(')), context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../playlist-publisher.js'), 'utf8'), context);
 context.inputs.etsyListingUrl = { value: '' };
 context.inputs.catalogueVisible = { checked: false };
+assert.equal(context.normalizeEtsyListingUrl(' 4594024039 '), 'https://alloccasionsbingo.etsy.com/listing/4594024039');
+assert.equal(context.normalizeEtsyListingUrl('https://www.etsy.com/listing/123?ref=test'), 'https://www.etsy.com/listing/123?ref=test');
+context.inputs.etsyListingUrl.value = '4594024039';
+assert.equal(context.getCatalogueSettings().etsy, 'https://alloccasionsbingo.etsy.com/listing/4594024039');
+context.inputs.etsyListingUrl.value = '';
 assert(context.isEtsyListingUrl('https://www.etsy.com/uk/listing/123456789/test'));
 assert(context.isEtsyListingUrl('https://alloccasionsbingo.etsy.com/listing/4594024039'));
 assert.equal(context.isEtsyListingUrl('https://alloccasionsbingo.etsy.com.evil.example/listing/4594024039'), false);

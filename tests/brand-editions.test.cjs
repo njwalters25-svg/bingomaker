@@ -34,6 +34,9 @@ vm.createContext(context);
 context.inputs.etsyListingUrl = control();
 context.inputs.catalogueVisible = { checked: false };
 vm.runInContext(source.slice(source.indexOf("function getEditionSettings()"), source.indexOf("function saveSettings()")), context);
+context.inputs.etsyListingUrl.value = "4594024039";
+assert.equal(context.getEditionSettings().etsyListingUrl, "https://alloccasionsbingo.etsy.com/listing/4594024039");
+context.inputs.etsyListingUrl.value = "";
 
 const legacy = {
   productName: "80s Music Bingo", count: "100", items: "Shared songs",

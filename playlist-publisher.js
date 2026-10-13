@@ -2,7 +2,7 @@ const playlistPublishingOrigin = "https://alloccasionsbingo.com";
 let pendingPlaylistPublication = null;
 
 function getCatalogueSettings() {
-  return { etsy: inputs.etsyListingUrl?.value.trim() || "", visible: inputs.catalogueVisible?.checked === true ? "1" : "0" };
+  return { etsy: normalizeEtsyListingUrl(inputs.etsyListingUrl?.value || ""), visible: inputs.catalogueVisible?.checked === true ? "1" : "0" };
 }
 
 function isEtsyListingUrl(value) {

@@ -215,7 +215,7 @@ function getEditionSettings() {
     spotifyFullUrl: inputs.spotifyFullUrl.value,
     spotifyPreviewUrl: inputs.spotifyPreviewUrl.value,
     youtubePlaylistUrl: inputs.youtubePlaylistUrl.value,
-    etsyListingUrl: inputs.etsyListingUrl?.value || "",
+    etsyListingUrl: normalizeEtsyListingUrl(inputs.etsyListingUrl?.value || ""),
     catalogueVisible: inputs.catalogueVisible?.checked === true,
     spotifyFullQrData,
     spotifyPreviewQrData,
@@ -225,6 +225,11 @@ function getEditionSettings() {
     primaryColor: primaryColor.value,
     highlightColor: highlightColor.value,
   };
+}
+
+function normalizeEtsyListingUrl(value) {
+  const trimmed = value.trim();
+  return /^\d+$/.test(trimmed) ? `https://alloccasionsbingo.etsy.com/listing/${trimmed}` : trimmed;
 }
 
 function getSettingsSnapshot() {
@@ -2717,7 +2722,10 @@ youtubePlaylistQrInput.addEventListener("change", () => {
 });
 
 [inputs.etsyListingUrl, inputs.catalogueVisible].filter(Boolean).forEach((control) => {
-  control.addEventListener("change", saveSettings);
+  control.addEventListener("change", () => {
+    if (control === inputs.etsyListingUrl) control.value = normalizeEtsyListingUrl(control.value);
+    saveSettings();
+  });
 });
 
 function updateCardCountPresets(customSelected = false) {
