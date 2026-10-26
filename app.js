@@ -24,6 +24,7 @@ const printTwoUpButton = document.querySelector("#printTwoUpButton");
 const printExtrasButton = document.querySelector("#printExtrasButton");
 const pngSamplePackButton = document.querySelector("#pngSamplePackButton");
 const productionFolderButton = document.querySelector("#productionFolderButton");
+const customerFilesButton = document.querySelector("#customerFilesButton");
 const resetButton = document.querySelector("#resetButton");
 const savedGameSelect = document.querySelector("#savedGameSelect");
 const saveGameButton = document.querySelector("#saveGameButton");
@@ -1329,6 +1330,7 @@ function setPdfBusy(isBusy) {
   printExtrasButton.disabled = isBusy;
   pngSamplePackButton.disabled = isBusy;
   productionFolderButton.disabled = isBusy;
+  customerFilesButton.disabled = isBusy;
   form.querySelector("#generateButton").disabled = isBusy;
   resetButton.disabled = isBusy;
   printFullSizeButton.textContent = isBusy ? "Preparing..." : "Print full size cards";
@@ -1336,6 +1338,7 @@ function setPdfBusy(isBusy) {
   printExtrasButton.textContent = isBusy ? "Preparing..." : "Print instructions";
   pngSamplePackButton.textContent = isBusy ? "Preparing..." : "PNG sample pack";
   productionFolderButton.textContent = isBusy ? "Preparing..." : "Export production folders";
+  customerFilesButton.textContent = isBusy ? "Preparing..." : "Download all customer files";
 }
 
 function getExportSettingsSnapshot() {
@@ -1628,10 +1631,12 @@ async function createPdfBlobFromCurrentLayout(exportType = "current", options = 
       });
       const image = canvas.toDataURL("image/jpeg", jpegQuality);
       pdf.addImage(image, "JPEG", 0, 0, sizing.sheetWidth, sizing.sheetHeight);
+      canvas.width = 0;
+      canvas.height = 0;
     }
 
     const blob = pdf.output("blob");
-    const sizeMb = pdf.output("arraybuffer").byteLength / (1024 * 1024);
+    const sizeMb = blob.size / (1024 * 1024);
     return {
       blob,
       pageCount: sheets.length,
@@ -1777,6 +1782,83 @@ async function exportProductionFolders() {
   } finally {
     restoreExportSettings(previousSettings);
     setPdfBusy(false);
+  }
+}
+
+async function downloadAllCustomerFiles() {
+  if (!validateReadyToExport("current")) {
+    return;
+  }
+  if (!window.html2canvas || !window.jspdf?.jsPDF || !window.JSZip) {
+    setStatus("The customer-file exporter is still loading. Please try again in a moment.", true);
+    return;
+  }
+
+  const previousSettings = getExportSettingsSnapshot();
+  const previousCards = currentCards;
+  const previousCount = inputs.count.value;
+  const previousDirty = generatedSettingsDirty;
+  const previousBrandDisabled = brandSelect.disabled;
+  const previousControls = [...form.querySelectorAll("input, select, textarea, button")]
+    .map((control) => ({ control, disabled: control.disabled }));
+  const brandId = getCurrentBrand().id;
+  const filename = `${getProductNameForFilename()}-${brandId}-customer-files.zip`;
+  const zip = new JSZip();
+  const oversizedFiles = [];
+
+  setPdfBusy(true);
+  brandSelect.disabled = true;
+  previousControls.forEach(({ control }) => { control.disabled = true; });
+  setStatus("Creating customer files. Keep this tab open until the download starts...");
+
+  try {
+    // Reuse the same cards in each format and quantity; generating a larger pack
+    // must not change the game currently open in the editor or its saved cards.
+    const allCards = makeUniqueCards(currentItems, 300);
+    if (allCards.length !== 300) {
+      throw new Error("Could not generate 300 unique cards.");
+    }
+    let completed = 0;
+    for (const cardCount of [50, 100, 200, 300]) {
+      const packageCards = allCards.slice(0, cardCount);
+      const packageFolder = zip.folder(`${cardCount} Cards`);
+      for (const [exportType, fileType, label] of [
+        ["cards-full", "full", "full-size cards"],
+        ["cards-two-up", "twoUp", "2-up cards"],
+        ["extras", "instructions", "instructions and extras"],
+      ]) {
+        setStatus(`Creating customer PDF ${completed + 1} of 12: ${cardCount} cards, ${label}...`);
+        const result = await createProductionPdfForCount(cardCount, exportType, packageCards);
+        const pdfFilename = getProductionPdfFilename(cardCount, fileType);
+        packageFolder.file(pdfFilename, result.blob);
+        if (result.blob.size > 20_000_000) {
+          oversizedFiles.push(`${cardCount} Cards/${pdfFilename}`);
+        }
+        completed += 1;
+      }
+    }
+    setStatus("Packaging all 12 customer PDFs for download...");
+    // PDFs already contain compressed images. Recompressing them would add work
+    // without materially reducing this archive's size.
+    const blob = await zip.generateAsync({ type: "blob", compression: "STORE" });
+    downloadBlob(blob, filename);
+    setStatus(oversizedFiles.length
+      ? `Downloaded all customer files. These PDFs exceed 20 MB and need splitting before Etsy upload: ${oversizedFiles.join("; ")}`
+      : "Downloaded all customer files: 50, 100, 200 and 300 cards, with three PDFs per quantity.", Boolean(oversizedFiles.length));
+  } catch (error) {
+    console.error(error);
+    setStatus("The customer-file ZIP could not be created. No partial ZIP was downloaded; your game is unchanged. Please try again.", true);
+  } finally {
+    currentCards = previousCards;
+    inputs.count.value = previousCount;
+    generatedSettingsDirty = previousDirty;
+    try {
+      restoreExportSettings(previousSettings);
+    } finally {
+      setPdfBusy(false);
+      previousControls.forEach(({ control, disabled }) => { control.disabled = disabled; });
+      brandSelect.disabled = previousBrandDisabled;
+    }
   }
 }
 
@@ -2768,6 +2850,7 @@ printTwoUpButton.addEventListener("click", () => printExport("cards-two-up"));
 printExtrasButton.addEventListener("click", () => printExport("extras"));
 pngSamplePackButton.addEventListener("click", exportPngSamplePack);
 productionFolderButton.addEventListener("click", exportProductionFolders);
+customerFilesButton.addEventListener("click", downloadAllCustomerFiles);
 resetButton.addEventListener("click", resetSettings);
 savedGameSelect?.addEventListener("change", () => {
   selectedCloudGameId = savedGameSelect.value;
