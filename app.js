@@ -895,12 +895,27 @@ function fitSquareText(square) {
   }
 
   square.style.fontSize = "";
-  const baseSize = Number.parseFloat(getComputedStyle(square).fontSize);
+  const computed = getComputedStyle(square);
+  const baseSize = Number.parseFloat(computed.fontSize);
   const minimumSize = cardsPerPage.value === "2" ? 5.8 : 8;
   let size = baseSize;
 
-  while (size > minimumSize && (square.scrollHeight > square.clientHeight || square.scrollWidth > square.clientWidth)) {
-    size -= 0.5;
+  const overflows = () => {
+    if (square.scrollHeight > square.clientHeight || square.scrollWidth > square.clientWidth) return true;
+    if (!square.classList.contains("music-square")) return false;
+    // Centred grid content can overflow above the cell without increasing scrollHeight.
+    const box = square.getBoundingClientRect();
+    const scaleY = square.offsetHeight ? box.height / square.offsetHeight : 1;
+    const insetTop = (Number.parseFloat(computed.borderTopWidth) + Number.parseFloat(computed.paddingTop)) * scaleY;
+    const insetBottom = (Number.parseFloat(computed.borderBottomWidth) + Number.parseFloat(computed.paddingBottom)) * scaleY;
+    return [...square.children].some((child) => {
+      const text = child.getBoundingClientRect();
+      return text.top < box.top + insetTop - 0.5 || text.bottom > box.bottom - insetBottom + 0.5;
+    });
+  };
+
+  while (size > minimumSize && overflows()) {
+    size = Math.max(minimumSize, size - 0.5);
     square.style.fontSize = `${size}px`;
   }
 }

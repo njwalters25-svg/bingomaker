@@ -712,6 +712,8 @@ button:disabled {
 .song-title,
 .song-artist {
   display: block;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .song-title {
@@ -722,6 +724,7 @@ button:disabled {
 .song-artist {
   font-weight: 500;
   text-transform: uppercase;
+  overflow-wrap: normal;
 }
 
 .square.text-medium {
@@ -742,6 +745,30 @@ button:disabled {
   font-size: 8.25pt;
   line-height: 1.05;
   overflow-wrap: anywhere;
+}
+
+body[data-cards-per-page="1"]:not([data-page="5x7"]) .bingo-grid {
+  gap: 12px;
+}
+
+body[data-cards-per-page="1"]:not([data-page="5x7"]) .bingo-card {
+  grid-template-rows: 270px minmax(0, 1fr) 34px;
+}
+
+body[data-cards-per-page="1"]:not([data-page="5x7"]) .bingo-grid {
+  min-height: 0;
+  min-width: 0;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+}
+
+body[data-cards-per-page="1"]:not([data-page="5x7"]) .square:not(.free) {
+  padding: 7px;
+  font-size: 13.5pt;
+  line-height: 1.08;
+}
+
+body[data-cards-per-page="1"]:not([data-page="5x7"]) .music-square {
+  gap: 6px;
 }
 
 .square.free {
@@ -1816,15 +1843,15 @@ body[data-cards-per-page="2"] .bingo-grid {
 
 body[data-cards-per-page="2"] .square {
   aspect-ratio: 1 / 1;
-  padding: 7px;
+  padding: 4px;
   border-radius: 14px;
   box-shadow: 3px 3px 4px rgba(36, 36, 36, 0.2);
-  font-size: 7.5pt;
+  font-size: 9.25pt;
   line-height: 1.08;
 }
 
 body[data-cards-per-page="2"] .bingo-card {
-  grid-template-rows: 168px 1fr 24px;
+  grid-template-rows: 168px minmax(0, 1fr) 24px;
   padding: 16px 16px 20px;
 }
 
@@ -1838,28 +1865,28 @@ body[data-cards-per-page="2"] .card-header {
 }
 
 body[data-cards-per-page="2"] .bingo-grid {
-  align-self: start;
+  align-self: stretch;
   justify-self: stretch;
+  min-height: 0;
+  min-width: 0;
   aspect-ratio: auto;
-  grid-template-rows: repeat(5, auto);
-  gap: 8px;
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  gap: 6px;
   padding: 5px 26px 8px;
 }
 
 body[data-cards-per-page="2"] .music-square {
-  gap: 12px;
+  gap: 4px;
 }
 
-body[data-cards-per-page="2"] .square.text-medium {
-  font-size: 6.75pt;
+body[data-cards-per-page="2"] .square {
+  aspect-ratio: auto;
 }
 
-body[data-cards-per-page="2"] .square.text-long {
-  font-size: 6pt;
-}
-
+body[data-cards-per-page="2"] .square.text-medium,
+body[data-cards-per-page="2"] .square.text-long,
 body[data-cards-per-page="2"] .square.text-xlong {
-  font-size: 5.5pt;
+  font-size: 9.25pt;
 }
 
 body[data-cards-per-page="2"] .square.free {
