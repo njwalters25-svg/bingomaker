@@ -899,6 +899,8 @@ function fitSquareText(square) {
   const baseSize = Number.parseFloat(computed.fontSize);
   const minimumSize = cardsPerPage.value === "2" ? 5.8 : 8;
   let size = baseSize;
+  const artist = square.classList.contains("music-square") ? square.children[1] : null;
+  if (artist) artist.style.fontSize = "";
 
   const overflows = () => {
     if (square.scrollHeight > square.clientHeight || square.scrollWidth > square.clientWidth) return true;
@@ -913,6 +915,25 @@ function fitSquareText(square) {
       return text.top < box.top + insetTop - 0.5 || text.bottom > box.bottom - insetBottom + 0.5;
     });
   };
+
+  if (artist) {
+    let artistSize = baseSize;
+    const shrinkArtist = () => {
+      artistSize = Math.max(minimumSize, artistSize - 0.5);
+      artist.style.fontSize = `${artistSize}px`;
+    };
+    // Fit unbreakable artist names to the width before balancing vertical space.
+    while (artistSize > minimumSize && artist.scrollWidth > artist.clientWidth) shrinkArtist();
+    while ((size > minimumSize || artistSize > minimumSize) && overflows()) {
+      if (artistSize > minimumSize && (size <= minimumSize || artistSize > size * 0.85)) {
+        shrinkArtist();
+      } else {
+        size = Math.max(minimumSize, size - 0.5);
+        square.style.fontSize = `${size}px`;
+      }
+    }
+    return;
+  }
 
   while (size > minimumSize && overflows()) {
     size = Math.max(minimumSize, size - 0.5);

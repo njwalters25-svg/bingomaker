@@ -16,7 +16,7 @@ test("readable layouts constrain the grid instead of letting text enlarge the ca
   assert.match(css, /body\[data-cards-per-page="2"\] \.square \{\s*aspect-ratio: auto;/);
 });
 
-function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, scroll = false } = {}) {
+function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, scroll = false, longArtist = false, longTitle = false } = {}) {
   const square = {
     style: {}, clientHeight: 80, clientWidth: 80, offsetHeight: 80,
     querySelector: () => image,
@@ -29,9 +29,18 @@ function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, 
     scrollWidth: { get: () => 80 },
   });
   square.children = [{ getBoundingClientRect: () => ({
-    top: (size() > fitsAt ? -2 : 6) * scale,
+    top: (!longArtist && !longTitle && size() > fitsAt ? -2 : 6) * scale,
     bottom: 70 * scale,
   }) }];
+  if (longArtist || longTitle) {
+    const artist = { style: {}, clientWidth: 80, get scrollWidth() {
+      return longArtist && (Number.parseFloat(this.style.fontSize) || size()) > fitsAt ? 90 : 80;
+    }, getBoundingClientRect: () => ({
+      top: 35 * scale,
+      bottom: ((Number.parseFloat(artist.style.fontSize) || size()) + (longTitle ? size() : 0) > fitsAt ? 85 : 70) * scale,
+    }) };
+    square.children.push(artist);
+  }
   const context = {
     cardsPerPage: { value: mode },
     getComputedStyle: () => ({ fontSize: "12.333px", borderTopWidth: "2px", borderBottomWidth: "2px", paddingTop: "4px", paddingBottom: "4px" }),
@@ -39,8 +48,26 @@ function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, 
   vm.createContext(context);
   vm.runInContext(fit, context);
   context.fitSquareText(square);
+  if (longArtist || longTitle) return { title: square.style.fontSize, artist: square.children[1].style.fontSize };
   return square.style.fontSize;
 }
+
+test("a long artist shrinks without shrinking a short title", () => {
+  for (const mode of ["1", "2"]) {
+    const result = run({ mode, longArtist: true, fitsAt: 8.5 });
+    assert.equal(result.title, "");
+    assert.ok(Number.parseFloat(result.artist) <= 8.5);
+  }
+});
+
+test("a long title shares the height reduction with its artist", () => {
+  const result = run({ longTitle: true, fitsAt: 20 });
+  const title = Number.parseFloat(result.title);
+  const artist = Number.parseFloat(result.artist);
+  assert.ok(title < 12.333);
+  assert.ok(artist >= title * 0.8);
+  assert.ok(title + artist <= 20);
+});
 
 test("short two-up entries keep the larger starting size", () => {
   assert.equal(run({ fitsAt: 13 }), "");
