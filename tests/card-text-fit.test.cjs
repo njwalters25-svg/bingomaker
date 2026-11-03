@@ -16,7 +16,7 @@ test("readable layouts constrain the grid instead of letting text enlarge the ca
   assert.match(css, /body\[data-cards-per-page="2"\] \.square \{\s*aspect-ratio: auto;/);
 });
 
-function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, scroll = false, longArtist = false, longTitle = false } = {}) {
+function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, scroll = false, longArtist = false, longTitle = false, singleWord = false } = {}) {
   const square = {
     style: {}, clientHeight: 80, clientWidth: 80, offsetHeight: 80,
     querySelector: () => image,
@@ -28,16 +28,17 @@ function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, 
     scrollHeight: { get: () => scroll && size() > fitsAt ? 90 : 80 },
     scrollWidth: { get: () => 80 },
   });
-  square.children = [{ getBoundingClientRect: () => ({
-    top: (!longArtist && !longTitle && size() > fitsAt ? -2 : 6) * scale,
+  square.children = [{ style: {}, textContent: singleWord ? "Machinehead" : "Song title", clientWidth: 80,
+    get scrollWidth() { return singleWord && size() > fitsAt ? 90 : 80; }, getBoundingClientRect: () => ({
+    top: (!longArtist && !longTitle && !singleWord && size() > fitsAt ? -2 : 6) * scale,
     bottom: 70 * scale,
   }) }];
-  if (longArtist || longTitle) {
+  if (longArtist || longTitle || singleWord) {
     const artist = { style: {}, clientWidth: 80, get scrollWidth() {
       return longArtist && (Number.parseFloat(this.style.fontSize) || size()) > fitsAt ? 90 : 80;
     }, getBoundingClientRect: () => ({
       top: 35 * scale,
-      bottom: ((Number.parseFloat(artist.style.fontSize) || size()) + (longTitle ? size() : 0) > fitsAt ? 85 : 70) * scale,
+      bottom: (!singleWord && (Number.parseFloat(artist.style.fontSize) || size()) + (longTitle ? size() : 0) > fitsAt ? 85 : 70) * scale,
     }) };
     square.children.push(artist);
   }
@@ -48,9 +49,20 @@ function run({ mode = "2", scale = 1, fitsAt = 11, image = false, music = true, 
   vm.createContext(context);
   vm.runInContext(fit, context);
   context.fitSquareText(square);
+  if (singleWord) return { title: square.style.fontSize, artist: square.children[1].style.fontSize, whiteSpace: square.children[0].style.whiteSpace };
   if (longArtist || longTitle) return { title: square.style.fontSize, artist: square.children[1].style.fontSize };
   return square.style.fontSize;
 }
+
+test("single-word titles stay on one line without shrinking the artist", () => {
+  for (const mode of ["1", "2"]) {
+    const result = run({ mode, singleWord: true });
+    assert.ok(Number.parseFloat(result.title) <= 11);
+    assert.equal(result.artist, "12.333px");
+    assert.equal(result.whiteSpace, "nowrap");
+  }
+  assert.equal(run({ singleWord: true, fitsAt: 0 }).whiteSpace, "");
+});
 
 test("a long artist shrinks without shrinking a short title", () => {
   for (const mode of ["1", "2"]) {

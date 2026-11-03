@@ -917,19 +917,32 @@ function fitSquareText(square) {
   };
 
   if (artist) {
+    const title = square.children[0];
+    title.style.whiteSpace = "";
+    const shrinkTitle = () => {
+      size = Math.max(minimumSize, size - 0.5);
+      square.style.fontSize = `${size}px`;
+    };
     let artistSize = baseSize;
     const shrinkArtist = () => {
       artistSize = Math.max(minimumSize, artistSize - 0.5);
       artist.style.fontSize = `${artistSize}px`;
     };
+    if (/^\S+$/.test(title.textContent.trim())) {
+      title.style.whiteSpace = "nowrap";
+      while (size > minimumSize && title.scrollWidth > title.clientWidth) {
+        artist.style.fontSize = `${artistSize}px`;
+        shrinkTitle();
+      }
+      if (title.scrollWidth > title.clientWidth) title.style.whiteSpace = "";
+    }
     // Fit unbreakable artist names to the width before balancing vertical space.
     while (artistSize > minimumSize && artist.scrollWidth > artist.clientWidth) shrinkArtist();
     while ((size > minimumSize || artistSize > minimumSize) && overflows()) {
       if (artistSize > minimumSize && (size <= minimumSize || artistSize > size * 0.85)) {
         shrinkArtist();
       } else {
-        size = Math.max(minimumSize, size - 0.5);
-        square.style.fontSize = `${size}px`;
+        shrinkTitle();
       }
     }
     return;
