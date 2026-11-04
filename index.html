@@ -161,6 +161,15 @@
             <span id="listHelp" class="hint">Paste at least 24 unique items. Around 75 is ideal for lots of variety, especially if generating many cards.</span>
           </label>
 
+          <details class="full-span" id="masterListOptions">
+            <summary>Separate master song list</summary>
+            <label for="masterItemList">
+              Master song list (optional)
+              <textarea id="masterItemList" rows="8" spellcheck="true" aria-describedby="masterListHint" placeholder="Song title - Artist"></textarea>
+              <span id="masterListHint" class="hint">Use the same songs, one per line, with the wording you want on the master list. Leave blank to use the bingo card list.</span>
+            </label>
+          </details>
+
           <fieldset class="full-span">
             <legend>Free square</legend>
             <p class="fieldset-hint">Choose custom text or one of your saved free-square images.</p>
@@ -438,7 +447,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js?v=20261103-single-word-fit"></script>
+  <script src="app.js?v=20261104-master-list"></script>
     <script src="playlist-publisher.js?v=20261013-catalogue-header"></script>
   </body>
 </html>

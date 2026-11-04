@@ -27,7 +27,11 @@ async function runExport(brandId, cardCount = 20, fail = false) {
     cloneForPdf: card => card,
     createTwoUpSampleSheet: (elements, startIndex) => elements.slice(startIndex, startIndex + 2),
     renderMarkers: () => ["large-markers", "small-markers"],
-    renderMasterList: () => ["songlist"],
+    getMasterListItems: () => ["Song - Artist"],
+    renderMasterList: items => {
+      assert.deepEqual(items, ["Song - Artist"]);
+      return ["songlist"];
+    },
     renderInstructionsForCount: count => { counts.push(count); return count; },
     setStatus: message => { context.status = message; },
     setPdfBusy: busy => { context.busy = busy; },

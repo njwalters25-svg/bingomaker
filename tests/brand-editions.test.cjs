@@ -33,6 +33,8 @@ context.saveSettings = () => { context.lastSaved = context.getSettingsSnapshot()
 vm.createContext(context);
 context.inputs.etsyListingUrl = control();
 context.inputs.catalogueVisible = { checked: false };
+const masterOptions = { open: false };
+context.inputs.masterItems = { value: "", closest: () => masterOptions };
 vm.runInContext(source.slice(source.indexOf("function getEditionSettings()"), source.indexOf("function saveSettings()")), context);
 context.inputs.etsyListingUrl.value = "4594024039";
 assert.equal(context.getEditionSettings().etsyListingUrl, "https://alloccasionsbingo.etsy.com/listing/4594024039");
@@ -49,6 +51,14 @@ const legacy = {
   primaryColor: "#123456", highlightColor: "#abcdef", footerText: "Printables footer",
 };
 context.applySettingsSnapshot(legacy);
+assert.equal(context.inputs.masterItems.value, "");
+context.inputs.masterItems.value = "Song - Artist";
+const separateListSnapshot = context.getSettingsSnapshot();
+context.applySettingsSnapshot(legacy);
+assert.equal(context.inputs.masterItems.value, "");
+context.applySettingsSnapshot(separateListSnapshot);
+assert.equal(context.inputs.masterItems.value, "Song - Artist");
+assert.equal(masterOptions.open, true);
 assert.equal(context.activeEditionBrandId, "all-occasions-printables");
 assert.equal(context.headerImageData, legacy.headerImageData);
 const cards = context.currentCards;

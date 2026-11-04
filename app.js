@@ -132,6 +132,7 @@ const inputs = {
   productName: getControl("#productName", "#occasionInput"),
   count: document.querySelector("#cardCount"),
   items: document.querySelector("#itemList"),
+  masterItems: document.querySelector("#masterItemList"),
   freeText: document.querySelector("#freeText"),
   spotifyFullUrl: document.querySelector("#spotifyFullUrl"),
   spotifyPreviewUrl: document.querySelector("#spotifyPreviewUrl"),
@@ -158,6 +159,11 @@ function parseItems(value) {
       .map((item) => item.trim())
       .filter(Boolean)
   )];
+}
+
+function getMasterListItems(cardItems = currentItems) {
+  const override = inputs.masterItems?.value.trim();
+  return override ? parseItems(`${override}\n`) : cardItems;
 }
 
 function shuffle(items) {
@@ -242,6 +248,7 @@ function getSettingsSnapshot() {
     productName: inputs.productName?.value || "",
     count: inputs.count.value,
     items: inputs.items.value,
+    masterItems: inputs.masterItems?.value || "",
     currentItems,
     currentCards,
     generatedSettingsDirty,
@@ -312,6 +319,10 @@ function applySettingsSnapshot(savedSettings) {
   inputs.count.value = savedSettings.count || "100";
   updateCardCountPresets();
   inputs.items.value = savedSettings.items ?? "";
+  if (inputs.masterItems) {
+    inputs.masterItems.value = savedSettings.masterItems ?? "";
+    inputs.masterItems.closest("details").open = Boolean(inputs.masterItems.value.trim());
+  }
   currentItems = Array.isArray(savedSettings.currentItems) ? savedSettings.currentItems : [];
   currentCards = Array.isArray(savedSettings.currentCards) ? savedSettings.currentCards : [];
   generatedSettingsDirty = Boolean(savedSettings.generatedSettingsDirty);
@@ -386,6 +397,10 @@ function resetSettings() {
   inputs.count.value = "100";
   updateCardCountPresets();
   inputs.items.value = "";
+  if (inputs.masterItems) {
+    inputs.masterItems.value = "";
+    inputs.masterItems.closest("details").open = false;
+  }
   inputs.freeText.value = "FREE";
   inputs.spotifyFullUrl.value = "";
   inputs.spotifyPreviewUrl.value = "";
@@ -662,6 +677,11 @@ function validateReadyToExport(exportType) {
 
   if (currentItems.length !== 75) {
     setStatus(`This game has ${currentItems.length || parseItems(inputs.items.value).length} unique song${currentItems.length === 1 ? "" : "s"}. You need exactly 75 before exporting. Check for duplicates, then click Generate cards.`, true);
+    return false;
+  }
+
+  if (exportType !== "cards-full" && exportType !== "cards-two-up" && getMasterListItems().length !== currentItems.length) {
+    setStatus(`The separate master song list must have ${currentItems.length} unique entries, one per line, or be left blank.`, true);
     return false;
   }
 
@@ -1610,7 +1630,7 @@ async function exportPngSamplePack() {
         await addElementPngToZip(zip, `extras/bingo-markers-${index === 0 ? "large" : "small"}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }
 
-      const masterPages = renderMasterList(currentItems);
+      const masterPages = renderMasterList(getMasterListItems());
       for (const [index, page] of masterPages.entries()) {
         await addElementPngToZip(zip, `extras/complete-songlist-${String(index + 1).padStart(2, "0")}.png`, page, sizing.sheetWidth, sizing.sheetHeight);
       }
@@ -2402,7 +2422,7 @@ function renderMasterListPage(items, startIndex, pageIndex, pageCount, layout = 
     else list.append(row);
   });
   if (isBingoBrand) {
-    decorateBingoPackHeader(page, "Complete Songlist", `${parseItems(inputs.items.value).length} songs - tick each song as it plays. Page ${pageIndex + 1} of ${pageCount}.`);
+    decorateBingoPackHeader(page, "Complete Songlist", `${items.length} songs - tick each song as it plays. Page ${pageIndex + 1} of ${pageCount}.`);
   }
   return page;
 }
@@ -2542,7 +2562,7 @@ function renderExtras(items) {
   extrasContainer.append(createExtraFrame(renderInstructions()));
   extrasContainer.append(createExtraFrame(renderTips()));
 
-  renderMasterList(items).forEach((page) => {
+  renderMasterList(getMasterListItems(items)).forEach((page) => {
     extrasContainer.append(createExtraFrame(page));
   });
 
@@ -2633,6 +2653,11 @@ form.addEventListener("submit", (event) => {
 inputs.items.addEventListener("input", () => {
   markCardsNeedRegeneration();
   saveSettings();
+});
+
+inputs.masterItems?.addEventListener("input", saveSettings);
+inputs.masterItems?.addEventListener("change", () => {
+  if (currentItems.length) renderExtras(currentItems);
 });
 
 freePresetGrid.addEventListener("change", (event) => {
