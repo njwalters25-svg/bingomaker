@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Picture Bingo | Bingo Maker</title>
+  <link rel="stylesheet" href="picture-bingo.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="picture-bingo-font.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="bingo-storage.js"></script>
+  <script defer src="picture-bingo-caller.js"></script>
+  <script defer src="picture-bingo-png.js"></script>
+  <script defer src="picture-bingo.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a href="index.html">Music Bingo</a>
+    <h1>Picture Bingo</h1>
+  </header>
+  <main>
+    <section aria-label="Set up picture bingo">
+      <fieldset id="setup">
+        <legend>Set up your game</legend>
+        <div class="saved-games">
+          <label>Saved picture game <select id="savedPictureGame"><option value="">Choose a saved game</option></select></label>
+          <div class="saved-actions">
+            <button id="loadPictureGame" disabled>Load</button>
+            <button id="savePictureGame" disabled>Save game</button>
+            <button id="saveNewPictureGame" disabled>Save as new</button>
+          </div>
+        </div>
+        <label>Game title <input id="gameTitle" maxlength="80" value="Picture Bingo"></label>
+        <label>Board header artwork (optional)
+          <input id="boardHeader" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <div id="headerSelection" hidden>
+          <span id="headerFilename"></span>
+          <button id="removeHeader" type="button">Remove header</button>
+        </div>
+        <label>Board border <input id="borderColor" type="color" value="#c18f22"></label>
+        <div class="options">
+          <label>Layout
+            <select id="layout">
+              <option value="5">5 × 5 · Free centre</option>
+              <option value="4">4 × 4 · No free square</option>
+            </select>
+          </label>
+          <label>Player boards
+            <select id="quantity"><option>50</option><option>100</option></select>
+          </label>
+        </div>
+        <label>Upload pictures <input id="pictures" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
+        <div class="list-heading"><h2>Pictures</h2><span id="pictureCount">0 added</span></div>
+        <ul id="pictureList"></ul>
+        <div class="actions">
+          <button id="allPictureFiles" disabled>Download all files</button>
+          <button id="boardsPdf" disabled>Download full-page boards</button>
+          <button id="twoUpPdf" disabled>Download two-per-page boards</button>
+          <button id="callingPdf" disabled>Download calling cards PDF</button>
+          <button id="callerHtml" disabled>Download offline caller</button>
+          <button id="picturePngPack" disabled>Download Etsy PNG pack</button>
+        </div>
+      </fieldset>
+      <p id="status" role="status" aria-live="polite"></p>
+    </section>
+    <section aria-label="Print preview" class="preview">
+      <div class="preview-heading">
+        <h2>Preview</h2>
+        <label class="visually-hidden" for="previewType">Preview type</label>
+        <select id="previewType"><option value="boards">Full-page boards</option><option value="two-up">Two per page</option><option value="calling">Calling cards</option></select>
+      </div>
+      <div id="paper" class="paper"></div>
+      <nav aria-label="Preview pages" class="pagination">
+        <button id="previous" disabled>Previous</button>
+        <span id="pageNumber"></span>
+        <button id="next" disabled>Next</button>
+      </nav>
+    </section>
+  </main>
+</body>
+</html>

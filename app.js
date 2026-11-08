@@ -114,9 +114,7 @@ let activeEditionBrandId = defaultBrand.id;
 let editionRevision = 0;
 
 const storageKey = "allOccasionsBingoMakerSettings";
-const supabaseUrl = "https://idlihjucxernlbwkndca.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkbGloanVjeGVybmxid2tuZGNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTc0NDAsImV4cCI6MjA5NjIzMzQ0MH0.dlbkCbpin2GhnJQgZurgUa0KZqeZx7P3pDukd1ZMFYk";
-const supabaseClient = window.supabase?.createClient(supabaseUrl, supabaseAnonKey) || null;
+const supabaseClient = window.bingoCloud || null;
 const pdfExportScale = 1.35;
 const pdfJpegQuality = 0.84;
 const productionPdfExportScale = 0.8;
@@ -480,6 +478,7 @@ async function loadSavedGames() {
   const { data, error } = await supabaseClient
     .from("bingo_games")
     .select("id, name, updated_at")
+    .or("data->>kind.is.null,data->>kind.neq.picture-bingo")
     .order("name", { ascending: true, nullsFirst: false })
     .order("updated_at", { ascending: false });
   setCloudButtonsBusy(false);
@@ -510,7 +509,8 @@ async function saveCloudGame({ asNew = false } = {}) {
   setCloudButtonsBusy(true);
   const query = asNew || !selectedCloudGameId
     ? supabaseClient.from("bingo_games").insert(payload).select("id").single()
-    : supabaseClient.from("bingo_games").update(payload).eq("id", selectedCloudGameId).select("id").single();
+    : supabaseClient.from("bingo_games").update(payload).eq("id", selectedCloudGameId)
+      .or("data->>kind.is.null,data->>kind.neq.picture-bingo").select("id").single();
   const { data, error } = await query;
   setCloudButtonsBusy(false);
 
@@ -536,6 +536,7 @@ async function loadSelectedCloudGame() {
     .from("bingo_games")
     .select("id, name, data")
     .eq("id", savedGameSelect.value)
+    .or("data->>kind.is.null,data->>kind.neq.picture-bingo")
     .single();
   setCloudButtonsBusy(false);
 
@@ -568,7 +569,8 @@ async function deleteSelectedCloudGame() {
   const { error } = await supabaseClient
     .from("bingo_games")
     .delete()
-    .eq("id", savedGameSelect.value);
+    .eq("id", savedGameSelect.value)
+    .or("data->>kind.is.null,data->>kind.neq.picture-bingo");
   setCloudButtonsBusy(false);
 
   if (error) {

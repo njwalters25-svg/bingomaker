@@ -5,6 +5,7 @@ deployment:
     - /bin/cp index.html $DEPLOYPATH
     - /bin/cp styles.css $DEPLOYPATH
     - /bin/cp app.js $DEPLOYPATH
+    - /bin/cp picture-bingo.html picture-bingo.css picture-bingo.js picture-bingo-caller.js picture-bingo-png.js picture-bingo-font.js picture-bingo-font-OFL.txt bingo-storage.js $DEPLOYPATH
     - /bin/cp playlist-publisher.js $DEPLOYPATH
     - /bin/cp robots.txt $DEPLOYPATH
     - /bin/mkdir -p $DEPLOYPATH/public/free-square
