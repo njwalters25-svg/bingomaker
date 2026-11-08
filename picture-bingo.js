@@ -138,6 +138,15 @@ function writePicturePdf(pdf, { title, pages, layout, calling = false, header = 
     } else {
       drawLabel(pdf, calling ? `${title} - Calling Cards` : title, margin, calling ? 12 : HEADER_TOP, gridWidth, calling ? 38 : HEADER_HEIGHT, calling ? 17 : 30);
     }
+    if (calling) {
+      const bottom = CALLING_TOP + CALLING_HEIGHT;
+      pdf.setDrawColor(155, 162, 166);
+      pdf.setLineDashPattern([3, 2], 0);
+      pdf.rect(margin, CALLING_TOP, gridWidth, CALLING_HEIGHT);
+      pdf.line(margin + cellWidth, CALLING_TOP, margin + cellWidth, bottom);
+      pdf.line(margin, CALLING_TOP + cellHeight, margin + gridWidth, CALLING_TOP + cellHeight);
+      pdf.setLineDashPattern([], 0);
+    }
     const slots = calling ? 4 : pictures.length;
     for (let index = 0; index < slots; index++) {
       const picture = pictures[index];
@@ -154,7 +163,7 @@ function writePicturePdf(pdf, { title, pages, layout, calling = false, header = 
         pdf.setFont("helvetica", "bold");
         continue;
       }
-      pdf.rect(x, y, cellWidth, cellHeight);
+      if (!calling) pdf.rect(x, y, cellWidth, cellHeight);
       if (picture) {
         const padding = calling ? 16 : 3;
         const nameHeight = calling ? 44 : 0;

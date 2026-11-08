@@ -61,6 +61,13 @@ function pngSheetDrawing(canvas, metrics, images) {
     setTextColor: (r, g, b) => { context.fillStyle = `rgb(${r},${g},${b})`; },
     setDrawColor: (r, g, b) => { context.strokeStyle = typeof r === "string" ? r : `rgb(${r},${g},${b})`; },
     setLineWidth: value => { context.lineWidth = value; },
+    setLineDashPattern: (pattern, offset) => { context.setLineDash(pattern); context.lineDashOffset = offset; },
+    line: (x1, y1, x2, y2) => {
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.stroke();
+    },
     rect: (...args) => context.strokeRect(...args),
     text: (value, x, y, options) => {
       context.textAlign = options.align;

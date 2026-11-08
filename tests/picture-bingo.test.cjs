@@ -43,11 +43,13 @@ test("both layouts generate distinct boards with no repeated picture in a board"
 });
 
 function recorder() {
-  const pdf = { images: [], labels: [], rectangles: [], borders: [], sizes: [], pageCount: 1 };
+  const pdf = { images: [], labels: [], rectangles: [], borders: [], sizes: [], lines: [], dashes: [], pageCount: 1 };
   Object.assign(pdf, {
     addImage: (...args) => pdf.images.push(args),
     text: (...args) => { pdf.labels.push(args); pdf.sizes.push(pdf.fontSize); },
     rect: (...args) => pdf.rectangles.push(args),
+    line: (...args) => pdf.lines.push(args),
+    setLineDashPattern: pattern => pdf.dashes.push(pattern),
     addPage: () => pdf.pageCount++,
     splitTextToSize: value => [value],
     setFont() {}, setTextColor() {}, setDrawColor: (...args) => pdf.borders.push(args), setLineWidth() {}, setFontSize: size => { pdf.fontSize = size; },
@@ -60,6 +62,7 @@ test("board PDF draws text separately and reuses 36 image aliases across 100 pag
   const pdf = writePicturePdf(recorder(), { title: "Christmas Bingo", pages, layout: 5 });
   assert.equal(pdf.pageCount, 100);
   assert.equal(pdf.images.length, 2400);
+  assert.deepEqual(pdf.dashes, []);
   assert.equal(new Set(pdf.images.map(args => args[6])).size, 36);
   assert.equal(pdf.labels.filter(([label]) => label === "Free").length, 100);
   assert.equal(pdf.labels.filter(([label]) => label === "Space").length, 100);
@@ -116,7 +119,9 @@ test("calling sheets include every picture once, with four cut-out slots per pag
     const pages = makeCallingPages(pictures.slice(0, count));
     const pdf = writePicturePdf(recorder(), { title: "Christmas Bingo", pages, calling: true });
     assert.equal(pdf.pageCount, Math.ceil(count / 4));
-    assert.equal(pdf.rectangles.length, pdf.pageCount * 4);
+    assert.equal(pdf.rectangles.length, pdf.pageCount);
+    assert.equal(pdf.lines.length, pdf.pageCount * 2);
+    assert.deepEqual(pdf.dashes.slice(0, 2), [[3, 2], []]);
     assert.equal(pdf.images.length, count);
     assert.equal(pdf.labels.filter(([label]) => label === "Christmas Bingo").length, count);
     assert.equal(new Set(pdf.images.map(args => args[6])).size, count);
