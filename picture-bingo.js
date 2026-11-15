@@ -205,7 +205,7 @@ function createPictureGuidePdf(JsPdf, game) {
   heading("How to Play");
 
   const sections = [
-    ["1. Print and set up", "Choose full-page or two-per-page boards. Cut the two-per-page sheets in half and give each player a different board. Use the printable markers on page 2, counters or a pencil. If your board has a Free Space, cover it before the first call."],
+    ["1. Print and set up", "Choose full-page or two-per-page boards. Cut the two-per-page sheets in half and give each player a different board. Print page 2 for full-page markers or page 3 for two-per-page markers. You can also use counters or a pencil. If your board has a Free Space, cover it before the first call."],
     ["2. Choose your caller", "Printed calling cards: Print the calling sheets, cut along the dashed lines and shuffle the cards. Draw one at a time and show or read out the picture. Keep drawn cards to check a winning board."],
     ["Offline HTML caller", "Unzip the download first. Open the bingo-caller.html file from the extracted folder in a web browser. No internet or account is needed. Click Next call to show a random picture. It will not repeat a call during the round. Use Call history to check a win and Restart for a new round."],
     ["3. Play and check the winner", "Before starting, agree on the winning pattern, such as a full row, column or diagonal. Players cover the matching picture after each call. The first player to complete the pattern calls BINGO! Check their marked pictures against the calls before declaring a winner."],
@@ -222,21 +222,20 @@ function createPictureGuidePdf(JsPdf, game) {
     y += 39 + lines.length * 17;
   }
 
-  pdf.addPage(LETTER, "portrait");
-  heading("Printable Bingo Markers");
   const theme = game.title.trim().replace(/(?:^|\s)(?:picture\s+)?bingo$/i, "").trim();
   if (game.fontData) {
     pdf.addFileToVFS("LilitaOne.ttf", game.fontData);
     pdf.addFont("LilitaOne.ttf", "LilitaOne", "normal");
   }
-  pdf.setDrawColor(184, 184, 184);
-  pdf.setLineWidth(0.45);
-  for (const { title, top, size, columns, rows } of [
-    { title: "Full-page boards", top: 155, size: 54, columns: 6, rows: 5 },
-    { title: "Two-per-page boards", top: 497, size: 36, columns: 9, rows: 6 },
+  for (const { title, size, columns, rows } of [
+    { title: "For full-page boards", size: 84, columns: 6, rows: 7 },
+    { title: "For two-per-page boards", size: 54, columns: 9, rows: 11 },
   ]) {
-    pdf.setFont("helvetica", "bold");
-    pdf.setTextColor(23, 34, 49);
+    pdf.addPage(LETTER, "portrait");
+    heading("Printable Bingo Markers");
+    pdf.setDrawColor(184, 184, 184);
+    pdf.setLineWidth(0.45);
+    const top = 150;
     drawLabel(pdf, title, 36, top - 36, 540, 26, 15);
     const width = columns * size;
     const height = rows * size;
@@ -245,6 +244,9 @@ function createPictureGuidePdf(JsPdf, game) {
     for (let col = 1; col < columns; col++) pdf.line(left + col * size, top, left + col * size, top + height);
     for (let row = 1; row < rows; row++) pdf.line(left, top + row * size, left + width, top + row * size);
     pdf.setFont(game.fontData ? "LilitaOne" : "helvetica", game.fontData ? "normal" : "bold");
+    const maxBingoSize = size * 0.33;
+    pdf.setFontSize(maxBingoSize);
+    const bingoSize = Math.min(maxBingoSize, maxBingoSize * (size - 8) / pdf.getTextWidth("BINGO"));
     for (let i = 0; i < columns * rows; i++) {
       const x = left + (i % columns) * size;
       const y = top + Math.floor(i / columns) * size;
@@ -253,12 +255,12 @@ function createPictureGuidePdf(JsPdf, game) {
         drawLabel(pdf, theme, x + 3, y + size * 0.15, size - 6, size * 0.34, size * 0.25);
       }
       pdf.setTextColor(game.border || DEFAULT_BORDER);
-      drawLabel(pdf, "BINGO", x + 3, y + (theme ? size * 0.49 : 0), size - 6, theme ? size * 0.36 : size, size * 0.33);
+      drawLines(pdf, ["BINGO"], x + 3, y + (theme ? size * 0.49 : 0), size - 6, theme ? size * 0.36 : size, bingoSize);
     }
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(23, 34, 49);
+    drawLabel(pdf, "Cut along the grid lines. Print extra copies as needed.", 36, 750, 540, 22, 11);
   }
-  pdf.setFont("helvetica", "bold");
-  pdf.setTextColor(23, 34, 49);
-  drawLabel(pdf, "Cut along the grid lines. Print extra copies as needed.", 36, 747, 540, 22, 11);
   return pdf;
 }
 
@@ -821,3 +823,4 @@ if (typeof module !== "undefined") {
 } else {
   initialisePictureBingo();
 }
+

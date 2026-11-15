@@ -52,6 +52,7 @@ function recorder() {
     setLineDashPattern: pattern => pdf.dashes.push(pattern),
     addPage: () => pdf.pageCount++,
     splitTextToSize: value => [value],
+    getTextWidth: value => value.length * pdf.fontSize * 0.65,
     setFont() {}, setTextColor() {}, setDrawColor: (...args) => pdf.borders.push(args), setLineWidth() {}, setFontSize: size => { pdf.fontSize = size; },
   });
   return pdf;
@@ -153,7 +154,7 @@ test("download all puts both board formats, calling cards, caller, guide and mar
   const game = { title: "Christmas Bingo", pictures, layout: 5, boards: makePictureBoards(pictures, 5, 50, randomSource()) };
   function MockPdf(options) {
     const pdf = recorder();
-    pdf.output = () => ({ pages: pdf.pageCount, options, images: pdf.images.map(image => image[6]), labels: pdf.labels, rectangles: pdf.rectangles, lines: pdf.lines });
+    pdf.output = () => ({ pages: pdf.pageCount, options, images: pdf.images.map(image => image[6]), labels: pdf.labels, sizes: pdf.sizes, rectangles: pdf.rectangles, lines: pdf.lines });
     return pdf;
   }
   const archive = await buildPicturePack(zip, MockPdf, game, (title, items) => {
@@ -172,10 +173,13 @@ test("download all puts both board formats, calling cards, caller, guide and mar
   assert.equal(files.get("Christmas-Bingo-bingo-caller.html"), "offline caller");
   const guide = files.get("Christmas-Bingo-how-to-play.pdf");
   assert.equal(files.has("Christmas-Bingo-markers.pdf"), false);
-  assert.equal(guide.pages, 2);
+  assert.equal(guide.pages, 3);
   assert.ok(guide.labels.some(([value]) => value.includes("Unzip the download first")));
-  assert.deepEqual(guide.rectangles, [[144, 155, 324, 270], [144, 497, 324, 216]]);
-  assert.equal(guide.lines.length, 22);
-  assert.equal(guide.labels.filter(([value]) => value === "Christmas").length, 84);
-  assert.equal(guide.labels.filter(([value]) => value === "BINGO").length, 84);
+  assert.deepEqual(guide.rectangles, [[54, 150, 504, 588], [63, 150, 486, 594]]);
+  assert.equal(guide.lines.length, 29);
+  assert.equal(guide.labels.filter(([value]) => value === "Christmas").length, 141);
+  assert.equal(guide.labels.filter(([value]) => value === "BINGO").length, 141);
+  const bingoSizes = guide.sizes.filter((_, i) => guide.labels[i][0] === "BINGO");
+  assert.ok(bingoSizes.slice(0, 42).every(size => size * 3.25 <= 76.001));
+  assert.ok(bingoSizes.slice(42).every(size => size * 3.25 <= 46.001));
 });
