@@ -129,6 +129,10 @@ function buildOfflineCaller(title, pictures, header = null) {
     </section>
     <section aria-labelledby="history-heading">
       <h2 id="history-heading">Call history</h2>
+      <details>
+        <summary>How to use the caller</summary>
+        <p>Click Next call to show a random picture. Each picture is called once per round. Check winning boards against Call history, then use Restart to begin a new round. This file works without internet or an account.</p>
+      </details>
       <ol id="call-history"></ol>
     </section>
   </main>

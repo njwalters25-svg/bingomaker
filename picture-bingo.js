@@ -194,6 +194,74 @@ function createPicturePdf(JsPdf, game, calling = false, twoUp = false) {
   return pdf;
 }
 
+function createPictureGuidePdf(JsPdf, game) {
+  const pdf = new JsPdf({ unit: "pt", format: LETTER, compress: true });
+  const heading = title => {
+    pdf.setTextColor(23, 34, 49);
+    pdf.setFont("helvetica", "bold");
+    drawLabel(pdf, game.title, 36, 28, 540, 34, 20);
+    drawLabel(pdf, title, 36, 70, 540, 42, 30);
+  };
+  heading("How to Play");
+
+  const sections = [
+    ["1. Print and set up", "Choose full-page or two-per-page boards. Cut the two-per-page sheets in half and give each player a different board. Use the printable markers on page 2, counters or a pencil. If your board has a Free Space, cover it before the first call."],
+    ["2. Choose your caller", "Printed calling cards: Print the calling sheets, cut along the dashed lines and shuffle the cards. Draw one at a time and show or read out the picture. Keep drawn cards to check a winning board."],
+    ["Offline HTML caller", "Unzip the download first. Open the bingo-caller.html file from the extracted folder in a web browser. No internet or account is needed. Click Next call to show a random picture. It will not repeat a call during the round. Use Call history to check a win and Restart for a new round."],
+    ["3. Play and check the winner", "Before starting, agree on the winning pattern, such as a full row, column or diagonal. Players cover the matching picture after each call. The first player to complete the pattern calls BINGO! Check their marked pictures against the calls before declaring a winner."],
+  ];
+  let y = 140;
+  for (const [heading, body] of sections) {
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.text(heading, 48, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(12);
+    const lines = pdf.splitTextToSize(body, 516);
+    lines.forEach((line, i) => pdf.text(line, 48, y + 23 + i * 17));
+    y += 39 + lines.length * 17;
+  }
+
+  pdf.addPage(LETTER, "portrait");
+  heading("Printable Bingo Markers");
+  const theme = game.title.trim().replace(/(?:^|\s)(?:picture\s+)?bingo$/i, "").trim();
+  if (game.fontData) {
+    pdf.addFileToVFS("LilitaOne.ttf", game.fontData);
+    pdf.addFont("LilitaOne.ttf", "LilitaOne", "normal");
+  }
+  pdf.setDrawColor(184, 184, 184);
+  pdf.setLineWidth(0.45);
+  for (const { title, top, size, columns, rows } of [
+    { title: "Full-page boards", top: 155, size: 54, columns: 6, rows: 5 },
+    { title: "Two-per-page boards", top: 497, size: 36, columns: 9, rows: 6 },
+  ]) {
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(23, 34, 49);
+    drawLabel(pdf, title, 36, top - 36, 540, 26, 15);
+    const width = columns * size;
+    const height = rows * size;
+    const left = (LETTER[0] - width) / 2;
+    pdf.rect(left, top, width, height);
+    for (let col = 1; col < columns; col++) pdf.line(left + col * size, top, left + col * size, top + height);
+    for (let row = 1; row < rows; row++) pdf.line(left, top + row * size, left + width, top + row * size);
+    pdf.setFont(game.fontData ? "LilitaOne" : "helvetica", game.fontData ? "normal" : "bold");
+    for (let i = 0; i < columns * rows; i++) {
+      const x = left + (i % columns) * size;
+      const y = top + Math.floor(i / columns) * size;
+      if (theme) {
+        pdf.setTextColor(23, 34, 49);
+        drawLabel(pdf, theme, x + 3, y + size * 0.15, size - 6, size * 0.34, size * 0.25);
+      }
+      pdf.setTextColor(game.border || DEFAULT_BORDER);
+      drawLabel(pdf, "BINGO", x + 3, y + (theme ? size * 0.49 : 0), size - 6, theme ? size * 0.36 : size, size * 0.33);
+    }
+  }
+  pdf.setFont("helvetica", "bold");
+  pdf.setTextColor(23, 34, 49);
+  drawLabel(pdf, "Cut along the grid lines. Print extra copies as needed.", 36, 747, 540, 22, 11);
+  return pdf;
+}
+
 async function buildPicturePack(zip, JsPdf, game, makeCaller, onProgress = async () => {}) {
   const name = pictureFileStem(game.title);
   const folder = zip.folder(name + "-" + game.boards.length + "-boards");
@@ -208,6 +276,8 @@ async function buildPicturePack(zip, JsPdf, game, makeCaller, onProgress = async
   }
   await onProgress("Offline caller");
   folder.file(`${name}-bingo-caller.html`, makeCaller(game.title, game.pictures, game.header), { compression: "DEFLATE" });
+  await onProgress("Quick-start guide and markers");
+  folder.file(`${name}-how-to-play.pdf`, createPictureGuidePdf(JsPdf, game).output("arraybuffer"));
   return zip.generateAsync({ type: "blob", compression: "STORE" });
 }
 
@@ -687,7 +757,7 @@ function initialisePictureBingo() {
         await nextPaint();
       });
       downloadFile(blob, `${boards.length}-boards.zip`);
-      status(`Four files downloaded in one ZIP · ${(blob.size / 1_000_000).toFixed(2)} MB`);
+      status(`Five files downloaded in one ZIP · ${(blob.size / 1_000_000).toFixed(2)} MB`);
     } catch (error) {
       console.error(error);
       status("Could not create the ZIP. Your pictures are still loaded.", true);
@@ -724,6 +794,20 @@ function initialisePictureBingo() {
       updateButtons();
     }
   });
+  byId("pictureGuide").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf || {};
+      if (!jsPDF) {
+        status("The PDF library did not load. Check your connection and reload this page.", true);
+        return;
+      }
+      try {
+        downloadFile(createPictureGuidePdf(jsPDF, currentGame()).output("blob"), "how-to-play.pdf");
+        status("Quick-start guide and marker sheet downloaded.");
+      } catch (error) {
+        console.error(error);
+        status("Could not create that PDF. Your game is still loaded.", true);
+      }
+  });
   new ResizeObserver(renderPreview).observe(paper);
   rebuildBoards();
   if (cloud) refreshSavedGames().catch(error => {
@@ -733,7 +817,7 @@ function initialisePictureBingo() {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { labelFromFilename, makePictureBoards, makeCallingPages, containedImage, opaqueBounds, headerBorderColor, boardLabels, restorePictureBoards, writePicturePdf, buildPicturePack };
+  module.exports = { labelFromFilename, makePictureBoards, makeCallingPages, containedImage, opaqueBounds, headerBorderColor, boardLabels, restorePictureBoards, writePicturePdf, buildPicturePack, createPictureGuidePdf };
 } else {
   initialisePictureBingo();
 }
