@@ -144,20 +144,27 @@ test("saved game round-trip keeps the exact board arrangement and shared picture
 
 test("download all puts both board formats, calling cards, caller, guide and markers in one folder", async () => {
   const files = new Map();
-  const zip = {
+  class MockZip {
     folder(name) {
       assert.equal(name, "Christmas-Bingo-50-boards");
       return { file: (filename, value) => files.set(filename, value) };
-    },
-    generateAsync: () => "zip",
-  };
+    }
+    file(name, value) {
+      assert.equal(name, "bingo-caller.html");
+      this.html = value;
+    }
+    generateAsync(options) {
+      assert.equal(options.compression, this.html ? "DEFLATE" : "STORE");
+      return this.html ? new Blob([this.html]) : "zip";
+    }
+  }
   const game = { title: "Christmas Bingo", pictures, layout: 5, boards: makePictureBoards(pictures, 5, 50, randomSource()) };
   function MockPdf(options) {
     const pdf = recorder();
     pdf.output = () => ({ pages: pdf.pageCount, options, images: pdf.images.map(image => image[6]), labels: pdf.labels, sizes: pdf.sizes, rectangles: pdf.rectangles, lines: pdf.lines });
     return pdf;
   }
-  const archive = await buildPicturePack(zip, MockPdf, game, (title, items) => {
+  const archive = await buildPicturePack(MockZip, MockPdf, game, (title, items) => {
     assert.equal(title, game.title);
     assert.equal(items, pictures);
     return "offline caller";
@@ -170,11 +177,12 @@ test("download all puts both board formats, calling cards, caller, guide and mar
   assert.equal(twoUp.pages, 25);
   assert.deepEqual(twoUp.images, full.images);
   assert.equal(files.get("Christmas-Bingo-calling-cards.pdf").pages, 9);
-  assert.equal(files.get("Christmas-Bingo-bingo-caller.html"), "offline caller");
+  assert.equal(files.has("Christmas-Bingo-bingo-caller.html"), false);
+  assert.equal(await files.get("Christmas-Bingo-bingo-caller.zip").text(), "offline caller");
   const guide = files.get("Christmas-Bingo-how-to-play.pdf");
   assert.equal(files.has("Christmas-Bingo-markers.pdf"), false);
   assert.equal(guide.pages, 3);
-  assert.ok(guide.labels.some(([value]) => value.includes("Unzip the download first")));
+  assert.ok(guide.labels.some(([value]) => value.includes("Unzip the bingo-caller ZIP first")));
   assert.deepEqual(guide.rectangles, [[54, 150, 504, 588], [63, 150, 486, 594]]);
   assert.equal(guide.lines.length, 29);
   assert.equal(guide.labels.filter(([value]) => value === "Christmas").length, 141);

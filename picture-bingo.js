@@ -212,7 +212,7 @@ function drawPictureGuide(pdf, game, onlyPage = null) {
     const sections = [
       ["1. Print and set up", "Choose full-page or two-per-page boards. Cut the two-per-page sheets in half and give each player a different board. Print page 2 for full-page markers or page 3 for two-per-page markers. You can also use counters or a pencil. If your board has a Free Space, cover it before the first call."],
       ["2. Choose your caller", "Printed calling cards: Print the calling sheets, cut along the dashed lines and shuffle the cards. Draw one at a time and show or read out the picture. Keep drawn cards to check a winning board."],
-      ["Offline HTML caller", "Unzip the download first. Open the bingo-caller.html file from the extracted folder in a web browser. No internet or account is needed. Click Next call to show a random picture. It will not repeat a call during the round. Use Call history to check a win and Restart for a new round."],
+      ["Offline HTML caller", "Unzip the bingo-caller ZIP first, then open bingo-caller.html in your web browser. No internet or account is needed. Click Next call to show a random picture. It will not repeat a call during the round. Use Call history to check a win and Restart for a new round."],
       ["3. Play and check the winner", "Before starting, agree on the winning pattern, such as a full row, column or diagonal. Players cover the matching picture after each call. The first player to complete the pattern calls BINGO! Check their marked pictures against the calls before declaring a winner."],
     ];
     let y = 140;
@@ -272,7 +272,14 @@ function drawPictureGuide(pdf, game, onlyPage = null) {
   return pdf;
 }
 
-async function buildPicturePack(zip, JsPdf, game, makeCaller, onProgress = async () => {}) {
+function buildPictureCallerZip(Zip, game, makeCaller) {
+  const zip = new Zip();
+  zip.file("bingo-caller.html", makeCaller(game.title, game.pictures, game.header));
+  return zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+}
+
+async function buildPicturePack(Zip, JsPdf, game, makeCaller, onProgress = async () => {}) {
+  const zip = new Zip();
   const name = pictureFileStem(game.title);
   const folder = zip.folder(name + "-" + game.boards.length + "-boards");
   const files = [
@@ -285,7 +292,8 @@ async function buildPicturePack(zip, JsPdf, game, makeCaller, onProgress = async
     folder.file(`${name}-${suffix}`, createPicturePdf(JsPdf, game, calling, twoUp).output("arraybuffer"));
   }
   await onProgress("Offline caller");
-  folder.file(`${name}-bingo-caller.html`, makeCaller(game.title, game.pictures, game.header), { compression: "DEFLATE" });
+  const caller = await buildPictureCallerZip(Zip, game, makeCaller);
+  folder.file(`${name}-bingo-caller.zip`, caller);
   await onProgress("Quick-start guide and markers");
   folder.file(`${name}-how-to-play.pdf`, createPictureGuidePdf(JsPdf, game).output("arraybuffer"));
   return zip.generateAsync({ type: "blob", compression: "STORE" });
@@ -766,15 +774,23 @@ function initialisePictureBingo() {
   boardsButton.addEventListener("click", () => download(false));
   twoUpButton.addEventListener("click", () => download(false, true));
   callingButton.addEventListener("click", () => download(true));
-  callerButton.addEventListener("click", () => {
+  callerButton.addEventListener("click", async () => {
+    if (!window.JSZip) {
+      status("The ZIP library did not load. Check your connection and reload this page.", true);
+      return;
+    }
+    setup.disabled = busy = true;
+    status("Preparing offline caller ZIP...");
     try {
-      const html = buildOfflineCaller(gameTitle(), pictures, header);
-      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-      downloadFile(blob, "bingo-caller.html");
+      const blob = await buildPictureCallerZip(window.JSZip, currentGame(), buildOfflineCaller);
+      downloadFile(blob, "bingo-caller.zip");
       status(`Offline caller downloaded · ${(blob.size / 1_000_000).toFixed(2)} MB`);
     } catch (error) {
       console.error(error);
       status("Could not generate the offline caller. Your pictures are still loaded.", true);
+    } finally {
+      setup.disabled = busy = false;
+      updateButtons();
     }
   });
   allFilesButton.addEventListener("click", async () => {
@@ -785,7 +801,7 @@ function initialisePictureBingo() {
     }
     setup.disabled = busy = true;
     try {
-      const blob = await buildPicturePack(new window.JSZip(), jsPDF, currentGame(), buildOfflineCaller, async label => {
+      const blob = await buildPicturePack(window.JSZip, jsPDF, currentGame(), buildOfflineCaller, async label => {
         status(`Preparing ${label.toLowerCase()}...`);
         await nextPaint();
       });
