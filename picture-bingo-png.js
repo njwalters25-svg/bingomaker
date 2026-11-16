@@ -327,7 +327,7 @@ async function recordPictureListingVideo(slides, onStart) {
   if (!mimeType || !slides.length) return null;
   const canvas = document.createElement("canvas");
   if (!canvas.captureStream) return null;
-  canvas.width = 2160;
+  canvas.width = 1080;
   canvas.height = 1080;
   const context = canvas.getContext("2d");
   const images = [];
@@ -337,7 +337,7 @@ async function recordPictureListingVideo(slides, onStart) {
     function show(image) {
       context.fillStyle = "#f4f1ed";
       context.fillRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(image, 540, 0, 1080, 1080);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
     }
     show(images[0]);
     stream = canvas.captureStream(30);
