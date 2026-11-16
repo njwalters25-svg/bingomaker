@@ -196,30 +196,37 @@ function createPicturePdf(JsPdf, game, calling = false, twoUp = false) {
 
 function createPictureGuidePdf(JsPdf, game) {
   const pdf = new JsPdf({ unit: "pt", format: LETTER, compress: true });
+  return drawPictureGuide(pdf, game);
+}
+
+function drawPictureGuide(pdf, game, onlyPage = null) {
   const heading = title => {
     pdf.setTextColor(23, 34, 49);
     pdf.setFont("helvetica", "bold");
     drawLabel(pdf, game.title, 36, 28, 540, 34, 20);
     drawLabel(pdf, title, 36, 70, 540, 42, 30);
   };
-  heading("How to Play");
+  if (onlyPage === null || onlyPage === 1) {
+    heading("How to Play");
 
-  const sections = [
-    ["1. Print and set up", "Choose full-page or two-per-page boards. Cut the two-per-page sheets in half and give each player a different board. Print page 2 for full-page markers or page 3 for two-per-page markers. You can also use counters or a pencil. If your board has a Free Space, cover it before the first call."],
-    ["2. Choose your caller", "Printed calling cards: Print the calling sheets, cut along the dashed lines and shuffle the cards. Draw one at a time and show or read out the picture. Keep drawn cards to check a winning board."],
-    ["Offline HTML caller", "Unzip the download first. Open the bingo-caller.html file from the extracted folder in a web browser. No internet or account is needed. Click Next call to show a random picture. It will not repeat a call during the round. Use Call history to check a win and Restart for a new round."],
-    ["3. Play and check the winner", "Before starting, agree on the winning pattern, such as a full row, column or diagonal. Players cover the matching picture after each call. The first player to complete the pattern calls BINGO! Check their marked pictures against the calls before declaring a winner."],
-  ];
-  let y = 140;
-  for (const [heading, body] of sections) {
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
-    pdf.text(heading, 48, y);
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(12);
-    const lines = pdf.splitTextToSize(body, 516);
-    lines.forEach((line, i) => pdf.text(line, 48, y + 23 + i * 17));
-    y += 39 + lines.length * 17;
+    const sections = [
+      ["1. Print and set up", "Choose full-page or two-per-page boards. Cut the two-per-page sheets in half and give each player a different board. Print page 2 for full-page markers or page 3 for two-per-page markers. You can also use counters or a pencil. If your board has a Free Space, cover it before the first call."],
+      ["2. Choose your caller", "Printed calling cards: Print the calling sheets, cut along the dashed lines and shuffle the cards. Draw one at a time and show or read out the picture. Keep drawn cards to check a winning board."],
+      ["Offline HTML caller", "Unzip the download first. Open the bingo-caller.html file from the extracted folder in a web browser. No internet or account is needed. Click Next call to show a random picture. It will not repeat a call during the round. Use Call history to check a win and Restart for a new round."],
+      ["3. Play and check the winner", "Before starting, agree on the winning pattern, such as a full row, column or diagonal. Players cover the matching picture after each call. The first player to complete the pattern calls BINGO! Check their marked pictures against the calls before declaring a winner."],
+    ];
+    let y = 140;
+    for (const [heading, body] of sections) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text(heading, 48, y);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      const lines = pdf.splitTextToSize(body, 516);
+      lines.forEach((line, i) => pdf.text(line, 48, y + 23 + i * 17));
+      y += 39 + lines.length * 17;
+    }
+    if (onlyPage === 1) return pdf;
   }
 
   const theme = game.title.trim().replace(/(?:^|\s)(?:picture\s+)?bingo$/i, "").trim();
@@ -227,11 +234,12 @@ function createPictureGuidePdf(JsPdf, game) {
     pdf.addFileToVFS("LilitaOne.ttf", game.fontData);
     pdf.addFont("LilitaOne.ttf", "LilitaOne", "normal");
   }
-  for (const { title, size, columns, rows } of [
+  for (const [index, { title, size, columns, rows }] of [
     { title: "For full-page boards", size: 84, columns: 6, rows: 7 },
     { title: "For two-per-page boards", size: 54, columns: 9, rows: 11 },
-  ]) {
-    pdf.addPage(LETTER, "portrait");
+  ].entries()) {
+    if (onlyPage !== null && onlyPage !== index + 2) continue;
+    if (onlyPage === null) pdf.addPage(LETTER, "portrait");
     heading("Printable Bingo Markers");
     pdf.setDrawColor(184, 184, 184);
     pdf.setLineWidth(0.45);
@@ -393,6 +401,8 @@ function initialisePictureBingo() {
   const callerButton = byId("callerHtml");
   const allFilesButton = byId("allPictureFiles");
   const pngPackButton = byId("picturePngPack");
+  const coverButton = byId("pictureListingCover");
+  const listingButton = byId("pictureListingPack");
   const savedSelect = byId("savedPictureGame");
   const loadGame = byId("loadPictureGame");
   const saveGame = byId("savePictureGame");
@@ -434,6 +444,8 @@ function initialisePictureBingo() {
     twoUpButton.disabled = boardsButton.disabled;
     allFilesButton.disabled = boardsButton.disabled;
     pngPackButton.disabled = boardsButton.disabled;
+    coverButton.disabled = boardsButton.disabled;
+    listingButton.disabled = boardsButton.disabled;
     callingButton.disabled = busy || invalidLabels || !pictures.length;
     callerButton.disabled = callingButton.disabled;
     loadGame.disabled = busy || !cloud || !savedSelect.value;
@@ -577,6 +589,25 @@ function initialisePictureBingo() {
   }
 
   savedSelect.addEventListener("change", updateButtons);
+  byId("newPictureGame").addEventListener("click", () => {
+    if (busy) return;
+    if ((activeGame || pictures.length || header || title.value !== title.defaultValue) &&
+        !window.confirm("Start a new game? Any unsaved changes will be lost. Saved games will be kept.")) return;
+    activeGame = savedSelect.value = "";
+    nextId = 0;
+    pictures.length = 0;
+    header = null;
+    title.value = title.defaultValue;
+    fileInput.value = headerInput.value = "";
+    border.value = DEFAULT_BORDER;
+    layout.selectedIndex = quantity.selectedIndex = previewType.selectedIndex = 0;
+    byId("headerFilename").textContent = "";
+    byId("headerSelection").hidden = true;
+    renderList();
+    rebuildBoards();
+    status("");
+    title.focus();
+  });
   saveGame.addEventListener("click", () => savePictureGame(false));
   saveNew.addEventListener("click", () => savePictureGame(true));
   loadGame.addEventListener("click", () => {
@@ -768,34 +799,71 @@ function initialisePictureBingo() {
       updateButtons();
     }
   });
-  pngPackButton.addEventListener("click", async () => {
+  coverButton.addEventListener("click", async () => {
     const { jsPDF } = window.jspdf || {};
-    if (!jsPDF || !window.JSZip || !window.html2canvas) {
-      status("The PNG export libraries did not load. Check your connection and reload this page.", true);
+    if (coverButton.disabled) return;
+    if (!jsPDF) {
+      status("The export library did not load. Check your connection and reload this page.", true);
       return;
     }
     setup.disabled = busy = true;
-    status("Preparing PNG artwork...");
+    updateButtons();
+    status("Preparing Etsy cover...");
     try {
       const game = currentGame();
       await document.fonts.ready;
       const images = await decodePngExportImages(game);
-      const blob = await buildPicturePngPack(
-        new window.JSZip(), game,
-        job => renderPictureSheetPng(game, job, jsPDF, images, writePicturePdf),
-        () => captureOfflineCallerPng(buildOfflineCaller(game.title, game.pictures, game.header), window.html2canvas),
-        async (index, total) => { status(`Preparing listing image ${index} of ${total}...`); await nextPaint(); },
-      );
-      downloadFile(blob, "etsy-png-pack.zip");
-      status(`Etsy PNG pack downloaded · ${(blob.size / 1_000_000).toFixed(2)} MB`);
+      const cover = await buildPictureListingCover(game, "picture-listing-background.jpg",
+        () => renderPictureSheetPng(game, { pages: [game.boards[0]] }, jsPDF, images, writePicturePdf));
+      downloadFile(cover, `${game.boards.length}-etsy-cover.jpg`);
+      status("Etsy cover JPG downloaded.");
     } catch (error) {
       console.error(error);
-      status("Could not create the Etsy PNG pack. Your pictures are still loaded.", true);
+      status("Could not create the Etsy cover. Your game is still loaded.", true);
     } finally {
       setup.disabled = busy = false;
       updateButtons();
     }
   });
+  async function downloadListingPack(finished) {
+    const { jsPDF } = window.jspdf || {};
+    if (!jsPDF || !window.JSZip || !window.html2canvas) {
+      status("The listing export libraries did not load. Check your connection and reload this page.", true);
+      return;
+    }
+    setup.disabled = busy = true;
+    updateButtons();
+    const format = finished ? "JPG" : "PNG";
+    status(`Preparing Etsy ${format} images...`);
+    try {
+      const game = currentGame();
+      await document.fonts.ready;
+      const images = await decodePngExportImages(game);
+      const zip = new window.JSZip();
+      const render = job => renderPictureSheetPng(game, job, jsPDF, images, (drawing, options) => {
+        if (options.guidePage) drawPictureGuide(drawing, options, options.guidePage);
+        else writePicturePdf(drawing, options);
+      });
+      const caller = () => captureOfflineCallerPng(buildOfflineCaller(game.title, game.pictures, game.header), window.html2canvas);
+      const progress = async (index, total) => {
+        status(`Preparing listing image ${index} of ${total}...`);
+        await nextPaint();
+      };
+      const blob = finished
+        ? await buildPictureListingPack(zip, game, "picture-listing-background.jpg", render, caller, progress)
+        : await buildPicturePngPack(zip, game, render, caller, progress);
+      downloadFile(blob, finished ? `${game.boards.length}-etsy-listing-jpgs.zip` : "etsy-png-pack.zip");
+      status(`Etsy ${format} pack downloaded · ${(blob.size / 1_000_000).toFixed(2)} MB`);
+    } catch (error) {
+      console.error(error);
+      status(`Could not create the Etsy ${format} pack. Your pictures are still loaded.`, true);
+    } finally {
+      setup.disabled = busy = false;
+      updateButtons();
+    }
+  }
+  pngPackButton.addEventListener("click", () => downloadListingPack(false));
+  listingButton.addEventListener("click", () => downloadListingPack(true));
   byId("pictureGuide").addEventListener("click", () => {
       const { jsPDF } = window.jspdf || {};
       if (!jsPDF) {
@@ -823,4 +891,3 @@ if (typeof module !== "undefined") {
 } else {
   initialisePictureBingo();
 }
-

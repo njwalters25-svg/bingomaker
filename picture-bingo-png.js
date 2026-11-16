@@ -12,6 +12,9 @@ async function buildPicturePngPack(zip, game, renderSheet, captureCaller, onProg
   for (let start = 0; start < game.pictures.length; start += 4) {
     jobs.push({ path: `calling-cards/sheet-${number(start / 4)}.png`, pages: [game.pictures.slice(start, start + 4)], calling: true });
   }
+  ["how-to-play", "markers-full-page", "markers-two-up"].forEach((name, index) => {
+    jobs.push({ path: `instructions/${name}.png`, guidePage: index + 1 });
+  });
   const total = jobs.length + 1;
   for (const [index, job] of jobs.entries()) {
     await onProgress(index + 1, total);
@@ -19,6 +22,9 @@ async function buildPicturePngPack(zip, game, renderSheet, captureCaller, onProg
   }
   await onProgress(total, total);
   zip.file("offline-caller.png", await captureCaller());
+  zip.file("listing-data.json", JSON.stringify({
+    version: 1, title: game.title, boardCount: game.boards.length, pictureCount: game.pictures.length,
+  }, null, 2));
   return zip.generateAsync({ type: "blob", compression: "STORE" });
 }
 
@@ -58,7 +64,8 @@ function pngSheetDrawing(canvas, metrics, images) {
       updateFont();
     },
     splitTextToSize: (...args) => metrics.splitTextToSize(...args),
-    setTextColor: (r, g, b) => { context.fillStyle = `rgb(${r},${g},${b})`; },
+    getTextWidth: value => metrics.getTextWidth(value),
+    setTextColor: (r, g, b) => { context.fillStyle = typeof r === "string" ? r : `rgb(${r},${g},${b})`; },
     setDrawColor: (r, g, b) => { context.strokeStyle = typeof r === "string" ? r : `rgb(${r},${g},${b})`; },
     setLineWidth: value => { context.lineWidth = value; },
     setLineDashPattern: (pattern, offset) => { context.setLineDash(pattern); context.lineDashOffset = offset; },
@@ -70,7 +77,7 @@ function pngSheetDrawing(canvas, metrics, images) {
     },
     rect: (...args) => context.strokeRect(...args),
     text: (value, x, y, options) => {
-      context.textAlign = options.align;
+      context.textAlign = options?.align || "left";
       context.fillText(value, x, y);
     },
     addImage: (data, _format, x, y, width, height) => context.drawImage(images.get(data), x, y, width, height),
@@ -82,6 +89,236 @@ async function pngBytes(canvas) {
     canvas.toBlob(value => value ? resolve(value) : reject(new Error("PNG encoding failed")), "image/png");
   });
   return blob.arrayBuffer();
+}
+
+function drawPictureListingCover(context, background, board, boardCount, pictureCount, accent) {
+  const scale = Math.max(2000 / background.width, 2000 / background.height);
+  const w = background.width * scale, h = background.height * scale;
+  context.fillStyle = "#fff";
+  context.fillRect(0, 0, 2000, 2000);
+  context.drawImage(background, (2000 - w) / 2, (2000 - h) / 2, w, h);
+
+  context.save();
+  context.translate(1020, 1310);
+  context.rotate(-9 * Math.PI / 180);
+  context.shadowColor = "rgba(35, 26, 18, .32)";
+  context.shadowBlur = 27;
+  context.shadowOffsetX = 16;
+  context.shadowOffsetY = 20;
+  context.drawImage(board, -790, -1022, 1580, 2044);
+  context.restore();
+
+  function label(value, x, y, size, color, maxWidth) {
+    context.font = `bold ${size}px Arial, sans-serif`;
+    context.fillStyle = color;
+    context.textAlign = "center";
+    context.fillText(value, x, y, maxWidth);
+  }
+  label("DIGITAL DOWNLOAD", 1000, 135, 125, "#151515", 1750);
+
+  context.beginPath();
+  for (let i = 0; i < 32; i++) {
+    const angle = i * Math.PI / 16;
+    const radius = i % 2 ? 137 : 169;
+    const x = 200 + radius * Math.cos(angle);
+    const y = 510 + radius * Math.sin(angle);
+    if (i === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  }
+  context.closePath();
+  context.fillStyle = "#37b510";
+  context.fill();
+  label(`${pictureCount} FUN`, 200, 494, 59, "#151515", 262);
+  label("PICTURES", 200, 575, 56, "#151515", 278);
+
+  context.beginPath();
+  context.arc(1740, 1724, 203, 0, Math.PI * 2);
+  context.fillStyle = accent || "#b32836";
+  context.fill();
+  const ink = listingAccentInk(context.fillStyle);
+  label(String(boardCount), 1740, 1655, 82, ink, 250);
+  label("BINGO", 1740, 1750, 80, ink, 318);
+  label("CARDS", 1740, 1845, 80, ink, 318);
+}
+
+function listingAccentInk(color) {
+  const hex = /^#[\da-f]{6}$/i.test(color) ? color.slice(1) : "000000";
+  const [r, g, b] = hex.match(/../g).map(channel => {
+    const value = parseInt(channel, 16) / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.179 ? "#000" : "#fff";
+}
+
+async function buildPictureListingCover(game, backgroundData, renderBoard) {
+  const [background, boardBytes] = await Promise.all([
+    loadListingImage(backgroundData), renderBoard(),
+  ]);
+  const boardUrl = URL.createObjectURL(new Blob([boardBytes], { type: "image/png" }));
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 2000;
+  try {
+    const board = await loadListingImage(boardUrl);
+    drawPictureListingCover(canvas.getContext("2d"), background, board, game.boards.length, game.pictures.length, game.border);
+    return await new Promise((resolve, reject) => canvas.toBlob(value => {
+      if (value) resolve(value);
+      else reject(new Error("Cover encoding failed"));
+    }, "image/jpeg", 0.94));
+  } finally {
+    URL.revokeObjectURL(boardUrl);
+    canvas.width = canvas.height = 0;
+  }
+}
+
+function pictureListingPages(count) {
+  return [
+    ["01-cover", null, [["board-1"]]],
+    ["02-whats-included", "What's included?", [
+      ["board-1", 90, 280, 440, 620, `${count} full-page boards`],
+      ["two-up", 565, 280, 770, 620, `${count} boards, two per page`],
+      ["calling-1", 1390, 280, 520, 620, "Calling cards"],
+      ["caller", 175, 1070, 1010, 720, "Offline bingo caller"],
+      ["guide-1", 1250, 1070, 575, 720, "How to play + markers"],
+    ]],
+    ["03-unique-boards", `${count} unique bingo boards`, [
+      ["board-1", 205, 65, 725, 850], ["board-2", 1070, 65, 725, 850],
+      ["board-3", 205, 950, 725, 850], ["board-4", 1070, 950, 725, 850],
+    ]],
+    ["04-calling-cards", "Printable calling cards", [
+      ["calling-1", 75, 315, 920, 1375], ["calling-2", 1005, 315, 920, 1375],
+    ], "Four cards per sheet. Cut along the dashed lines."],
+    ["05-offline-caller", "Offline bingo caller", [
+      ["caller", 120, 320, 1760, 1325],
+    ], "Random calls, no repeats, no internet needed."],
+    ["06-print-options", "Two print options", [
+      ["board-1", 90, 335, 765, 1280, "Full page"],
+      ["two-up", 925, 335, 990, 1280, "Two per page"],
+    ], "Print the format that works for your group."],
+    ["07-instructions-and-markers", "Instructions and bingo markers", [
+      ["guide-1", 65, 435, 600, 1080, "How to play"],
+      ["guide-2", 700, 435, 600, 1080, "Full-page markers"],
+      ["guide-3", 1335, 435, 600, 1080, "Two-per-page markers"],
+    ], "Two sizes of bingo markers included."],
+    ["08-print-at-home", "Print at home", [
+      ["board-5", 125, 755, 810, 1060], ["board-6", 845, 820, 780, 1010],
+    ]],
+  ];
+}
+
+function drawPictureListingPage(context, background, page, artwork, accent) {
+  const [name, title, slots, footer] = page;
+  context.drawImage(background, 0, 0, 2000, 2000);
+  function label(text, x, y, size, limit, ink = "#151515") {
+    context.font = `bold ${size}px Arial, sans-serif`;
+    context.textAlign = "center";
+    context.fillStyle = ink;
+    context.fillText(text, x, y, limit);
+  }
+  const included = name === "02-whats-included";
+  if (included) label(title, 1000, 178, 110, 1770);
+  else if (footer) label(footer, 1000, 205, 68, 1750);
+  for (const [key, x, y, w, h, caption] of slots) {
+    const source = artwork.get(key);
+    const device = key === "caller";
+    const inset = device ? 28 : 0;
+    const scale = Math.min((w - inset * 2) / source.width, (h - inset * 2) / source.height);
+    const width = source.width * scale, height = source.height * scale;
+    const left = x + (w - width) / 2, top = y + (h - height) / 2;
+    context.save();
+    if (name === "08-print-at-home") {
+      context.translate(left + width / 2, top + height / 2);
+      context.rotate((key === "board-5" ? -10 : 6) * Math.PI / 180);
+      context.translate(-left - width / 2, -top - height / 2);
+    }
+    context.shadowColor = "rgba(35, 26, 18, .32)";
+    context.shadowBlur = 25;
+    context.shadowOffsetX = 10;
+    context.shadowOffsetY = 15;
+    if (device) {
+      context.fillStyle = "#202124";
+      context.beginPath();
+      context.roundRect(left - inset, top - inset, width + 2 * inset, height + 2 * inset, 24);
+      context.fill();
+      context.shadowColor = "transparent";
+    }
+    context.drawImage(source, left, top, width, height);
+    context.restore();
+    if (caption) label(caption, x + w / 2, y + h + 66, 52, w);
+  }
+  if (!included) {
+    context.fillStyle = accent || "#b32836";
+    context.fillRect(0, 1850, 2000, 150);
+    label(title.toUpperCase(), 1000, 1958, 85, 1800, listingAccentInk(context.fillStyle));
+  }
+}
+
+async function buildPictureListingPack(zip, game, backgroundUrl, renderSheet, captureCaller, progress = async () => {}) {
+  const background = await loadListingImage(backgroundUrl);
+  const desk = await loadListingImage("picture-listing-desk.jpg");
+  const artwork = new Map();
+  const pages = pictureListingPages(game.boards.length);
+  const remaining = pages.flatMap(page => page[2].map(([key]) => key));
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 2000;
+  const context = canvas.getContext("2d");
+  try {
+    for (const [index, page] of pages.entries()) {
+      await progress(index + 1, pages.length + 1);
+      for (const [key] of page[2]) {
+        if (artwork.has(key)) continue;
+        let bytes;
+        if (key === "caller") bytes = await captureCaller();
+        else {
+          const [kind, number] = key.split("-");
+          const offset = Number(number) - 1;
+          bytes = await renderSheet(key === "two-up" ? { pages: game.boards.slice(0, 2), twoUp: true }
+            : kind === "board" ? { pages: [game.boards[offset]], boardStart: offset }
+            : kind === "calling" ? { pages: [game.pictures.slice(offset * 4, offset * 4 + 4)], calling: true }
+            : { guidePage: offset + 1 });
+        }
+        artwork.set(key, await createImageBitmap(new Blob([bytes], { type: "image/png" })));
+      }
+      if (index === 0) drawPictureListingCover(context, background, artwork.get("board-1"), game.boards.length, game.pictures.length, game.border);
+      else drawPictureListingPage(context, page[0] === "08-print-at-home" ? desk : background, page, artwork, game.border);
+      const jpg = await new Promise((resolve, reject) => canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error("Listing JPG encoding failed")), "image/jpeg", 0.94));
+      zip.file(`${page[0]}.jpg`, await jpg.arrayBuffer());
+      for (const [key] of page[2]) {
+        remaining.splice(remaining.indexOf(key), 1);
+        if (!remaining.includes(key)) {
+          artwork.get(key).close();
+          artwork.delete(key);
+        }
+      }
+    }
+    await progress(pages.length + 1, pages.length + 1);
+    const promoUrl = "picture-listing-save-50.jpg";
+    let promo;
+    if (location.protocol === "file:") {
+      // Local pages can display sibling images, but cannot fetch their original bytes.
+      context.drawImage(await loadListingImage(promoUrl), 0, 0, canvas.width, canvas.height);
+      promo = await new Promise((resolve, reject) => canvas.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error("Final slide encoding failed")), "image/jpeg", 0.98));
+    } else {
+      const response = await fetch(promoUrl);
+      if (!response.ok || !response.headers.get("content-type")?.includes("image/jpeg")) {
+        throw new Error("Could not load the Save 50% slide");
+      }
+      promo = await response.blob();
+    }
+    zip.file("09-save-50.jpg", await promo.arrayBuffer());
+    return await zip.generateAsync({ type: "blob", compression: "STORE" });
+  } finally {
+    for (const source of artwork.values()) source.close();
+    canvas.width = canvas.height = 0;
+  }
+}
+
+async function loadListingImage(source) {
+  const image = new Image();
+  image.src = source;
+  await image.decode();
+  return image;
 }
 
 async function renderPictureSheetPng(game, job, JsPdf, images, drawSheet) {
@@ -145,4 +382,4 @@ async function captureOfflineCallerPng(html, capture) {
   }
 }
 
-if (typeof module !== "undefined") module.exports = { buildPicturePngPack, renderPictureSheetPng };
+if (typeof module !== "undefined") module.exports = { buildPicturePngPack, buildPictureListingPack, renderPictureSheetPng, drawPictureListingCover, drawPictureListingPage, pictureListingPages };

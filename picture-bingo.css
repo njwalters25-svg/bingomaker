@@ -28,6 +28,10 @@ button:disabled { opacity: .5; cursor: default; }
 button:not(:disabled):hover { border-color: #056466; }
 .actions { display: grid; gap: 8px; }
 .actions button { background: #056466; color: white; border-color: #056466; font-weight: 650; }
+.other-exports { margin-top: 12px; }
+.other-exports summary { cursor: pointer; color: #056466; }
+.other-exports .actions { margin-top: 8px; }
+.other-exports button { background: white; color: #056466; }
 #status { margin-top: 12px; color: #374d52; overflow-wrap: anywhere; }
 #status.error { color: #9d2929; }
 .preview { width: min(100%, 640px); margin-inline: auto; }

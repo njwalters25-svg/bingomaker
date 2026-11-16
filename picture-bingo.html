@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Picture Bingo | Bingo Maker</title>
-  <link rel="stylesheet" href="picture-bingo.css?v=cut-guides-1">
+  <link rel="stylesheet" href="picture-bingo.css?v=etsy-listing-1">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -13,8 +13,8 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="bingo-storage.js"></script>
   <script defer src="picture-bingo-caller.js?v=20261115-guide-markers"></script>
-  <script defer src="picture-bingo-png.js?v=cut-guides-1"></script>
-  <script defer src="picture-bingo.js?v=20261115-marker-pages"></script>
+  <script defer src="picture-bingo-png.js?v=etsy-listing-1"></script>
+  <script defer src="picture-bingo.js?v=etsy-listing-1"></script>
 </head>
 <body>
   <header class="top">
@@ -28,6 +28,7 @@
         <div class="saved-games">
           <label>Saved picture game <select id="savedPictureGame"><option value="">Choose a saved game</option></select></label>
           <div class="saved-actions">
+            <button id="newPictureGame" type="button">New game</button>
             <button id="loadPictureGame" disabled>Load</button>
             <button id="savePictureGame" disabled>Save game</button>
             <button id="saveNewPictureGame" disabled>Save as new</button>
@@ -57,14 +58,21 @@
         <div class="list-heading"><h2>Pictures</h2><span id="pictureCount">0 added</span></div>
         <ul id="pictureList"></ul>
         <div class="actions">
-          <button id="allPictureFiles" disabled>Download all files</button>
+          <button id="allPictureFiles" disabled>Download customer files</button>
+          <button id="pictureListingPack" disabled>Download Etsy listing images</button>
+        </div>
+        <details class="other-exports">
+          <summary>Other downloads</summary>
+          <div class="actions">
           <button id="boardsPdf" disabled>Download full-page boards</button>
           <button id="twoUpPdf" disabled>Download two-per-page boards</button>
           <button id="callingPdf" disabled>Download calling cards PDF</button>
           <button id="pictureGuide">Download instructions and markers PDF</button>
           <button id="callerHtml" disabled>Download offline caller</button>
           <button id="picturePngPack" disabled>Download Etsy PNG pack</button>
-        </div>
+          <button id="pictureListingCover" disabled>Download Etsy cover JPG</button>
+          </div>
+        </details>
       </fieldset>
       <p id="status" role="status" aria-live="polite"></p>
     </section>
@@ -84,5 +92,3 @@
   </main>
 </body>
 </html>
-
-
