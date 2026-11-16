@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { buildPicturePngPack, buildPictureListingPack, pictureListingPages } = require("../picture-bingo-png.js");
 
-test("the listing ZIP renders each source once and appends the fixed promo as the ninth JPG", async () => {
+test("the listing ZIP exports the promo as the ninth JPG and feeds the ordered slides to the MP4 recorder", async () => {
   const jobs = [], names = [], labels = [];
   const imageSources = [];
   const originalFetch = global.fetch;
@@ -34,9 +34,13 @@ test("the listing ZIP renders each source once and appends the fixed promo as th
     const result = await buildPictureListingPack(zip, game, "background.jpg", job => {
       jobs.push(job);
       return new ArrayBuffer(0);
-    }, () => { calls++; return new ArrayBuffer(0); });
+    }, () => { calls++; return new ArrayBuffer(0); }, undefined, async slides => {
+      assert.equal(slides.length, 9);
+      assert.equal(Buffer.from(slides.at(-1)).toString(), "original promo");
+      return new Blob(["video"], { type: "video/mp4" });
+    });
     assert.equal(result, "jpg-zip");
-    assert.deepEqual(names, [...pictureListingPages(100).map(([name]) => name + ".jpg"), "09-save-50.jpg"]);
+    assert.deepEqual(names, [...pictureListingPages(100).map(([name]) => name + ".jpg"), "09-save-50.jpg", "listing-video.mp4"]);
     assert.deepEqual(imageSources, ["background.jpg", "picture-listing-desk.jpg"]);
     assert.equal(calls, 1);
     assert.equal(closed, 13);

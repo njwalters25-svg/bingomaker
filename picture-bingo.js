@@ -865,11 +865,18 @@ function initialisePictureBingo() {
         status(`Preparing listing image ${index} of ${total}...`);
         await nextPaint();
       };
+      let videoIncluded = false;
       const blob = finished
-        ? await buildPictureListingPack(zip, game, "picture-listing-background.jpg", render, caller, progress)
+        ? await buildPictureListingPack(zip, game, "picture-listing-background.jpg", render, caller, progress, async slides => {
+          const video = await recordPictureListingVideo(slides, () => status("Recording the Etsy MP4. Keep this tab open for about 14 seconds."));
+          videoIncluded = Boolean(video);
+          return video;
+        })
         : await buildPicturePngPack(zip, game, render, caller, progress);
       downloadFile(blob, finished ? `${game.boards.length}-etsy-listing-jpgs.zip` : "etsy-png-pack.zip");
-      status(`Etsy ${format} pack downloaded · ${(blob.size / 1_000_000).toFixed(2)} MB`);
+      status(finished
+        ? videoIncluded ? "Etsy pack downloaded: 9 JPGs and an MP4." : "Etsy JPGs downloaded. This browser could not create the MP4."
+        : `Etsy ${format} pack downloaded · ${(blob.size / 1_000_000).toFixed(2)} MB`);
     } catch (error) {
       console.error(error);
       status(`Could not create the Etsy ${format} pack. Your pictures are still loaded.`, true);

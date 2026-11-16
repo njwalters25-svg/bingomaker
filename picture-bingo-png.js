@@ -252,7 +252,7 @@ function drawPictureListingPage(context, background, page, artwork, accent) {
   }
 }
 
-async function buildPictureListingPack(zip, game, backgroundUrl, renderSheet, captureCaller, progress = async () => {}) {
+async function buildPictureListingPack(zip, game, backgroundUrl, renderSheet, captureCaller, progress = async () => {}, makeVideo) {
   const background = await loadListingImage(backgroundUrl);
   const desk = await loadListingImage("picture-listing-desk.jpg");
   const artwork = new Map();
@@ -261,6 +261,7 @@ async function buildPictureListingPack(zip, game, backgroundUrl, renderSheet, ca
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 2000;
   const context = canvas.getContext("2d");
+  const slides = [];
   try {
     for (const [index, page] of pages.entries()) {
       await progress(index + 1, pages.length + 1);
@@ -282,7 +283,9 @@ async function buildPictureListingPack(zip, game, backgroundUrl, renderSheet, ca
       else drawPictureListingPage(context, page[0] === "08-print-at-home" ? desk : background, page, artwork, game.border);
       const jpg = await new Promise((resolve, reject) => canvas.toBlob(
         blob => blob ? resolve(blob) : reject(new Error("Listing JPG encoding failed")), "image/jpeg", 0.94));
-      zip.file(`${page[0]}.jpg`, await jpg.arrayBuffer());
+      const bytes = await jpg.arrayBuffer();
+      zip.file(`${page[0]}.jpg`, bytes);
+      if (makeVideo) slides.push(bytes);
       for (const [key] of page[2]) {
         remaining.splice(remaining.indexOf(key), 1);
         if (!remaining.includes(key)) {
@@ -306,10 +309,68 @@ async function buildPictureListingPack(zip, game, backgroundUrl, renderSheet, ca
       }
       promo = await response.blob();
     }
-    zip.file("09-save-50.jpg", await promo.arrayBuffer());
+    const finalSlide = await promo.arrayBuffer();
+    zip.file("09-save-50.jpg", finalSlide);
+    if (makeVideo) {
+      const video = await makeVideo([...slides, finalSlide]);
+      if (video) zip.file("listing-video.mp4", video);
+    }
     return await zip.generateAsync({ type: "blob", compression: "STORE" });
   } finally {
     for (const source of artwork.values()) source.close();
+    canvas.width = canvas.height = 0;
+  }
+}
+
+async function recordPictureListingVideo(slides, onStart) {
+  const mimeType = ["video/mp4;codecs=avc1.420034", "video/mp4"].find(type => globalThis.MediaRecorder?.isTypeSupported(type));
+  if (!mimeType || !slides.length) return null;
+  const canvas = document.createElement("canvas");
+  if (!canvas.captureStream) return null;
+  canvas.width = 2160;
+  canvas.height = 1080;
+  const context = canvas.getContext("2d");
+  const images = [];
+  let stream, recorder, timer, interrupted = false;
+  try {
+    for (const slide of slides) images.push(await createImageBitmap(new Blob([slide], { type: "image/jpeg" })));
+    function show(image) {
+      context.fillStyle = "#f4f1ed";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 540, 0, 1080, 1080);
+    }
+    show(images[0]);
+    stream = canvas.captureStream(30);
+    recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 5_000_000 });
+    const chunks = [];
+    const recording = new Promise((resolve, reject) => {
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onerror = event => reject(event.error);
+      recorder.onstop = () => resolve(!interrupted && chunks.length ? new Blob(chunks, { type: "video/mp4" }) : null);
+    });
+    onStart();
+    recorder.start();
+    const start = performance.now();
+    timer = setInterval(() => {
+      if (recorder.state !== "recording") return;
+      if (document.hidden) {
+        interrupted = true;
+        recorder.stop();
+        return;
+      }
+      const index = Math.floor((performance.now() - start) / 1500);
+      if (index >= images.length) recorder.stop();
+      else show(images[index]);
+    }, 30);
+    return await recording;
+  } catch (error) {
+    console.warn("Could not record Etsy listing MP4", error);
+    return null;
+  } finally {
+    clearInterval(timer);
+    if (recorder?.state === "recording") recorder.stop();
+    stream?.getTracks().forEach(track => track.stop());
+    images.forEach(image => image.close());
     canvas.width = canvas.height = 0;
   }
 }
