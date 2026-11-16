@@ -115,6 +115,9 @@ function drawPictureListingCover(context, background, board, boardCount, picture
     context.fillText(value, x, y, maxWidth);
   }
   label("DIGITAL DOWNLOAD", 1000, 135, 125, "#151515", 1750);
+  context.fillStyle = "#172231";
+  context.fillRect(78, 167, 875, 90);
+  label("OFFLINE CALLER INCLUDED", 515.5, 231, 55, "#fff", 810);
 
   context.beginPath();
   for (let i = 0; i < 32; i++) {

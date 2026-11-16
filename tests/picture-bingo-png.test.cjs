@@ -50,6 +50,7 @@ test("the listing ZIP exports the promo as the ninth JPG and feeds the ordered s
     assert.ok(labels.includes("100 boards, two per page"));
     assert.ok(labels.includes("100 UNIQUE BINGO BOARDS"));
     assert.ok(labels.includes("36 FUN"));
+    assert.ok(labels.includes("OFFLINE CALLER INCLUDED"));
   } finally {
     delete global.document;
     delete global.Image;
