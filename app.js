@@ -2080,7 +2080,7 @@ function updateFreeSquarePreview() {
   });
 
   const items = parseItems(inputs.items.value);
-  const requestedCount = Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
+  const requestedCount = getRequestedCardCount();
   renderHelpfulChecks(getHelpfulChecks(items, requestedCount));
 }
 
@@ -2194,7 +2194,7 @@ function hasCompleteYoutubePlaylist() {
 }
 
 function getRequestedCardCount() {
-  return Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
+  return Math.min(Math.max(Math.floor(Number(inputs.count.value)) || 1, 1), 400);
 }
 
 function renderInstructions() {
@@ -2614,7 +2614,7 @@ function updatePreviewScale() {
 function generateCards() {
   const items = parseItems(inputs.items.value);
   updateListHelp();
-  const requestedCount = Math.min(Math.max(Number(inputs.count.value) || 1, 1), 300);
+  const requestedCount = getRequestedCardCount();
   inputs.count.value = requestedCount;
 
   if (items.length < 24) {
